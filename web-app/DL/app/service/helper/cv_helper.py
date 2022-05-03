@@ -63,9 +63,7 @@ class CVHelper:
 
     async def get_skew_angel(self, extracted_objects):
         find_skew_angles = [self.__calculate_skew_angel(extracted_object['detected_object']) for
-                            extracted_object
-                            in
-                            extracted_objects]
+                            extracted_object in extracted_objects]
         skew_angles = await asyncio.gather(*find_skew_angles)
         max_skew_angle = np.max(skew_angles)
         min_skew_angle = np.min(skew_angles)
@@ -80,8 +78,7 @@ class CVHelper:
         (h, w) = image.shape[:2]
         center = (w // 2, h // 2)
         M = cv2.getRotationMatrix2D(center, angle, 1.0)
-        rotated = cv2.warpAffine(image, M, (w, h),
-                                 flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+        rotated = cv2.warpAffine(image, M, (w, h), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
         return rotated
 
     async def automatic_enhancement(self, image, clip_hist_percent=1):

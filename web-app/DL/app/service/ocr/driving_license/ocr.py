@@ -15,7 +15,11 @@ pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 class OCRDrivingLicense():
     def _apply_preprocessing(self, image):
         original = image
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+        h,w,c = image.shape
+        if h > 640 or w > 640:
+            image = cv2.resize(image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+        else:
+            image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blured1 = cv2.medianBlur(image, 3)
         blured2 = cv2.medianBlur(image, 51)
@@ -28,7 +32,7 @@ class OCRDrivingLicense():
         return image
 
     def _apply_red_color_mask(self, image):
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
         mask = cv2.inRange(image, (0, 0, 0), (60, 60, 100))
         image = 255 - mask
         kernel = np.ones((2, 2), np.uint8)
@@ -37,7 +41,7 @@ class OCRDrivingLicense():
         return image
 
     def _apply_dark_red_color_mask(self, image):
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
         mask = cv2.inRange(image, (0, 0, 0), (80, 85, 98))
         image = 255 - mask
         kernel = np.ones((2, 2), np.uint8)
@@ -46,7 +50,7 @@ class OCRDrivingLicense():
         return image
 
     def _apply_black_color_mask(self, image):
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
         mask = cv2.inRange(image, (0, 0, 0), (50, 50, 50))
         image = 255 - mask
         kernel = np.ones((2, 2), np.uint8)
@@ -55,7 +59,7 @@ class OCRDrivingLicense():
         return image
 
     def _apply_gray_color_mask(self, image):
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
         mask = cv2.inRange(image, (30, 30, 30), (200, 160, 160))
         image = 255 - mask
         kernel = np.ones((2, 2), np.uint8)
@@ -64,7 +68,7 @@ class OCRDrivingLicense():
         return image
 
     def _apply__dark_gray_color_mask(self, image):
-        image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+
         mask = cv2.inRange(image, (0, 0, 0), (140, 120, 120))
         image = 255 - mask
         kernel = np.ones((2, 2), np.uint8)

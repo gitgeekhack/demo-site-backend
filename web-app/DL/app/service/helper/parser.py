@@ -1,6 +1,7 @@
 import re
 from datetime import datetime
 
+from app import logger
 from app.constant import Gender, Parser, EyeHairColor
 
 REGX = Parser.Regx
@@ -109,12 +110,19 @@ def parse_gender(text):
 
 @strip_text
 def parse_height(text):
+    SIMILAR_INCH_NUMBERS = {'8': '0'}
     text = text.split('H')[-1] if 'H' in text else text
     text_group = re.search(REGX.HEIGHT, text)
     if text_group:
         height = text_group.group(0)
         x = re.findall(r'\d', height)
-        height = f"""{x[0]}'{x[1]}{x[2]}\"""" if len(x) == 3 else None
+        if len(x) == 3:
+            if x[1] in SIMILAR_INCH_NUMBERS.keys():
+                x[1] = SIMILAR_INCH_NUMBERS[x[1]]
+            if int(x[1]) > 1:
+                logger.info(f"""Incorrect format for height unit -> {x[0]}'{x[1]}{x[2]}\"""")
+                return None
+            height = f"""{x[0]}'{x[1]}{x[2]}\""""
         return height
 
 
