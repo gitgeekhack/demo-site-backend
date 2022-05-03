@@ -29,17 +29,11 @@ class DLDataPointExtractorV1(MonoState):
         self.label = DrivingLicense.ObjectDetection.OBJECT_LABELS
         self.cv_helper = CVHelper()
         self.ocr = OCR()
-        self.ocr_method = {'address': self.ocr.get_address,
-                           'date': self.ocr.get_date,
-                           'gender': self.ocr.get_gender,
-                           'license_number': self.ocr.get_license_number,
-                           'name': self.ocr.get_name,
-                           'eye_color': self.ocr.get_eye_color,
-                           'hair_color': self.ocr.get_hair_color,
-                           'license_class': self.ocr.get_license_class,
-                           'height': self.ocr.get_height,
-                           'weight': self.ocr.get_weight
-                           }
+        self.ocr_method = {'address': self.ocr.get_address, 'date': self.ocr.get_date, 'gender': self.ocr.get_gender,
+                           'license_number': self.ocr.get_license_number, 'name': self.ocr.get_name,
+                           'eye_color': self.ocr.get_eye_color, 'hair_color': self.ocr.get_hair_color,
+                           'license_class': self.ocr.get_license_class, 'height': self.ocr.get_height,
+                           'weight': self.ocr.get_weight}
 
     async def __multiple_dates(self, dates):
         for date in dates:
@@ -48,8 +42,8 @@ class DLDataPointExtractorV1(MonoState):
             for x in temp:
                 iou = await self.cv_helper.calculate_iou(x=x['bbox'], y=date['bbox'])
                 if iou >= 0.5:
-                    max_conf = x if x['score'] < date['score'] else date
-                    dates.remove(max_conf)
+                    min_conf = x if x['score'] < date['score'] else date
+                    dates.remove(min_conf)
         return dates
 
     async def __detect_objects(self, image):
@@ -90,35 +84,34 @@ class DLDataPointExtractorV1(MonoState):
 
     async def __extract_objects(self, image):
         detected_objects = await self.__detect_objects(image)
-        dates_coroutines = None
         object_extraction_coroutines = [
-            self.cv_helper.get_object(image,
-                                      coordinates=detected_object['bbox'], label=label) for label, detected_object in
-            detected_objects.items() if label != 'dates']
-        for label, detected_object in detected_objects.items():
-            if label == 'dates':
-                dates_coroutines = [self.cv_helper.get_object(image, coordinates=x['bbox'], label=label) for x in
-                                    detected_object]
-        if dates_coroutines:
-            object_extraction_coroutines.extend(dates_coroutines)
+            self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
+            label, detected_object in detected_objects.items()]
         extracted_objects = await asyncio.gather(*object_extraction_coroutines)
         if len(extracted_objects) > 0:
-            _skew_finding_objects = []
-            _skew_finding_objects.append(extracted_objects[0])
-            _skew_finding_objects.extend(extracted_objects[2:])
-            skew_angle = await self.cv_helper.get_skew_angel(_skew_finding_objects)
+            skew_angle = await self.cv_helper.get_skew_angel(extracted_objects)
             logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
                 logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
                 object_extraction_coroutines = [
-                    self.cv_helper.get_object(image,
-                                              coordinates=detected_object['bbox'], label=label) for
-                    label, detected_object in
-                    detected_objects.items()]
+                    self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
+                    label, detected_object in detected_objects.items()]
                 extracted_objects = await asyncio.gather(*object_extraction_coroutines)
-        return extracted_objects, detected_objects
+        return extracted_objects
+
+    async def __dates_per_label(self, extracted_data):
+        date = [data[1] for data in extracted_data if data[0].startswith('date')]
+        extracted_data = [data for data in extracted_data if not data[0].startswith('date')]
+        if len(date) == 3 and all(date):
+            date_labels = ['date_of_birth', 'issue_date', 'expiry_date']
+            date.sort()
+            dates = list(zip(date_labels, date))
+            extracted_data.extend(dates)
+            return extracted_data
+        logger.warning(f'Unable to extract dates')
+        return extracted_data
 
     async def extract(self, file):
         data = {"driving_license": None}
@@ -131,7 +124,7 @@ class DLDataPointExtractorV1(MonoState):
         results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
-        extracted_objects, detected_objects = await self.__extract_objects(image)
+        extracted_objects = await self.__extract_objects(image)
         extracted_objects_dict = dict()
 
         for i in extracted_objects:
@@ -140,11 +133,9 @@ class DLDataPointExtractorV1(MonoState):
                                         in extracted_objects_dict.items()]
         extracted_data = await asyncio.gather(*object_extraction_coroutines)
 
-        if len(detected_objects.items()) > 0:
-            date = [y for x, y in extracted_data if x.startswith('date')]
-            shared_keys = results_dict.keys() & dict(extracted_data).keys()
-            data['driving_license'] = {k: dict(extracted_data)[k] for k in shared_keys}
-            data['driving_license']['date'] = ', '.join(map(str, date))
+        if len(extracted_data) > 0:
+            extracted_data = await self.__dates_per_label(extracted_data)
+            data['driving_license'] = results_dict | dict(extracted_data)
             data['driving_license']['filename'] = filename
         logger.info(f'Request ID: [{self.uuid}] Response: {data}')
 
