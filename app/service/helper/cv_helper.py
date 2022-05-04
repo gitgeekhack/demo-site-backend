@@ -4,8 +4,14 @@ import cv2
 import numpy as np
 from scipy.ndimage import interpolation as inter
 
+"""
+The Object Extraction helper signifies helper class which provides necessary supporting methods used in object extraction
+"""
+
 
 class CVHelper:
+    """Contains crop_object method which takes image and respective box dimension for detected object, crops and
+    returns the image """
 
     async def get_object(self, target_img, coordinates, label):
         """

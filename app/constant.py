@@ -46,6 +46,9 @@ class DrivingLicense:
         OBJECT_LABELS = {0: 'license_number', 1: 'name', 2: 'address', 3: 'date', 4: 'gender', 5: 'height',
                          6: 'weight', 7: 'hair_color', 8: 'eye_color', 9: 'license_class'}
 
+    class RegexCollection:
+        DATE_REGEX = '(\d{2})[/.-](\d{2})[/.-](\d{4})$'
+
     class ResponseKeys:
         NAME = 'name'
         EYE_COLOR = 'eye_color'
@@ -69,7 +72,17 @@ class AllowedFileType:
 
 
 class ExceptionMessage:
+    INVALID_INSURANCE_COMPANY_NAME = 'Inputted application is of invalid insurance company'
     INVALID_FILE_EXCEPTION_MESSAGE = 'Inputted file is invalid'
+    FAILED_TO_DOWNLOAD_FILE_FROM_URL_EXCEPTION_MESSAGE = 'Unable to download file from url'
+    INVALID_PDF_STRUCTURE_TYPE = 'file has invalid pdf structure'
+    UNABLE_TO_GET_ENVIRONMENT_VARIABLE = 'Unable to get environment variable'
+    FILE_NOT_FOUND = 'file not found in temporary folder'
+    MISSING_DOCUMENTS = 'one or more documents missing'
+    UNABLE_TO_EXTRACT_NAME = 'Unable to extract name'
+    UNABLE_TO_EXTRACT_EOD_SECTION = 'Unable to extract end of the document'
+    UNABLE_TO_EXTRACT_DATE = 'Unable to Extract Date'
+    UNABLE_TO_EXTRACT_DATAPOINT = 'Request ID: [{}] -> Unable to extract {}'
 
 
 class EyeHairColor:

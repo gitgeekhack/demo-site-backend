@@ -16,7 +16,7 @@ from app.service.ocr.driving_license.ocr import OCRDrivingLicense as OCR
 def model_loader():
     torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
     model = torch.hub.load(DrivingLicense.ObjectDetection.YOLOV5, 'custom',
-                           path=DrivingLicense.ObjectDetection.DL_OBJECT_DETECTION_MODEL_PATH)
+                           path=DrivingLicense.ObjectDetection.DL_OBJECT_DETECTION_MODEL_PATH, force_reload=True)
     model.conf = DrivingLicense.ObjectDetection.MODEL_CONFIDENCE
     return model
 
@@ -82,14 +82,12 @@ class DLDataPointExtractorV1(MonoState):
             text = self.ocr_method[label](detected_object)
         return label, text
 
-    async def __extract_data_by_label(self, image):
-        extracted_data_by_label = None
+    async def __extract_objects(self, image):
         detected_objects = await self.__detect_objects(image)
         object_extraction_coroutines = [
             self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
             label, detected_object in detected_objects.items()]
         extracted_objects = await asyncio.gather(*object_extraction_coroutines)
-
         if len(extracted_objects) > 0:
             skew_angle = await self.cv_helper.get_skew_angel(extracted_objects)
             logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
@@ -101,14 +99,7 @@ class DLDataPointExtractorV1(MonoState):
                     self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
                     label, detected_object in detected_objects.items()]
                 extracted_objects = await asyncio.gather(*object_extraction_coroutines)
-        extracted_objects_with_labels = dict()
-
-        for i in extracted_objects:
-            extracted_objects_with_labels[i['label']] = i['detected_object']
-        object_extraction_coroutines = [self.__get_text_from_object(label, detected_object) for label, detected_object
-                                        in extracted_objects_with_labels.items()]
-        extracted_data_by_label = await asyncio.gather(*object_extraction_coroutines)
-        return extracted_data_by_label
+        return extracted_objects
 
     async def __dates_per_label(self, extracted_data):
         date = [data[1] for data in extracted_data if data[0].startswith('date')]
@@ -129,13 +120,20 @@ class DLDataPointExtractorV1(MonoState):
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
 
-        results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
+        results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(self.label.values())))
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
-        extracted_data_by_label = await self.__extract_data_by_label(image)
+        extracted_objects = await self.__extract_objects(image)
+        extracted_objects_dict = dict()
 
-        if len(extracted_data_by_label) > 0:
-            extracted_data = await self.__dates_per_label(extracted_data_by_label)
+        for i in extracted_objects:
+            extracted_objects_dict[i['label']] = i['detected_object']
+        object_extraction_coroutines = [self.__get_text_from_object(label, detected_object) for label, detected_object
+                                        in extracted_objects_dict.items()]
+        extracted_data = await asyncio.gather(*object_extraction_coroutines)
+
+        if len(extracted_data) > 0:
+            extracted_data = await self.__dates_per_label(extracted_data)
             data['driving_license'] = {**results_dict, **dict(extracted_data)}
             data['driving_license']['filename'] = filename
         logger.info(f'Request ID: [{self.uuid}] Response: {data}')
