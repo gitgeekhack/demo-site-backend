@@ -16,7 +16,7 @@ class Index(web.View):
         return {}
 
 
-class DLExtract(web.View):
+class DLExtractor(web.View):
     @aiohttp_jinja2.template('results.html')
     async def post(self):
         x_uuid = uuid.uuid1()
