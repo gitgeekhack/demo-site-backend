@@ -1,7 +1,6 @@
+import logging
 import os
 import sys
-import logging
-from logging.handlers import RotatingFileHandler
 
 from app.constant import AllowedFileType
 
@@ -33,19 +32,9 @@ class MonoState(object):
         return obj
 
 
-def is_pdf_url(url):
-    file_type = url.split('/')[-1].split('.')[-1].lower()
-    return file_type == AllowedFileType.PDF
-
-
 def is_image_file(file):
     file_type = file.split('/')[-1].split('.')[-1].lower()
     return file_type in AllowedFileType.IMAGE
-
-
-def is_zip_file(file_name):
-    file_type = file_name.split('/')[-1].split('.')[-1].lower()
-    return file_type == AllowedFileType.ZIP
 
 
 class PackagePathFilter(logging.Filter):
@@ -60,13 +49,14 @@ class PackagePathFilter(logging.Filter):
                 break
         return True
 
+
 def make_dir(target_path):
     if not os.path.exists(target_path):
         os.mkdir(target_path)
 
+
 def get_logger():
     logger = logging.getLogger('gunicorn.error')
-    # logger = logging.getLogger('Veronica')
     logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                    '[Logger: %(name)s] - '
                                                    '[Level: %(levelname)s] - '

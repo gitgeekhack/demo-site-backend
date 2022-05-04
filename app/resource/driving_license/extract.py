@@ -2,11 +2,10 @@ import traceback
 import uuid
 
 import aiohttp_jinja2
-import jinja2
 from aiohttp import web
 
 from app import logger
-from app.business_rule_exception import InvalidFileException, FailedToDownloadFileFromURLException
+from app.business_rule_exception import InvalidFileException
 from app.common.utils import is_image_file
 from app.service.driving_license.extract import DLDataPointExtractorV1
 
@@ -15,6 +14,7 @@ class Index(web.View):
     @aiohttp_jinja2.template('uploader.html')
     async def get(self):
         return {}
+
 
 class DLExtract(web.View):
     @aiohttp_jinja2.template('results.html')
