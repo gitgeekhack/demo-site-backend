@@ -105,9 +105,8 @@ class DLDataPointExtractorV1(MonoState):
         date = [data[1] for data in extracted_data if data[0].startswith('date')]
         extracted_data = [data for data in extracted_data if not data[0].startswith('date')]
         if len(date) == 3 and all(date):
-            date_labels = ['date_of_birth', 'issue_date', 'expiry_date']
             date.sort()
-            dates = list(zip(date_labels, date))
+            dates = list(zip(DrivingLicense.ResponseKeys.DATE_LABELS, date))
             extracted_data.extend(dates)
             return extracted_data
         logger.warning(f'Unable to extract dates')
@@ -121,7 +120,7 @@ class DLDataPointExtractorV1(MonoState):
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
 
-        results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
+        results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(self.label.values())))
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
         extracted_objects = await self.__extract_objects(image)
@@ -135,7 +134,7 @@ class DLDataPointExtractorV1(MonoState):
 
         if len(extracted_data) > 0:
             extracted_data = await self.__dates_per_label(extracted_data)
-            data['driving_license'] = results_dict | dict(extracted_data)
+            data['driving_license'] = {**results_dict, **dict(extracted_data)}
             data['driving_license']['filename'] = filename
         logger.info(f'Request ID: [{self.uuid}] Response: {data}')
 

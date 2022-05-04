@@ -49,6 +49,23 @@ class DrivingLicense:
     class RegexCollection:
         DATE_REGEX = '(\d{2})[/.-](\d{2})[/.-](\d{4})$'
 
+    class ResponseKeys:
+        NAME = 'name'
+        EYE_COLOR = 'eye_color'
+        GENDER = 'gender'
+        HEIGHT = 'height'
+        ADDRESS = 'address'
+        WEIGHT = 'weight'
+        LICENSE_NUMBER = 'license_number'
+        LICENSE_CLASS = 'license_class'
+        HAIR_COLOR = 'hair_color'
+        DATE_OF_BIRTH = 'date_of_birth'
+        ISSUE_DATE = 'issue_date'
+        EXPIRY_DATE = 'expiry_date'
+        KEYS = [NAME, EYE_COLOR, GENDER, HAIR_COLOR, HEIGHT, WEIGHT, LICENSE_CLASS, LICENSE_NUMBER, EXPIRY_DATE,
+                DATE_OF_BIRTH, ISSUE_DATE]
+        DATE_LABELS = [DATE_OF_BIRTH, ISSUE_DATE, EXPIRY_DATE]
+
 
 class AllowedFileType:
     IMAGE = ['jpg', 'png', 'jpeg']
@@ -74,4 +91,4 @@ class EyeHairColor:
              'MAR': 'Maroon', 'COM': 'Stainless Steel', 'CPR': 'Copper', 'CRM': 'Ivory', 'GLD': 'Gold', 'GRY': 'Gray',
              'GRN': 'Green', 'DGR': 'Green, Dark', 'LGR': 'Green, Light', 'HAZ': 'Hazel', 'LAV': 'Lavender',
              'ONG': 'Orange', 'PNK': 'Pink', 'PLE': 'Purple', 'RED': 'Red', 'TAN': 'Tan', 'TRQ': 'Turquoise',
-             'WHI': 'White','YEL': 'Yellow'}
+             'WHI': 'White', 'YEL': 'Yellow'}
