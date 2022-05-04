@@ -11,7 +11,7 @@ from app.common.utils import is_image_file
 from app.service.driving_license.extract import DLDataPointExtractorV1
 
 
-class Uploader(web.View):
+class Index(web.View):
     @aiohttp_jinja2.template('uploader.html')
     async def get(self):
         return {}
