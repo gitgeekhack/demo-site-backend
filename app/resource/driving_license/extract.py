@@ -10,14 +10,12 @@ from app.common.utils import is_image_file
 from app.service.driving_license.extract import DLDataPointExtractorV1
 
 
-class Index(web.View):
-    @aiohttp_jinja2.template('uploader.html')
+class DLExtractor(web.View):
+    @aiohttp_jinja2.template('driving-license-ocr.html')
     async def get(self):
         return {}
 
-
-class DLExtractor(web.View):
-    @aiohttp_jinja2.template('results.html')
+    @aiohttp_jinja2.template('driving-license-ocr.html')
     async def post(self):
         x_uuid = uuid.uuid1()
         try:
