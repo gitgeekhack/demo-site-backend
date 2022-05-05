@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 
 import cv2
@@ -58,14 +59,12 @@ class DLDataPointExtractorV1(MonoState):
             x[:-2] = predicted bbox
             """
             if self.label[int(x[-1])] not in detected_objects.keys() and self.label[int(x[-1])] != 'date':
-                detected_objects[self.label[int(x[-1])]] = {'score': float(x[-2]),
-                                                            'bbox': x[:-2].numpy()}
+                detected_objects[self.label[int(x[-1])]] = {'score': float(x[-2]), 'bbox': x[:-2].numpy()}
             elif self.label[int(x[-1])] == 'date':
                 dates.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
             else:
                 max_score = detected_objects[self.label[int(x[-1])]]['score']
-                temp = {'score': float(x[-2]),
-                        'bbox': x[:-2].numpy()}
+                temp = {'score': float(x[-2]), 'bbox': x[:-2].numpy()}
                 if temp['score'] > max_score:
                     detected_objects[self.label[int(x[-1])]] = temp
         dates = await self.__multiple_dates(dates)
@@ -125,7 +124,7 @@ class DLDataPointExtractorV1(MonoState):
         data = {"driving_license": None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.TEMP_FOLDER, filename)
+        file_path = os.path.join(app.config.INPUT_FOLDER, filename)
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
 
@@ -136,8 +135,10 @@ class DLDataPointExtractorV1(MonoState):
 
         if len(extracted_data_by_label) > 0:
             extracted_data = await self.__dates_per_label(extracted_data_by_label)
-            data['driving_license'] = {**results_dict, **dict(extracted_data)}
-            data['driving_license']['filename'] = filename
+            results = {**results_dict, **dict(extracted_data)}
+            data['filename'] = filename
+            data['driving_license'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
+                                                 separators=("\n", " : "))
         logger.info(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data
