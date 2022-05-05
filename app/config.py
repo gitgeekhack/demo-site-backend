@@ -10,4 +10,4 @@ class BaseConfig(object):
 
 class DevelopmentConfig(BaseConfig):
     ENVIRONMENT = 'development'
-    TEMP_FOLDER = 'app/static/temp/'
+    INPUT_FOLDER = 'app/static/input_images/'
