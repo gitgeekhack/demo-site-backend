@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DL-OCR</title>
+</head>
+<body>
+<ol>
+    <li>Name: {{response['driving_license']['name']}}</li>
+    <li>Address: {{response['driving_license']['address']}}</li>
+    <li>License Number: {{response['driving_license']['license_number']}}</li>
+    <li>License class: {{response['driving_license']['license_class']}}</li>
+    <li>Gender: {{response['driving_license']['gender']}}</li>
+    <li>Height: {{response['driving_license']['height']}}</li>
+    <li>Weight: {{response['driving_license']['weight']}}</li>
+    <li>Eye Color: {{response['driving_license']['eye_color']}}</li>
+    <li>Hair Color: {{response['driving_license']['hair_color']}}</li>
+    <li>date of birth: {{response['driving_license']['date_of_birth']}}</li>
+    <li>expiry date: {{response['driving_license']['expiry_date']}}</li>
+    <li>issue date: {{response['driving_license']['issue_date']}}</li>
+</ol>
+<div>
+    <img src="{{ static('temp/' + response['driving_license']['filename']) }}">
+</div>
+</body>
+</html>
