@@ -1,6 +1,8 @@
 import re
 from datetime import datetime
 
+import pandas as pd
+
 from app import logger
 from app.constant import Gender, Parser, EyeHairColor
 
@@ -158,3 +160,75 @@ def parse_license_class(text):
     text_group = re.search(REGX.LICENSE_CLASS, text)
     if text_group:
         return text_group.group(0)
+
+
+@strip_text
+def parse_title_number(text):
+    temp = ''
+    text_group = re.findall(r"(\w*[\s]*)([\w]*)", text)
+    if text_group:
+        for i_text_group in text_group:
+            for i_i_text_group in i_text_group:
+                temp_text = i_i_text_group.replace('\n', '')
+                if 4 < len(temp_text) < 16 and temp_text.isalnum() and not temp_text.isalpha():
+                    temp = temp_text
+    return temp
+
+
+@strip_text
+def parse_vin(text):
+    parsed_text = re.search(r'([A-Z0-9]){17}', text)
+    if parsed_text:
+        return parsed_text.group(0)
+    else:
+        temp_text = text.replace(' ', '')
+        temp_text = temp_text.split('\n')
+        for i_text in temp_text:
+            if len(i_text) == 17 and i_text.isalnum() and not i_text.isalpha():
+                return i_text
+
+
+@strip_text
+def parse_year(text):
+    text_group = re.search(r'(19[8-9][0-9]|20[0-9]{2})', text)
+    if text_group:
+        return int(text_group.group(0))
+    else:
+        text_group = re.search(r'([1-9]{2})', text)
+        if text_group:
+            return int(text_group.group(0))
+
+
+@strip_text
+def parse_make(text):
+    text = text.replace('MAKE', '')
+    text = text.replace('MAKEOFVEHICLE', '')
+    text = text.replace('VEHICLE', '')
+    text = text.replace('\n', ' ')
+    text_group = re.search('([A-Z]){3,11}', text)
+    if text_group:
+        return text_group.group(0)
+
+
+@strip_text
+def parse_model(text):
+    temp = None
+    text = text.replace('\n', ' ')
+    text = " ".join(text.split(" ")[::-1])
+    text = text.replace('MODEL NAME', '')
+    text = text.replace('MODEL', '')
+    text = text.replace('MODELNAME', '')
+    text = text.replace('MO', '')
+    df = pd.read_csv('/home/yash/git/demo-site-backend/app/data/model.csv')
+    df['Model'], text = df['Model'].str.lower(), text.lower()
+    for i_text in text.split(' ')[::-1]:
+        if len(i_text) > 1 and (df['Model'] == i_text).sum():
+            temp = i_text.upper()
+    if not temp:
+        text = text.upper()
+        text_group = re.search('([A-Z]){2,11}', text)
+        if text_group:
+            temp = text_group.group(0)
+    if temp == 'ROVER':
+        temp = 'RANGE ROVER' if 'RANGE' in text else 'LAND ROVER'
+    return temp

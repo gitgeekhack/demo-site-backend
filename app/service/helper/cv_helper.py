@@ -38,25 +38,25 @@ class CVHelper:
         iou = inter_area / float(box0_area + box1_area - inter_area)
         return iou
 
-    async def __find_skew_score(self, arr, angle):
+    async def _find_skew_score(self, arr, angle):
         data = inter.rotate(arr, angle, reshape=False, order=0)
         histogram = np.sum(data, axis=1)
         score = np.sum((histogram[1:] - histogram[:-1]) ** 2)
         return histogram, score
 
-    async def __calculate_skew_angel(self, image, delta=5, limit=45):
+    async def _calculate_skew_angel(self, image, delta=5, limit=45):
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)[1]
         scores = []
         angles = np.arange(-limit, limit + delta, delta)
         for angle in angles:
-            histogram, score = await self.__find_skew_score(thresh, angle)
+            histogram, score = await self._find_skew_score(thresh, angle)
             scores.append(score)
         best_angle = angles[scores.index(max(scores))]
         return best_angle
 
     async def get_skew_angel(self, extracted_objects):
-        find_skew_angles = [self.__calculate_skew_angel(extracted_object['detected_object']) for
+        find_skew_angles = [self._calculate_skew_angel(extracted_object['detected_object']) for
                             extracted_object in extracted_objects]
         skew_angles = await asyncio.gather(*find_skew_angles)
         max_skew_angle = np.max(skew_angles)

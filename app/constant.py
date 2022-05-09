@@ -37,6 +37,20 @@ class OCRConfig:
         EYE_COLOR = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ " load_system_dawg=false load_freq_dawg=false'
         LICENSE_CLASS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890   " load_system_dawg=false load_freq_dawg=false'
 
+    class CertificateOfTitle:
+        TITLE_NO = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
+        VIN = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 " load_system_dawg=false load_freq_dawg=false'
+        YEAR = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789\n" load_system_dawg=false load_freq_dawg=false'
+        MAKE = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'
+        MODEL = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/\n" load_system_dawg=false load_freq_dawg=false'
+        DATE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
+        NAME = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ /\n" load_system_dawg=false load_freq_dawg=false'
+        ADDRESS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,\n-" load_system_dawg=false load_freq_dawg=false'
+        BODY_STYLE = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'
+        ODOMETER = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" load_system_dawg=false load_freq_dawg=false'
+        DOCUMENT_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
+        TITLE_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
+
 
 class DrivingLicense:
     class ObjectDetection:
@@ -79,3 +93,33 @@ class EyeHairColor:
              'GRN': 'Green', 'DGR': 'Green, Dark', 'LGR': 'Green, Light', 'HAZ': 'Hazel', 'LAV': 'Lavender',
              'ONG': 'Orange', 'PNK': 'Pink', 'PLE': 'Purple', 'RED': 'Red', 'TAN': 'Tan', 'TRQ': 'Turquoise',
              'WHI': 'White', 'YEL': 'Yellow'}
+
+
+class CertificateOfTitle:
+    class ObjectDetection:
+        COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
+        YOLOV5 = 'ultralytics/yolov5:v6.0'
+        MODEL_CONFIDENCE = 0.4
+        OBJECT_LABELS = {0: 'title_no', 1: 'vin', 2: 'year', 3: 'make', 4: 'model', 5: 'body_style',
+                         6: 'odometer_reading', 7: 'issue_date', 8: 'owner_name', 9: 'owner_address',
+                         10: 'lienholder_name', 11: 'lienholder_address', 12: 'lien_date', 13: 'document_type',
+                         14: 'title_type', 15: 'remark'}
+
+    class ResponseKeys:
+        TITLE_NO = 'title_no'
+        VIN = 'vin'
+        YEAR = 'year'
+        MAKE = 'make'
+        MODEL = 'model'
+        BODY_STYLE = 'body_style'
+        ODOMETER_READING = 'odometer_reading'
+        ISSUE_DATE = 'issue_date'
+        OWNER_NAME = 'owner_name'
+        OWNER_ADDRESS = 'owner_address'
+        LIENHOLDER_NAME = 'lienholder_name'
+        LIENHOLDER_ADDRESS = 'lienholder_address'
+        LIEN_DATE = 'lien_date'
+        DOCUMENT_TYPE = 'document_type'
+        TITLE_TYPE = 'title_type'
+        KEYS = [TITLE_NO, VIN, YEAR, MAKE, MODEL, BODY_STYLE, ODOMETER_READING, ISSUE_DATE, OWNER_ADDRESS,
+                OWNER_ADDRESS, LIENHOLDER_NAME, LIENHOLDER_ADDRESS, LIEN_DATE, DOCUMENT_TYPE, TITLE_TYPE]
