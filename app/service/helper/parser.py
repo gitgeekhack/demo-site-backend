@@ -206,6 +206,7 @@ def parse_title_number(text):
     text = text.upper()
     text = text.replace('TITLE NUMBER', '')
     text = text.replace('TITLE NO', '')
+    text = text.replace('TITLENO', '')
     text = text.replace('TITLE', '')
     text = text.replace('NUMBER', '')
     text = text.replace('\n', ' ')
@@ -222,6 +223,7 @@ def parse_vin(text):
     text = text.replace('VEHICLEIDENTIFICATIONNUMBER', '')
     text = text.replace('VEHICLEIDENTIFICATION NUMBER', '')
     text = text.replace('IDENTIFICATIONNUM', '')
+    text = text.replace('VINNO', '')
     text = text.replace('VIN', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('NUMBER', '')
@@ -375,7 +377,7 @@ def parse_odometer_reading(text):
 def parse_doc_type(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(r'ORIGINAL|DUPLICATE|TRANSFER}CERTIFIED COPY|NEW|REPLACEMENT', text)
+    text_group = re.findall(r'ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT', text)
     if text_group:
         result = list(set(text_group))
     return result
@@ -386,6 +388,16 @@ def parse_title_type(text):
     result = []
     text = text.replace('\n', ' ')
     text_group = re.findall(r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE', text)
+    if text_group:
+        result = list(set(text_group))
+    return result
+
+
+@strip_text
+def parse_remarks(text):
+    result = []
+    text = text.replace('\n', ' ')
+    text_group = re.findall(r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE|ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT', text)
     if text_group:
         result = list(set(text_group))
     return result
