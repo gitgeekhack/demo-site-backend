@@ -202,71 +202,190 @@ def parse_license_class(text):
 
 @strip_text
 def parse_title_number(text):
-    temp = ''
-    text_group = re.findall(r"(\w*[\s]*)([\w]*)", text)
-    if text_group:
-        for i_text_group in text_group:
-            for i_i_text_group in i_text_group:
-                temp_text = i_i_text_group.replace('\n', '')
-                if 4 < len(temp_text) < 16 and temp_text.isalnum() and not temp_text.isalpha():
-                    temp = temp_text
-    return temp
+    title = ''
+    text = text.upper()
+    text = text.replace('TITLE NUMBER', '')
+    text = text.replace('TITLE NO', '')
+    text = text.replace('TITLE', '')
+    text = text.replace('NUMBER', '')
+    text = text.replace('\n', ' ')
+    for i_text in text.split(' '):
+        if len(i_text) > 4 and i_text.isalnum() and not i_text.isalpha():
+            title= i_text
+    return title
 
 
 @strip_text
 def parse_vin(text):
-    parsed_text = re.search(r'([A-Z0-9]){17}', text)
-    if parsed_text:
-        return parsed_text.group(0)
-    else:
-        temp_text = text.replace(' ', '')
-        temp_text = temp_text.split('\n')
-        for i_text in temp_text:
-            if len(i_text) == 17 and i_text.isalnum() and not i_text.isalpha():
-                return i_text
+    vin = ''
+    text = text.upper()
+    text = text.replace('VEHICLEIDENTIFICATIONNUMBER', '')
+    text = text.replace('VEHICLEIDENTIFICATION NUMBER', '')
+    text = text.replace('IDENTIFICATIONNUM', '')
+    text = text.replace('VIN', '')
+    text = text.replace('VEHICLE', '')
+    text = text.replace('NUMBER', '')
+    text = text.replace('\n', ' ')
+    text_group = re.search(r'([A-Z0-9]){17}', text)
+    if text_group:
+        vin = text_group.group(0)
+    return vin
 
 
 @strip_text
 def parse_year(text):
-    text_group = re.search(r'(19[8-9][0-9]|20[0-9]{2})', text)
+    year = ''
+    text = text.upper()
+    text = text.replace('YEAR', '')
+    text = text.replace('\n', ' ')
+    text_group = re.search(r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b', text)
     if text_group:
-        return int(text_group.group(0))
-    else:
-        text_group = re.search(r'([1-9]{2})', text)
-        if text_group:
-            return int(text_group.group(0))
+        year = text_group.group(0)
+    return year
 
 
 @strip_text
 def parse_make(text):
-    text = text.replace('MAKE', '')
+    make = ''
+    text = text.upper()
+    text = text.replace('MAKE OF VEHICLE', '')
     text = text.replace('MAKEOFVEHICLE', '')
+    text = text.replace('MAKE', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('\n', ' ')
-    text_group = re.search('([A-Z]){3,11}', text)
+    text_group = re.search(r'[A-Z]{3,}', text)
     if text_group:
-        return text_group.group(0)
+        make = text_group.group(0)
+    return make
 
 
 @strip_text
 def parse_model(text):
-    temp = None
-    text = text.replace('\n', ' ')
-    text = " ".join(text.split(" ")[::-1])
+    model = ''
+    text = text.upper()
+    text = text.replace('MODEL DESCRIPTION', '')
     text = text.replace('MODEL NAME', '')
     text = text.replace('MODEL', '')
-    text = text.replace('MODELNAME', '')
+    text = text.replace('NAME', '')
     text = text.replace('MO', '')
-    df = pd.read_csv('/home/yash/git/demo-site-backend/app/data/model.csv')
-    df['Model'], text = df['Model'].str.lower(), text.lower()
-    for i_text in text.split(' ')[::-1]:
-        if len(i_text) > 1 and (df['Model'] == i_text).sum():
-            temp = i_text.upper()
-    if not temp:
-        text = text.upper()
-        text_group = re.search('([A-Z]){2,11}', text)
-        if text_group:
-            temp = text_group.group(0)
-    if temp == 'ROVER':
-        temp = 'RANGE ROVER' if 'RANGE' in text else 'LAND ROVER'
-    return temp
+    text = text.replace('\n', ' ')
+    text_group = re.search(r'[A-Z]{4,}', text)
+    if text_group:
+        model = text_group.group(0)
+    return model
+
+
+@strip_text
+def parse_body_style(text):
+    body = ''
+    text = text.upper()
+    text = text.replace('BODY TYPE MODEL', '')
+    text = text.replace('BODY TYPE', '')
+    text = text.replace('BODY STYLE', '')
+    text = text.replace('BODY', '')
+    text = text.replace('STYLE', '')
+    text = text.replace('MODEL', '')
+    text = text.replace('TYPE', '')
+    text = text.replace('/', '')
+    text = text.replace('\n', ' ')
+    text_group = re.search(r'\b[A-Z0-9]{2,9}\b', text)
+    if text_group:
+        body = text_group.group(0)
+    return body
+
+
+@strip_text
+def parse_owner_name(text):
+    names = []
+    text = text.upper()
+    text = text.replace('OWNER(S) NAME AND ADDRESS', '')
+    text = text.replace('REGISTERED OWNER(S)', '')
+    text = text.replace('VEHICLE OWNER', '')
+    text = text.replace('OWNER/LESSEE', '')
+    text = text.replace('LESSEE', '')
+    text = text.replace('OWNER(S)', '')
+    text = text.replace('OWNER', '')
+    text = text.replace('NAME', '')
+    text = text.replace('ADDRESS', '')
+    text = text.replace('REGISTERED', '')
+    text = text.replace('OWNER(5)', '')
+    text = text.replace('*', '')
+    text = text.split('\nOR ')
+    text = [x + '\n' for x in text]
+    texts = []
+    for t in text:
+        texts.append(re.findall(r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{1}[\s]{0,1}([A-Z]{0,4}))|)?(?=\n)', t))
+    for text in texts:
+        for text_group in text:
+            if text_group:
+                names.append(text_group[0])
+    return names
+
+
+@strip_text
+def parse_lien_name(text):
+    name = []
+    text = text.upper()
+    text = text.replace('1st LIENHOLDER (OR OWNER(S) OF NO LIEN)', '')
+    text = text.replace('SECURITY INTEREST HOLDER/LESSOR', '')
+    text = text.replace('FIRST LIENHOLDER NAME AND ADDRESS', '')
+    text = text.replace('FIRST LIEN FAVOR OF', '')
+    text = text.replace('FIRST LIENHOLDER', '')
+    text = text.replace('FIRST LIEN', '')
+    text = text.replace('LIEN HOLDER(S)', '')
+    text = text.replace('LIENHOLDER', '')
+    text = text.replace('FIRST', '')
+    text = text.replace('LIEN', '')
+    text = text.replace('\n', ' ')
+    texts = re.findall(REGX.NAME, text)
+    result = ''
+    if texts:
+        for text in texts:
+            temp = ''
+            for i in text:
+                if i not in temp:
+                    temp += i
+            name.append(temp)
+
+        result = max(name, key=len)
+    return result
+
+
+@strip_text
+def parse_odometer_reading(text):
+    odometer = ''
+    text = text.upper()
+    text = text.replace('MILEAGE AT TIME OF TRANSFER', '')
+    text = text.replace('ODOMETER READING', '')
+    text = text.replace('ODOMETER', '')
+    text = text.replace('READING', '')
+    text = text.replace('MILEAGE', '')
+    text = text.replace('&', '')
+    text = text.replace('CODE', '')
+    text = text.replace('ODOM', '')
+    text = text.replace('MILES', '')
+    text = text.replace('\n', ' ')
+    text_group = re.search(r'(\d+)|(EXEMPT)', text)
+    if text_group:
+        odometer = text_group.group(0)
+    return odometer
+
+
+@strip_text
+def parse_doc_type(text):
+    result = []
+    text = text.replace('\n', ' ')
+    text_group = re.findall(r'ORIGINAL|DUPLICATE|TRANSFER}CERTIFIED COPY|NEW|REPLACEMENT', text)
+    if text_group:
+        result = list(set(text_group))
+    return result
+
+
+@strip_text
+def parse_title_type(text):
+    result = []
+    text = text.replace('\n', ' ')
+    text_group = re.findall(r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE', text)
+    if text_group:
+        result = list(set(text_group))
+    return result
