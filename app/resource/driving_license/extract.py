@@ -5,7 +5,7 @@ import aiohttp_jinja2
 from aiohttp import web
 
 from app import logger
-from app.business_rule_exception import InvalidFileException
+from app.business_rule_exception import InvalidFile
 from app.common.utils import is_image_file
 from app.service.driving_license.extract import DLDataPointExtractorV1
 
@@ -23,7 +23,7 @@ class DLExtractor(web.View):
             file = data['file']
             file_name = file.filename
             if not is_image_file(file_name):
-                raise InvalidFileException(file_name)
+                raise InvalidFile(file_name)
             logger.info(f'Request ID: [{x_uuid}] FileName: [{file_name}]')
             extractor = DLDataPointExtractorV1(x_uuid)
             data = await extractor.extract(file=file)

@@ -127,7 +127,7 @@ class DLDataPointExtractorV1(MonoState):
         file_path = os.path.join(app.config.INPUT_FOLDER, filename)
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
-
+        data['filename'] = filename
         results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
@@ -136,7 +136,6 @@ class DLDataPointExtractorV1(MonoState):
         if len(extracted_data_by_label) > 0:
             extracted_data = await self.__dates_per_label(extracted_data_by_label)
             results = {**results_dict, **dict(extracted_data)}
-            data['filename'] = filename
             data['driving_license'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
                                                  separators=("\n", " : "))
         logger.info(f'Request ID: [{self.uuid}] Response: {data}')

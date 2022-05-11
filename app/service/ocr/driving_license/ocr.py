@@ -6,20 +6,40 @@ import pytesseract
 
 from app.constant import OCRConfig
 from app.service.helper.parser import parse_date, parse_name, parse_address, parse_license_number, parse_gender, \
-    parse_height, \
-    parse_weight, parse_hair_color, parse_eye_color, parse_license_class
+    parse_height, parse_weight, parse_hair_color, parse_eye_color, parse_license_class
+from app.business_rule_exception import MissingRequiredParameter
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
 
-class OCRDrivingLicense():
-    def _apply_preprocessing(self, image):
-        original = image
-        h,w,c = image.shape
-        if h > 640 or w > 640:
-            image = cv2.resize(image, None, fx=0.5, fy=0.5, interpolation=cv2.INTER_CUBIC)
+class OCRDrivingLicense:
+
+    def image_resize(self, image, width=None, height=None, interpolation=cv2.INTER_AREA):
+        dim = None
+        (h, w) = image.shape[:2]
+        if width is None:
+            r = height / float(h)
+            dim = (int(w * r), height)
         else:
-            image = cv2.resize(image, None, fx=3, fy=3, interpolation=cv2.INTER_CUBIC)
+            r = width / float(w)
+            dim = (width, int(h * r))
+        resized = cv2.resize(image, dim, interpolation=interpolation)
+        return resized
+
+    def auto_scale_image(self, image, resize_dimension=500):
+        h, w, c = image.shape
+        if resize_dimension:
+            if w > h:
+                image = self.image_resize(image, width=resize_dimension, height=None, interpolation=cv2.INTER_CUBIC)
+            else:
+                image = self.image_resize(image, width=None, height=resize_dimension, interpolation=cv2.INTER_CUBIC)
+        return image
+
+    def _apply_preprocessing(self, image, auto_scaling=False, resize_dimension=None):
+        if auto_scaling and resize_dimension:
+            image = self.auto_scale_image(image, resize_dimension=resize_dimension)
+        if auto_scaling and not resize_dimension or not auto_scaling and resize_dimension:
+            raise MissingRequiredParameter(message='Missing Required input Parameter for Image auto scaling')
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         blured1 = cv2.medianBlur(image, 3)
         blured2 = cv2.medianBlur(image, 51)
@@ -77,44 +97,44 @@ class OCRDrivingLicense():
         return image
 
     def get_address(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.ADDRESS, lang='eng')
         return parse_address(text)
 
     def get_name(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.NAME, lang='eng')
 
         return parse_name(text)
 
     def get_height(self, image):
 
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.HEIGHT, lang='eng')
         return parse_height(text)
 
     def get_weight(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.WEIGHT, lang='eng')
         return parse_weight(text)
 
     def get_hair_color(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.HAIR_COLOR, lang='eng')
         return parse_hair_color(text)
 
     def get_eye_color(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.EYE_COLOR, lang='eng')
         return parse_eye_color(text)
 
     def get_license_class(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.LICENSE_CLASS, lang='eng')
         return parse_license_class(" " + text)
 
     def get_date(self, image):
-        _image = self._apply_preprocessing(image)
+        _image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(_image, config=OCRConfig.DrivingLicense.DATE, lang='eng')
         date = parse_date(text)
 
@@ -151,11 +171,11 @@ class OCRDrivingLicense():
         return date
 
     def get_license_number(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.LICENSE_NO, lang='eng')
         return parse_license_number(text)
 
     def get_gender(self, image):
-        image = self._apply_preprocessing(image)
+        image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.GENDER, lang='eng')
         return parse_gender(text)
