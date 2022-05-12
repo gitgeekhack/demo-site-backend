@@ -10,4 +10,4 @@ class BaseConfig(object):
 
 class DevelopmentConfig(BaseConfig):
     ENVIRONMENT = 'development'
-    INPUT_FOLDER = 'app/static/input_images/'
+    INPUT_FOLDER = 'app/static/driving_license/input_images/'

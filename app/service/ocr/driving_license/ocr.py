@@ -1,10 +1,13 @@
+import csv
 import os
 
 import cv2
 import numpy as np
 import pytesseract
 
+from app.common.utils import MonoState
 from app.constant import OCRConfig
+from app.constant import Parser
 from app.service.helper.parser import parse_date, parse_name, parse_address, parse_license_number, parse_gender, \
     parse_height, parse_weight, parse_hair_color, parse_eye_color, parse_license_class
 from app.business_rule_exception import MissingRequiredParameter
@@ -12,7 +15,15 @@ from app.business_rule_exception import MissingRequiredParameter
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
 
-class OCRDrivingLicense:
+def load_us_cities():
+    with open(Parser.WORLD_CITIES_LIST, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        us_cities = [row[0] for row in reader if row[4] == 'United States']
+    return us_cities
+
+
+class OCRDrivingLicense(MonoState):
+    _internal_state = {'us_cities': load_us_cities()}
 
     def image_resize(self, image, width=None, height=None, interpolation=cv2.INTER_AREA):
         dim = None
@@ -99,7 +110,7 @@ class OCRDrivingLicense:
     def get_address(self, image):
         image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.DrivingLicense.ADDRESS, lang='eng')
-        return parse_address(text)
+        return parse_address(text, cities=self.us_cities)
 
     def get_name(self, image):
         image = self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)

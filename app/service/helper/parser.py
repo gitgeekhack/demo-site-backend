@@ -1,3 +1,4 @@
+import difflib
 import re
 from datetime import datetime
 
@@ -82,9 +83,17 @@ def parse_license_number(text):
     return license_number
 
 
-@strip_text
-def parse_address(text):
-    text = text.replace("\n", " ")
+def autocorrect_city(city, cities=None):
+    if cities and city:
+        city = ''.join([s.capitalize() for s in city.split(' ')])
+        if len(city) > 0:
+            similar_cities = difflib.get_close_matches(city, cities)
+            city = similar_cities[0] if similar_cities else city
+        return city
+
+
+def parse_address(text, cities=None):
+    raw_text = text
     text_group = re.findall(REGX.ADDRESS, text)
     address_texts = []
     address = ''
@@ -97,7 +106,29 @@ def parse_address(text):
             address_texts.append(temp)
 
         address = max(address_texts, key=len).replace('  ', ' ')
+        address = split_address(address=address, cities=cities)
+    return address
 
+
+@strip_text
+def split_address(address, cities=None):
+    address_split = address.split('\n')
+    address = {'street': None, 'city': None, 'state': None, 'zipcode': None}
+    city_state_zip = address_split[-1]
+    if address_split:
+        address['street'] = address_split[0].strip()
+    city_state_zip_group = re.search(REGX.CITY, city_state_zip.replace(address['street'], ''))
+    if city_state_zip_group:
+        city = city_state_zip_group.group(1)
+        address['city'] = autocorrect_city(city, cities)
+        city_state_zip = city_state_zip.replace(city, '')
+        zipcode = re.search(REGX.ZIPCODE, city_state_zip.replace(address['city'], ''))
+        if zipcode:
+            address['zipcode'] = zipcode.group()
+            city_state_zip = city_state_zip.replace(address['zipcode'], '').strip()
+        state_group = re.search(REGX.STATE, city_state_zip)
+        if state_group:
+            address['state'] = state_group.group()
     return address
 
 
