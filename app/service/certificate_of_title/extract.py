@@ -155,6 +155,7 @@ class COTDataPointExtractorV1(MonoState):
         object_extraction_coroutines = [self.__get_text_from_object(label, detected_object) for label, detected_object
                                         in extracted_objects_with_labels.items()]
         extracted_data_by_label = await asyncio.gather(*object_extraction_coroutines)
+
         return extracted_data_by_label
 
     async def __get_text_from_object(self, label, detected_object):
@@ -182,16 +183,19 @@ class COTDataPointExtractorV1(MonoState):
         cv2.imwrite(file_path, input_image)
 
         results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
+        results_dict['owners'] = results_dict.pop('owner_name')
         # results_dict.pop('remark')
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
         extracted_data_by_label = await self.__extract_data_by_label(image)
+        for i_data in extracted_data_by_label:
+            if 'owner_name' in i_data: i_data[0] = 'owners'
 
         if len(extracted_data_by_label) > 0:
             title_data = await self.__get_all_title_types(extracted_data_by_label, 'title_type')
             document_data = await self.__get_all_title_types(extracted_data_by_label, 'document_type')
             _extracted_data = [data for data in extracted_data_by_label if
-                              not data[0].startswith('title_type') or data[0].startswith('document_type')]
+                               not data[0].startswith(('title_type', 'document_type'))]
             extracted_data = list(chain([title_data], [document_data], _extracted_data))
             results = {**results_dict, **dict(extracted_data)}
             data['filename'] = filename

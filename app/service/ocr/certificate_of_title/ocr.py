@@ -71,17 +71,17 @@ class CertificateOfTitleOCR():
         return year
     
     async def get_make(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=320)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.MAKE, lang='eng')
         return parse_make(text)
     
     async def get_model(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=360)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.MODEL, lang='eng')
         return parse_model(text)
     
     async def get_body_style(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=400)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.BODY_STYLE, lang='eng')
         return parse_body_style(text)
     

@@ -2,8 +2,6 @@ import difflib
 import re
 from datetime import datetime
 
-import pandas as pd
-
 from app import logger
 from app.constant import Gender, Parser, EyeHairColor
 
@@ -212,7 +210,7 @@ def parse_title_number(text):
     text = text.replace('\n', ' ')
     for i_text in text.split(' '):
         if len(i_text) > 4 and i_text.isalnum() and not i_text.isalpha():
-            title= i_text
+            title = i_text
     return title
 
 
@@ -252,6 +250,8 @@ def parse_make(text):
     text = text.upper()
     text = text.replace('MAKE OF VEHICLE', '')
     text = text.replace('MAKEOFVEHICLE', '')
+    text = text.replace('MAKEBODY', '')
+    text = text.replace('MAKEBOD', '')
     text = text.replace('MAKE', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('\n', ' ')
@@ -265,13 +265,14 @@ def parse_make(text):
 def parse_model(text):
     model = ''
     text = text.upper()
-    text = text.replace('MODEL DESCRIPTION', '')
-    text = text.replace('MODEL NAME', '')
-    text = text.replace('MODEL', '')
+    text = text.split('MODEL')[-1]
+    # text = text.replace('MODEL DESCRIPTION', '')
+    # text = text.replace('MODEL NAME', '')
+    # text = text.replace('MODEL', '')
     text = text.replace('NAME', '')
     text = text.replace('MO', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'[A-Z]{4,}', text)
+    text_group = re.search(r'\d[^\d\W]+|[^\d\W]+\d|[A-Z]{2,}', text)
     if text_group:
         model = text_group.group(0)
     return model
@@ -281,13 +282,12 @@ def parse_model(text):
 def parse_body_style(text):
     body = ''
     text = text.upper()
-    text = text.replace('BODY TYPE MODEL', '')
-    text = text.replace('BODY TYPE', '')
-    text = text.replace('BODY STYLE', '')
-    text = text.replace('BODY', '')
+    text = text.split('BODY')[-1]
+    text = text.replace('TYPE MODEL', '')
+    text = text.replace('TYPE', '')
     text = text.replace('STYLE', '')
     text = text.replace('MODEL', '')
-    text = text.replace('TYPE', '')
+    text = text.replace('MAKES', '')
     text = text.replace('/', '')
     text = text.replace('\n', ' ')
     text_group = re.search(r'\b[A-Z0-9]{2,9}\b', text)
@@ -316,7 +316,9 @@ def parse_owner_name(text):
     text = [x + '\n' for x in text]
     texts = []
     for t in text:
-        texts.append(re.findall(r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{1}[\s]{0,1}([A-Z]{0,4}))|)?(?=\n)', t))
+        texts.append(re.findall(
+            r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{1}[\s]{0,1}([A-Z]{0,4}))|)?(?=\n)',
+            t))
     for text in texts:
         for text_group in text:
             if text_group:
@@ -387,7 +389,9 @@ def parse_doc_type(text):
 def parse_title_type(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE', text)
+    text_group = re.findall(
+        r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE',
+        text)
     if text_group:
         result = list(set(text_group))
     return result
@@ -397,7 +401,9 @@ def parse_title_type(text):
 def parse_remarks(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE|ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT', text)
+    text_group = re.findall(
+        r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE|ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT',
+        text)
     if text_group:
         result = list(set(text_group))
     return result
