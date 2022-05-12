@@ -11,6 +11,7 @@ class Parser:
         CITY = r'([A-Za-z\s]+=?)'
         ZIPCODE = r'([0-9\-]{5,10})'
         STATE = r'[A-Za-z]{2}'
+        STATE_WITH_SPACE = r'\s[A-Za-z]{2}\s'
         GENDER = r'^[MF]{1}'
         HEIGHT = r'''\d{1}'{0,1}-{0,1}\d{1,2}\"{0,1}'''
         WEIGHT = r'(?<=[WGTwgt]){0,3}(\d{2,4})(?<=[lbLB]){0,2}'

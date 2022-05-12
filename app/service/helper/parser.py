@@ -86,6 +86,11 @@ def parse_license_number(text):
 def autocorrect_city(city, cities=None):
     if cities and city:
         city = ''.join([s.capitalize() for s in city.split(' ')])
+        ''' We Capitalise the first letter of the split text as it seems to work better with 
+            difflib.get_close_matches library.
+            
+            EG: new york -> NewYork
+        '''
         if len(city) > 0:
             similar_cities = difflib.get_close_matches(city, cities)
             city = similar_cities[0] if similar_cities else city
@@ -93,7 +98,6 @@ def autocorrect_city(city, cities=None):
 
 
 def parse_address(text, cities=None):
-    raw_text = text
     text_group = re.findall(REGX.ADDRESS, text)
     address_texts = []
     address = ''
@@ -129,6 +133,9 @@ def split_address(address, cities=None):
         state_group = re.search(REGX.STATE, city_state_zip)
         if state_group:
             address['state'] = state_group.group()
+        else:
+            state_group = re.search(REGX.STATE_WITH_SPACE, city)
+            address['state'] = state_group.group().strip() if state_group else None
     return address
 
 
