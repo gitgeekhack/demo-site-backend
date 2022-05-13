@@ -4,6 +4,9 @@ import cv2
 import numpy as np
 from scipy.ndimage import interpolation as inter
 
+from app.common.utils import make_dir
+from app.constant import CarDamageDetection
+
 
 class CVHelper:
 
@@ -106,3 +109,20 @@ class CVHelper:
         '''
         auto_result = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
         return auto_result
+
+
+class Annotator:
+    def __init__(self, image, coordinates):
+        self.image = image
+        self.coordinates = coordinates
+
+    def annotate_and_save_image(self, save_image):
+        for co_ord in self.coordinates:
+            xmin = int(co_ord[0][0])
+            ymin = int(co_ord[0][1])
+            xmax = int(co_ord[0][2])
+            ymax = int(co_ord[0][3])
+            cv2.rectangle(self.image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
+        output_folder_path = CarDamageDetection.Path.STATIC_PATH + CarDamageDetection.Path.DETECTED_PATH
+        make_dir(output_folder_path)
+        cv2.imwrite(save_image, self.image)

@@ -52,7 +52,7 @@ class PackagePathFilter(logging.Filter):
 
 def make_dir(target_path):
     if not os.path.exists(target_path):
-        os.mkdir(target_path)
+        os.makedirs(target_path)
 
 
 def get_logger():
