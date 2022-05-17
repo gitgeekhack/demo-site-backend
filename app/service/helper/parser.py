@@ -322,17 +322,6 @@ def parse_owner_name(text):
         name_group = re.findall(r'([A-Z,]{3,14}\s*[A-Z]{1,14}\s?[A-Z\s]*)', i_text)
         for i_name_group in name_group:
             names.append(i_name_group)
-    # text = text.split('\nOR ')
-    # text = [x + '\n' for x in text]
-    # texts = []
-    # for t in text:
-    #     texts.append(re.findall(
-    #         r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{1}[\s]{0,1}([A-Z]{0,4}))|)?(?=\n)',
-    #         t))
-    # for text in texts:
-    #     for text_group in text:
-    #         if text_group:
-    #             names.append(text_group[0])
     return names
 
 

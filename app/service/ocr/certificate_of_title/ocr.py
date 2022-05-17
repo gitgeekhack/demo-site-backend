@@ -1,3 +1,4 @@
+import csv
 import os
 
 import cv2
@@ -5,7 +6,8 @@ import numpy as np
 import pytesseract
 
 from app.business_rule_exception import MissingRequiredParameter
-from app.constant import OCRConfig
+from app.common.utils import MonoState
+from app.constant import OCRConfig, Parser
 from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model, \
     parse_body_style, parse_date, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
     parse_doc_type, parse_title_type, parse_remarks
@@ -13,7 +15,16 @@ from app.service.helper.parser import parse_title_number, parse_vin, parse_year,
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
 
-class CertificateOfTitleOCR():
+def load_us_cities():
+    with open(Parser.WORLD_CITIES_LIST, newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        us_cities = [row[0] for row in reader if row[4] == 'United States']
+    return us_cities
+
+
+class CertificateOfTitleOCR(MonoState):
+    _internal_state = {'us_cities': load_us_cities()}
+
     async def image_resize(self, image, width=None, height=None, interpolation=cv2.INTER_AREA):
         dim = None
         (h, w) = image.shape[:2]
@@ -91,14 +102,12 @@ class CertificateOfTitleOCR():
         return parse_odometer_reading(text)
     
     async def get_owner_name(self, image):
-        # image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
         return parse_owner_name(text)
     
     async def get_address(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ADDRESS, lang='eng')
-        return text
+        return parse_address(text, cities=self.us_cities)
     
     async def get_lien_name(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)

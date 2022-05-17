@@ -77,9 +77,9 @@ class DLDataPointExtractorV1(MonoState):
 
     async def __get_text_from_object(self, label, detected_object):
         if label.startswith('date'):
-            text = await self.ocr_method['date'](detected_object)
+            text = self.ocr_method['date'](detected_object)
         else:
-            text = await self.ocr_method[label](detected_object)
+            text = self.ocr_method[label](detected_object)
         return label, text
 
     async def __extract_data_by_label(self, image):
