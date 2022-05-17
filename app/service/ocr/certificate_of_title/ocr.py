@@ -10,7 +10,7 @@ from app.common.utils import MonoState
 from app.constant import OCRConfig, Parser
 from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model, \
     parse_body_style, parse_date, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
-    parse_doc_type, parse_title_type, parse_remarks
+    parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
@@ -115,9 +115,13 @@ class CertificateOfTitleOCR(MonoState):
         return parse_lien_name(text)
     
     async def get_date(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
-        return parse_date(text)
+        date = parse_issue_date(text)
+        if not date:
+            image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=400)
+            text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
+            date = parse_issue_date(text)
+        return date
     
     async def get_doc_type(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)

@@ -68,6 +68,37 @@ def parse_date(text):
     return date
 
 
+def try_parse_date(date):
+    if '-' in date:
+        for fmt in ('%m-%d-%Y', '%m-%d-%y'):
+            try:
+                return datetime.strptime(date, fmt)
+            except ValueError:
+                pass
+    elif '/' in date:
+        for fmt in ('%m/%d/%Y', '%m/%d/%y'):
+            try:
+                return datetime.strptime(date, fmt)
+            except ValueError:
+                pass
+    return None
+
+
+@strip_text
+def parse_issue_date(text):
+    text = text.replace('- ', '-')
+    text = text.replace(' -', '-')
+    text = text.replace('/ ', '/')
+    text = text.replace(' /', '/')
+    text = text.replace(' ', '')
+    date = re.search(REGX.DATE, text)
+    if date:
+        date = date.group(1)
+        date = try_parse_date(date)
+        if isinstance(date, datetime):
+            date = date.strftime('%Y-%m-%d')
+    return date
+
 @strip_text
 def parse_license_number(text):
     text = text.split('LIC')[-1] if 'LIC' in text else text
