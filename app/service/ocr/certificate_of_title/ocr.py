@@ -91,14 +91,14 @@ class CertificateOfTitleOCR():
         return parse_odometer_reading(text)
     
     async def get_owner_name(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        # image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
         return parse_owner_name(text)
     
     async def get_address(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ADDRESS, lang='eng')
-        return parse_address(text)
+        return text
     
     async def get_lien_name(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
