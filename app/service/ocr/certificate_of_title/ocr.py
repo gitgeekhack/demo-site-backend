@@ -86,7 +86,7 @@ class CertificateOfTitleOCR():
         return parse_body_style(text)
     
     async def get_odometer_reading(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=400)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ODOMETER, lang='eng')
         return parse_odometer_reading(text)
     

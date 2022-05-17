@@ -369,9 +369,10 @@ def parse_odometer_reading(text):
     text = text.replace('ODOM', '')
     text = text.replace('MILES', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'(\d+)|(EXEMPT)', text)
+    text_group = re.search(r'([\d,]{5,})|(EXEMPT)', text)
     if text_group:
         odometer = text_group.group(0)
+        odometer = odometer.replace(',', '')
     return odometer
 
 
