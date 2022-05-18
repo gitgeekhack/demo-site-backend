@@ -1,5 +1,4 @@
 import asyncio
-import csv
 import json
 import os
 
@@ -125,7 +124,7 @@ class DLDataPointExtractorV1(MonoState):
         data = {"driving_license": None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, filename)
+        file_path = os.path.join(app.config.INPUT_FOLDER, 'driving_license/input_images', filename)
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
         data['filename'] = filename

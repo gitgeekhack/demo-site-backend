@@ -178,7 +178,7 @@ class COTDataPointExtractorV1(MonoState):
         data = {'certificate_of_title': None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, filename)
+        file_path = os.path.join(app.config.INPUT_FOLDER, 'certificate_of_title/input_images', filename)
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
 

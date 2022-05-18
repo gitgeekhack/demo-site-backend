@@ -57,7 +57,7 @@
                         <div class="row mt-2 mx-auto" id="thumbnail_gallery">
                             {% if response %}
                             <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
-                                <img src="{{static('input_images/'+response['filename'])}}"
+                                <img src="{{static('certificate_of_title/input_images/'+response['filename'])}}"
                                      onclick="openModal();currentSlide(1)"
                                      class="img-fluid img-thumbnail hover-shadow cursor my-2">
                             </div>
@@ -81,7 +81,7 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <img src="{{static('input_images/'+response['filename'])}}" class="img-fluid rounded">
+                    <img src="{{static('certificate_of_title/input_images/'+response['filename'])}}" class="img-fluid rounded">
                 </div>
                 <pre class="rounded mx-5">{{response['certificate_of_title']}} </pre>
             </div>
