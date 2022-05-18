@@ -99,6 +99,7 @@ def parse_issue_date(text):
             date = date.strftime('%Y-%m-%d')
     return date
 
+
 @strip_text
 def parse_license_number(text):
     text = text.split('LIC')[-1] if 'LIC' in text else text
@@ -297,9 +298,6 @@ def parse_model(text):
     model = ''
     text = text.upper()
     text = text.split('MODEL')[-1]
-    # text = text.replace('MODEL DESCRIPTION', '')
-    # text = text.replace('MODEL NAME', '')
-    # text = text.replace('MODEL', '')
     text = text.replace('NAME', '')
     text = text.replace('MO', '')
     text = text.replace('\n', ' ')
@@ -378,6 +376,27 @@ def parse_lien_name(text):
         if name:
             return name.group(0)
     return name
+
+
+@strip_text
+def parse_lien_address(text, cities=None):
+    texts = text.split('PO BOX') if 'PO BOX' in text else text
+    text = ' '.join(texts).replace('\n', ' ')
+    text = re.sub(r' (?= )', '', text)
+    text_group = re.findall(REGX.ADDRESS, text)
+    address_texts = []
+    address = ''
+    if text_group:
+        for group in text_group:
+            temp = ''
+            for i_text in group:
+                if i_text not in temp:
+                    temp += i_text
+            address_texts.append(temp)
+
+        address = max(address_texts, key=len).replace('  ', ' ')
+        address = split_address(address=address, cities=cities)
+    return address
 
 
 @strip_text

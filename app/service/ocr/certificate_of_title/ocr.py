@@ -9,7 +9,7 @@ from app.business_rule_exception import MissingRequiredParameter
 from app.common.utils import MonoState
 from app.constant import OCRConfig, Parser
 from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model, \
-    parse_body_style, parse_date, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
+    parse_body_style, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
     parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
@@ -41,9 +41,11 @@ class CertificateOfTitleOCR(MonoState):
         h, w, c = image.shape
         if resize_dimension:
             if w > h:
-                image = await self.image_resize(image, width=resize_dimension, height=None, interpolation=cv2.INTER_CUBIC)
+                image = await self.image_resize(image, width=resize_dimension, height=None,
+                                                interpolation=cv2.INTER_CUBIC)
             else:
-                image = await self.image_resize(image, width=None, height=resize_dimension, interpolation=cv2.INTER_CUBIC)
+                image = await self.image_resize(image, width=None, height=resize_dimension,
+                                                interpolation=cv2.INTER_CUBIC)
         return image
 
     async def _apply_preprocessing(self, image, auto_scaling=False, resize_dimension=None):
@@ -80,22 +82,22 @@ class CertificateOfTitleOCR(MonoState):
             text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.YEAR_PSM6, lang='eng')
         year = parse_year(text)
         return year
-    
+
     async def get_make(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=320)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.MAKE, lang='eng')
         return parse_make(text)
-    
+
     async def get_model(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=360)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.MODEL, lang='eng')
         return parse_model(text)
-    
+
     async def get_body_style(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=400)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.BODY_STYLE, lang='eng')
         return parse_body_style(text)
-    
+
     async def get_odometer_reading(self, image):
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ODOMETER, lang='eng')
         odometer = parse_odometer_reading(text)
@@ -104,20 +106,24 @@ class CertificateOfTitleOCR(MonoState):
             text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ODOMETER, lang='eng')
             odometer = parse_odometer_reading(text)
         return odometer
-    
+
     async def get_owner_name(self, image):
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.OWNER_NAME, lang='eng')
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
         return parse_owner_name(text)
-    
+
     async def get_address(self, image):
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ADDRESS, lang='eng')
         return parse_address(text, cities=self.us_cities)
-    
+
+    async def get_lien_address(self, image):
+        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.ADDRESS, lang='eng')
+        return parse_address(text, cities=self.us_cities)
+
     async def get_lien_name(self, image):
-        # image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.LIEN_NAME, lang='eng')
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
         return parse_lien_name(text)
-    
+
     async def get_date(self, image):
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
         date = parse_issue_date(text)
@@ -126,12 +132,12 @@ class CertificateOfTitleOCR(MonoState):
             text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
             date = parse_issue_date(text)
         return date
-    
+
     async def get_doc_type(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DOCUMENT_TYPE, lang='eng')
         return parse_doc_type(text)
-    
+
     async def get_title_type(self, image):
         image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
         text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.TITLE_TYPE, lang='eng')

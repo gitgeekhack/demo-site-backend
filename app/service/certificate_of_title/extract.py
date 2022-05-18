@@ -44,7 +44,7 @@ class COTDataPointExtractorV1(MonoState):
                            'owner_name': self.ocr.get_owner_name,
                            'owner_address': self.ocr.get_address,
                            'lienholder_name': self.ocr.get_lien_name,
-                           'lienholder_address': self.ocr.get_address,
+                           'lienholder_address': self.ocr.get_lien_address,
                            'lien_date': self.ocr.get_date,
                            'document_type': self.ocr.get_doc_type,
                            'title_type': self.ocr.get_title_type,
@@ -174,6 +174,19 @@ class COTDataPointExtractorV1(MonoState):
                 _list.append(data[1])
         return [label, list(chain(*_list))]
 
+    async def __filter_remark(self, extracted_data):
+        title_type = ['SALVAGE', 'CLEAR', 'REBUILT', 'RECONSTRUCTED', 'ASSEMBLED', 'FLOOD DAMAGE', 'SALVAGE-FIRE',
+                      'NON-REPAIRABLE', 'JUNK', 'NORMAL', 'STANDARD', 'VEHICLE']
+        document_type = ['ORIGINAL', 'DUPLICATE', 'TRANSFER CERTIFIED COPY', 'NEW', 'REPLACEMENT']
+        for result in extracted_data['remark']:
+            if result in title_type and result not in extracted_data['title_type']:
+                extracted_data['title_type'].append(result)
+            elif result in document_type and result not in extracted_data['document_type']:
+                extracted_data['document_type'].append(result)
+        extracted_data.pop('remark')
+        return extracted_data
+
+
     async def extract(self, file):
         data = {'certificate_of_title': None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
@@ -184,7 +197,6 @@ class COTDataPointExtractorV1(MonoState):
 
         results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
         results_dict['owners'] = results_dict.pop('owner_name')
-        # results_dict.pop('remark')
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
         extracted_data_by_label = await self.__extract_data_by_label(image)
@@ -198,6 +210,8 @@ class COTDataPointExtractorV1(MonoState):
                                not data[0].startswith(('title_type', 'document_type'))]
             extracted_data = list(chain([title_data], [document_data], _extracted_data))
             results = {**results_dict, **dict(extracted_data)}
+            if results['remark']:
+                results = await self.__filter_remark(results)
             data['filename'] = filename
             data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
                                                       separators=("\n", " : "))
