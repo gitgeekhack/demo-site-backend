@@ -332,6 +332,7 @@ def parse_owner_name(text):
     names = []
     text = text.upper()
     text = text.replace('NAMES AND ADDRESS OF REGISTERED OWNERS', '')
+    text = text.replace('NAME AND ADDRESS OF VEHICLE OWNER', '')
     text = text.replace('OWNERS NAME AND ADDRESS', '')
     text = text.replace('REGISTERED OWNERS', '')
     text = text.replace('VEHICLE OWNER', '')
@@ -350,7 +351,7 @@ def parse_owner_name(text):
     else:
         text = text.split('\n')
     for i_text in text:
-        name_group = re.findall(r'([A-Z,]{3,14}\s*[A-Z]{1,14}\s?[A-Z\s]*)', i_text)
+        name_group = re.findall(r'([A-Z,]{3,14}\s*[A-Z,]{1,14}\s?[A-Z\s]*)', i_text)
         for i_name_group in name_group:
             names.append(i_name_group)
     return names
@@ -358,31 +359,25 @@ def parse_owner_name(text):
 
 @strip_text
 def parse_lien_name(text):
-    name = []
+    name = None
     text = text.upper()
-    text = text.replace('1st LIENHOLDER (OR OWNER(S) OF NO LIEN)', '')
-    text = text.replace('SECURITY INTEREST HOLDER/LESSOR', '')
-    text = text.replace('FIRST LIENHOLDER NAME AND ADDRESS', '')
+    text = text.split('LIENHOLDER')[-1] if 'LIENHOLDER' in text else text
+    text = text.split('SECURITY')[-1] if 'SECURITY' in text else text
+    text = text.replace('INTEREST HOLDER/LESSOR', '')
+    text = text.replace('NAME AND ADDRESS', '')
     text = text.replace('FIRST LIEN FAVOR OF', '')
-    text = text.replace('FIRST LIENHOLDER', '')
     text = text.replace('FIRST LIEN', '')
     text = text.replace('LIEN HOLDER(S)', '')
-    text = text.replace('LIENHOLDER', '')
+    text = text.replace('SECURITY', '')
+    text = text.replace('INTEREST', '')
     text = text.replace('FIRST', '')
     text = text.replace('LIEN', '')
-    text = text.replace('\n', ' ')
-    texts = re.findall(REGX.NAME, text)
-    result = ''
-    if texts:
-        for text in texts:
-            temp = ''
-            for i in text:
-                if i not in temp:
-                    temp += i
-            name.append(temp)
-
-        result = max(name, key=len)
-    return result
+    text = re.sub(r'\n(?=\n)', '', text)
+    for i_text in text.split('\n'):
+        name = re.search(r'([A-Z,]{3,14}\s+[A-Z,]{1,14}\s?[A-Z\s]*)', i_text)
+        if name:
+            return name.group(0)
+    return name
 
 
 @strip_text

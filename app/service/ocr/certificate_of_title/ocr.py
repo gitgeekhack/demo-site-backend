@@ -106,7 +106,7 @@ class CertificateOfTitleOCR(MonoState):
         return odometer
     
     async def get_owner_name(self, image):
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.OWNER_NAME, lang='eng')
         return parse_owner_name(text)
     
     async def get_address(self, image):
@@ -114,8 +114,8 @@ class CertificateOfTitleOCR(MonoState):
         return parse_address(text, cities=self.us_cities)
     
     async def get_lien_name(self, image):
-        image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
+        # image = await self._apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.LIEN_NAME, lang='eng')
         return parse_lien_name(text)
     
     async def get_date(self, image):
