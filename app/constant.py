@@ -55,7 +55,7 @@ class OCRConfig:
         NAME = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
         ADDRESS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789# ,\n-" load_system_dawg=false load_freq_dawg=false'
         BODY_STYLE = '-l eng --oem 1 --psm 12 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\n" load_system_dawg=false load_freq_dawg=false'
-        ODOMETER = '-l eng --oem 1 --psm 11 -c tessedit_char_whitelist="EXMPT0123456789 ,\n" load_system_dawg=false load_freq_dawg=false'
+        ODOMETER = '-l eng --oem 1 --psm 11 -c tessedit_char_whitelist="EXMPTexmpt0123456789 ,\n" load_system_dawg=false load_freq_dawg=false'
         DOCUMENT_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" load_system_dawg=false load_freq_dawg=false'
         TITLE_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" load_system_dawg=false load_freq_dawg=false'
         REMARK = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'

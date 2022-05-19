@@ -298,6 +298,7 @@ def parse_model(text):
     model = ''
     text = text.upper()
     text = text.split('MODEL')[-1]
+    text = text.replace('DESCRIPTION', '')
     text = text.replace('NAME', '')
     text = text.replace('MO', '')
     text = text.replace('\n', ' ')
