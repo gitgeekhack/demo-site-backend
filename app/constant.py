@@ -130,8 +130,16 @@ class CertificateOfTitle:
         LIEN_DATE = 'lien_date'
         DOCUMENT_TYPE = 'document_type'
         TITLE_TYPE = 'title_type'
+        REMARK = 'remark'
         KEYS = [TITLE_NO, VIN, YEAR, MAKE, MODEL, BODY_STYLE, ODOMETER_READING, ISSUE_DATE, OWNER_ADDRESS,
                 OWNER_ADDRESS, LIENHOLDER_NAME, LIENHOLDER_ADDRESS, LIEN_DATE, DOCUMENT_TYPE, TITLE_TYPE]
+
+    class Sections:
+        TITLE_TYPE = ['SALVAGE', 'CLEAR', 'REBUILT', 'RECONSTRUCTED', 'ASSEMBLED', 'FLOOD DAMAGE', 'SALVAGE-FIRE',
+                      'NON-REPAIRABLE', 'JUNK', 'NORMAL', 'STANDARD', 'VEHICLE']
+        DOCUMENT_TYPE = ['ORIGINAL', 'DUPLICATE', 'TRANSFER CERTIFIED COPY', 'NEW', 'REPLACEMENT']
+        INPUT_PATH = 'certificate_of_title/input_images'
+        MULTIPLE_LABELS_OBJECT = ['title_type', 'owner_address', 'document_type']
 
 
 class CarDamageDetection:
