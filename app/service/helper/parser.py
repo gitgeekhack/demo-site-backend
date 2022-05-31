@@ -3,6 +3,7 @@ import re
 from datetime import datetime
 
 from app import logger
+from fuzzywuzzy import fuzz
 from app.constant import Gender, Parser, EyeHairColor
 
 REGX = Parser.Regx
@@ -278,52 +279,47 @@ def parse_year(text):
 
 @strip_text
 def parse_make(text):
-    make = ''
     text = text.upper()
-    text = text.replace('MAKE OF VEHICLE', '')
     text = text.replace('MAKEOFVEHICLE', '')
     text = text.replace('MAKEBODY', '')
-    text = text.replace('MAKEBOD', '')
     text = text.replace('MAKE', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'[A-Z]{3,}', text)
-    if text_group:
-        make = text_group.group(0)
-    return make
+    for i_text in text.split(' '):
+        if fuzz.ratio(i_text, 'MAKE') > 49:
+            text = text.replace(i_text, '')
+    return text
 
 
 @strip_text
 def parse_model(text):
-    model = ''
     text = text.upper()
-    text = text.split('MODEL')[-1]
     text = text.replace('DESCRIPTION', '')
     text = text.replace('NAME', '')
-    text = text.replace('MO', '')
+    text = text.replace('MODEL', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'\d[^\d\W]+|[^\d\W]+\d|[A-Z]{2,}', text)
-    if text_group:
-        model = text_group.group(0)
-    return model
+    for i_text in text.split(' '):
+        if fuzz.ratio(i_text, 'MODEL') > 59:
+            text = text.replace(i_text, '')
+    return text
 
 
 @strip_text
 def parse_body_style(text):
-    body = ''
     text = text.upper()
-    text = text.split('BODY')[-1]
-    text = text.replace('TYPE MODEL', '')
+    text = text.replace('BODY', '')
     text = text.replace('TYPE', '')
     text = text.replace('STYLE', '')
     text = text.replace('MODEL', '')
     text = text.replace('MAKES', '')
     text = text.replace('/', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'\b[A-Z0-9]{2,9}\b', text)
-    if text_group:
-        body = text_group.group(0)
-    return body
+    for i_text in text.split(' '):
+        if fuzz.ratio(i_text, 'BODY') > 49:
+            text = text.replace(i_text, '')
+        if fuzz.ratio(i_text, 'STYLE') > 49:
+            text = text.replace(i_text, '')
+    return text
 
 
 @strip_text

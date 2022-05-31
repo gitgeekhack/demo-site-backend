@@ -64,8 +64,8 @@ async def text_detection(image, area=6000):
     img = await auto_scale_image(image, resize_dimension=600)
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    blur = cv2.GaussianBlur(gray, (17, 17), 0)
-    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 15, 3)
+    blur = cv2.GaussianBlur(gray, (17, 17), 7)
+    thresh = cv2.adaptiveThreshold(blur, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY_INV, 21, 3)
 
     # Dilate to combine adjacent text contours
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (6, 4))
