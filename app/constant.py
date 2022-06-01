@@ -45,13 +45,13 @@ class OCRConfig:
         LICENSE_CLASS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890   " load_system_dawg=false load_freq_dawg=false'
 
     class CertificateOfTitle:
-        TITLE_NO = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
-        VIN = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
+        TITLE_NO = '-l eng --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
+        VIN = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
         YEAR_PSM6 = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789 \n" load_system_dawg=false load_freq_dawg=false'
         YEAR_PSM11 = '-l eng --oem 1 --psm 11 -c tessedit_char_whitelist="0123456789 \n" load_system_dawg=false load_freq_dawg=false'
         MAKE = '-l eng --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" load_system_dawg=false load_freq_dawg=false'
         MODEL = '-l eng --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/ \n" load_system_dawg=false load_freq_dawg=false'
-        DATE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
+        DATE = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
         NAME = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
         ADDRESS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789# ,\n-" load_system_dawg=false load_freq_dawg=false'
         BODY_STYLE = '-l eng --oem 1 --psm 11 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\n " load_system_dawg=false load_freq_dawg=false'
@@ -110,7 +110,7 @@ class CertificateOfTitle:
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_CONFIDENCE = 0.4
         OBJECT_LABELS = {0: 'title_no', 1: 'vin', 2: 'year', 3: 'make', 4: 'model', 5: 'body_style',
-                         6: 'odometer_reading', 7: 'issue_date', 8: 'owner_name', 9: 'owner_address',
+                         6: 'odometer_reading', 7: 'issue_date', 8: 'owners', 9: 'owner_address',
                          10: 'lienholder_name', 11: 'lienholder_address', 12: 'lien_date', 13: 'document_type',
                          14: 'title_type', 15: 'remark'}
 
@@ -123,7 +123,7 @@ class CertificateOfTitle:
         BODY_STYLE = 'body_style'
         ODOMETER_READING = 'odometer_reading'
         ISSUE_DATE = 'issue_date'
-        OWNER_NAME = 'owner_name'
+        OWNER_NAME = 'owners'
         OWNER_ADDRESS = 'owner_address'
         LIENHOLDER_NAME = 'lienholder_name'
         LIENHOLDER_ADDRESS = 'lienholder_address'

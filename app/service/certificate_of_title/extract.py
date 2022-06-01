@@ -183,7 +183,6 @@ class COTDataPointExtractorV1(MonoState):
                 extracted_data[self.response_key.TITLE_TYPE].append(result)
             elif result in self.section.DOCUMENT_TYPE and result not in extracted_data[self.response_key.DOCUMENT_TYPE]:
                 extracted_data[self.response_key.DOCUMENT_TYPE].append(result)
-        extracted_data.pop(self.response_key.REMARK)
         return extracted_data
 
     async def extract(self, file):
@@ -195,7 +194,6 @@ class COTDataPointExtractorV1(MonoState):
         cv2.imwrite(file_path, input_image)
 
         results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
-        results_dict['owners'] = results_dict.pop(self.response_key.OWNER_NAME)
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
         extracted_data_by_label = await self.__extract_data_by_label(image)
@@ -211,6 +209,7 @@ class COTDataPointExtractorV1(MonoState):
             results = {**results_dict, **dict(extracted_data)}
             if results[self.response_key.REMARK]:
                 results = await self.__filter_remark(results)
+            results.pop(self.response_key.REMARK)
             data['filename'] = filename
             data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
                                                       separators=("\n", " : "))

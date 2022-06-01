@@ -233,7 +233,6 @@ def parse_license_class(text):
 
 @strip_text
 def parse_title_number(text):
-    title = ''
     text = text.upper()
     text = text.replace('TITLE NUMBER', '')
     text = text.replace('TITLE NO', '')
@@ -243,26 +242,24 @@ def parse_title_number(text):
     text = text.replace('\n', ' ')
     for i_text in text.split(' '):
         if len(i_text) > 4 and i_text.isalnum() and not i_text.isalpha():
-            title = i_text
-    return title
+            return i_text
 
 
 @strip_text
 def parse_vin(text):
-    vin = ''
     text = text.upper()
     text = text.replace('VEHICLEIDENTIFICATIONNUMBER', '')
     text = text.replace('VEHICLEIDENTIFICATION NUMBER', '')
-    text = text.replace('IDENTIFICATIONNUM', '')
+    text = text.replace('IDENTIFICATION', '')
     text = text.replace('VINNO', '')
     text = text.replace('VIN', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('NUMBER', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'([A-Z0-9]){17}', text)
-    if text_group:
-        vin = text_group.group(0)
-    return vin
+    for i_text in text.split(' '):
+        if len(i_text) == 17 and i_text.isalnum() and not i_text.isalpha():
+            return i_text
+
 
 
 @strip_text

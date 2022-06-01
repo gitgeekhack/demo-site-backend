@@ -25,13 +25,21 @@ class CertificateOfTitleOCR(MonoState):
     _internal_state = {'us_cities': load_us_cities()}
 
     async def get_title_number(self, image):
-        image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.TITLE_NO, lang='eng')
+        pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        clean_image = await noise_removal(pre_image)
+        images = await text_detection(clean_image)
+        text = ''
+        for i_image in images:
+            text = text + ' ' + pytesseract.image_to_string(i_image, config=OCRConfig.CertificateOfTitle.TITLE_NO)
         return parse_title_number(text)
 
     async def get_vin(self, image):
-        image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.VIN, lang='eng')
+        pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        clean_image = await noise_removal(pre_image)
+        images = await text_detection(clean_image)
+        text = ''
+        for i_image in images:
+            text = text + ' ' + pytesseract.image_to_string(i_image, config=OCRConfig.CertificateOfTitle.VIN)
         return parse_vin(text)
 
     async def get_year(self, image):
