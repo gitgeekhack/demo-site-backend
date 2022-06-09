@@ -28,14 +28,14 @@ class DamageDetector(MonoState):
     async def __annotate(self, image, co_ordinates, save_path):
         annotator = Annotator(image, co_ordinates)
         annotator.annotate_and_save_image(save_path)
+        logger.info(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
 
     async def __label_colour(self, key):
         color = CarDamageDetection.ColorLabels.CAR_DAMAGE[key]
-        logger.info(f'Request ID: [{self.uuid}] found colour: [{color}]')
+        logger.info(f'Request ID: [{self.uuid}] damaged part:[{key}]found colour: [{color}]')
         return color
 
     async def __predict_labels(self, image_path, save_path):
-        multi_conf_labels = []
         conf_labels = []
         results = self.model(image_path)
         pred = results.pred
@@ -49,7 +49,7 @@ class DamageDetector(MonoState):
                     if all_labels[int(res[-1])] == label[0]:
                         label[1].append(int(res[4] * 100))
             for label in multi_conf_labels:
-                conf_labels.append([label[0],max(label[1])])
+                conf_labels.append([label[0], max(label[1])])
             img = cv2.imread(image_path)
             await self.__annotate(img, co_ordinates, save_path)
             logger.info(f'Request ID: [{self.uuid}] co-ordinates obtained: [{co_ordinates}]')
@@ -62,14 +62,17 @@ class DamageDetector(MonoState):
         for file_data in image_data:
             np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
             filename = secure_filename(file_data.filename)
-            input_folder_path = CarDamageDetection.Path.STATIC_PATH + CarDamageDetection.Path.UPLOADED_PATH
+            input_folder_path = os.path.join(CarDamageDetection.Path.STATIC_PATH, CarDamageDetection.Path.UPLOADED_PATH)
             input_file_path = os.path.join(input_folder_path, filename)
-            output_file_path = CarDamageDetection.Path.STATIC_PATH + CarDamageDetection.Path.DETECTED_PATH + 'out_' + filename
+            output_folder_path = os.path.join(CarDamageDetection.Path.STATIC_PATH, CarDamageDetection.Path.DETECTED_PATH)
+            output_file_path = os.path.join(output_folder_path, 'out_' + filename)
             make_dir(input_folder_path)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(input_file_path, input_image)
+            logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
+            make_dir(output_folder_path)
             detection = await self.__predict_labels(input_file_path, output_file_path)
-            out_path = CarDamageDetection.Path.DETECTED_PATH + 'out_' + filename
+            out_path = os.path.join(CarDamageDetection.Path.DETECTED_PATH, 'out_' + filename)
             results.append({'image_path': out_path, 'detection': detection, 'image_count': image_count})
             image_count += 1
         logger.info(f'Request ID: [{self.uuid}] results obtained: [{results}]')

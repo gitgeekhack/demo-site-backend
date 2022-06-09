@@ -29,8 +29,8 @@ class DamageExtractor(web.View):
                 logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                 filedata.append(file)
             detector = DamageDetector(x_uuid)
-            data = await detector.detect(image_data=filedata)
-            return {'results': data}
+            results = await detector.detect(image_data=filedata)
+            return {'results': results}
         except Exception as e:
             logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": 'Internal Server Error'}
