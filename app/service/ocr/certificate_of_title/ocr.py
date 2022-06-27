@@ -4,7 +4,7 @@ import cv2
 import numpy as np
 import pytesseract
 from app.constant import OCRConfig
-from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model
+from app.service.helper.driving_license_parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 

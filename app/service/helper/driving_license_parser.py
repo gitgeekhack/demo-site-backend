@@ -5,9 +5,9 @@ from datetime import datetime
 import pandas as pd
 
 from app import logger
-from app.constant import Gender, Parser, EyeHairColor
+from app.constant import Gender, DrivingLicenseParser, EyeHairColor
 
-REGX = Parser.Regx
+REGX = DrivingLicenseParser.Regex
 
 
 def strip_text(f):

@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>7</id>
+      <name>type1</name>
+      <size>1</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker></bugtracker>
+      <created>2022-06-08 12:35:31.370888+00:00</created>
+      <updated>2022-06-09 09:27:30.450284+00:00</updated>
+      <subset>default</subset>
+      <start_frame>0</start_frame>
+      <stop_frame>0</stop_frame>
+      <frame_filter></frame_filter>
+      <segments>
+        <segment>
+          <id>6</id>
+          <start>0</start>
+          <stop>0</stop>
+          <url>http://localhost:8080/?id=6</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>nirav</username>
+        <email></email>
+      </owner>
+      <assignee></assignee>
+      <labels>
+        <label>
+          <name>insured_name</name>
+          <color>#9d90af</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>policy_number</name>
+          <color>#3cc5c7</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>credit_card_number</name>
+          <color>#a1b9f1</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>credit_card_type</name>
+          <color>#a94a05</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>expiration_date</name>
+          <color>#0ffab4</color>
+          <attributes>
+          </attributes>
+        </label>
+      </labels>
+    </task>
+    <dumped>2022-06-10 08:40:05.945787+00:00</dumped>
+  </meta>
+  <image id="0" name="EFT- MIL6050622000000000.jpeg-1.jpg" width="1700" height="2200">
+    <box label="policy_number" occluded="0" source="manual" xtl="1175.39" ytl="380.60" xbr="1485.70" ybr="446.17" z_order="0">
+    </box>
+    <box label="credit_card_number" occluded="0" source="manual" xtl="305.46" ytl="440.34" xbr="842.97" ybr="497.16" z_order="0">
+    </box>
+    <box label="insured_name" occluded="0" source="manual" xtl="250.06" ytl="382.41" xbr="925.96" ybr="445.05" z_order="0">
+    </box>
+    <box label="expiration_date" occluded="0" source="manual" xtl="1182.88" ytl="489.67" xbr="1468.30" ybr="547.90" z_order="0">
+    </box>
+    <box label="credit_card_type" occluded="0" source="manual" xtl="1198.70" ytl="440.34" xbr="1459.45" ybr="501.53" z_order="0">
+    </box>
+  </image>
+</annotations>

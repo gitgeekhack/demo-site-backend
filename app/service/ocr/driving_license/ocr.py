@@ -7,8 +7,8 @@ import pytesseract
 
 from app.common.utils import MonoState
 from app.constant import OCRConfig
-from app.constant import Parser
-from app.service.helper.parser import parse_date, parse_name, parse_address, parse_license_number, parse_gender, \
+from app.constant import DrivingLicenseParser
+from app.service.helper.driving_license_parser import parse_date, parse_name, parse_address, parse_license_number, parse_gender, \
     parse_height, parse_weight, parse_hair_color, parse_eye_color, parse_license_class
 from app.business_rule_exception import MissingRequiredParameter
 
@@ -16,7 +16,7 @@ pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
 
 def load_us_cities():
-    with open(Parser.WORLD_CITIES_LIST, newline='') as csvfile:
+    with open(DrivingLicenseParser.WORLD_CITIES_LIST, newline='') as csvfile:
         reader = csv.reader(csvfile)
         us_cities = [row[0] for row in reader if row[4] == 'United States']
     return us_cities

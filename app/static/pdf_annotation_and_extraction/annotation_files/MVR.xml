@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>17</id>
+      <name>task1</name>
+      <size>2</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker></bugtracker>
+      <created>2022-06-14 05:34:43.651959+00:00</created>
+      <updated>2022-06-14 05:36:47.222546+00:00</updated>
+      <subset>default</subset>
+      <start_frame>0</start_frame>
+      <stop_frame>1</stop_frame>
+      <frame_filter></frame_filter>
+      <segments>
+        <segment>
+          <id>15</id>
+          <start>0</start>
+          <stop>1</stop>
+          <url>http://localhost:8080/?id=15</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>nirav</username>
+        <email></email>
+      </owner>
+      <assignee></assignee>
+      <labels>
+        <label>
+          <name>insured</name>
+          <color>#87517d</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>policyno</name>
+          <color>#08cf65</color>
+          <attributes>
+          </attributes>
+        </label>
+      </labels>
+    </task>
+    <dumped>2022-06-14 05:37:06.140849+00:00</dumped>
+  </meta>
+  <image id="0" name="MVR_Alfonso Soto 1000000000.jpeg-1.jpg" width="2203" height="1700">
+    <box label="insured" occluded="0" source="manual" xtl="973.20" ytl="352.10" xbr="1500.30" ybr="404.60" z_order="0">
+    </box>
+  </image>
+  <image id="1" name="MVR_Alfonso Soto 1000000000.jpeg-2.jpg" width="2203" height="1700">
+  </image>
+</annotations>
