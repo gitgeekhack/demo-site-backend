@@ -168,6 +168,7 @@ class PDFAnnotationAndExtraction:
 
     class TypesOfDynamicData:
         DATE_RANGE = 'DateRange'
+        TABLE = 'Table'
 
     APP_ROOT = os.path.dirname(os.path.abspath(__file__))
     STATIC_FOLDER = os.path.join(APP_ROOT, 'static', 'pdf_annotation_and_extraction')

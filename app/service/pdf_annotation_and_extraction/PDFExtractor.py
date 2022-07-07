@@ -40,14 +40,10 @@ class DataPointExtraction:
                 single_file_data <dict>: dictionary of extracted data from pdf
         """
         single_file_data = {}
-        extractor = DynamicDataExtractor()
         try:
             for page_no, datapoints in rect_boxes.items():
                 for label, bounding_box in datapoints.items():
-                    if len(bounding_box) > 4:  # if its dynamic data
-                        single_file_data[label] = await extractor.extract_dynamic_data(doc, bounding_box, page_no)
-                    else:
-                        single_file_data[label] = doc[page_no].get_textbox(bounding_box)
+                    single_file_data[label] = doc[page_no].get_textbox(bounding_box)
         except IndexError as e:
             logger.warning(f'Request ID: [{self.uuid}]  -> {e}')
 
@@ -64,9 +60,7 @@ class DataPointExtraction:
             total_pages = doc.page_count
             for key in rect_boxes.keys():
                 for rect in rect_boxes[key].values():
-                    if len(rect) > 4:
-                        doc[key].add_rect_annot(fitz.Rect(rect[1:]))
-                    else:
+                    if rect is not None:
                         doc[key].add_rect_annot(fitz.Rect(rect))
 
             try:
@@ -93,6 +87,15 @@ class DataPointExtraction:
                     result['extracted_data'][label[1]] = result['extracted_data'].pop(label[0])
         except KeyError as e:
             logger.warning(f'Request ID: [{self.uuid}]  -> {e}')
+
+    async def process_dynamic_data_result(self, dynamic_data, static_rect_boxes, filename):
+        for page_no, val in dynamic_data.items():
+            for label, data in val.items():
+                if page_no not in static_rect_boxes.keys():
+                    static_rect_boxes[page_no] = {label: data['bbox']}
+                else:
+                    static_rect_boxes[page_no].update({label: data['bbox']})
+                self.data[filename].update({label: data['data']})
 
     async def change_output_label_names(self, results):
         try:
@@ -123,7 +126,6 @@ class DataPointExtraction:
 
     async def generate_output_response(self, rect_boxes):
         results = []
-        image_count = 1
         total_images = len(os.listdir(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER))
 
         try:
@@ -141,11 +143,11 @@ class DataPointExtraction:
 
     async def extract(self, annotation_file, file):
         results = []
-        rect_boxes = await find_rectangle_boxes(self.uuid, annotation_file, file)
+        static_rect_boxes, dynamic_blocks = await find_rectangle_boxes(self.uuid, annotation_file, file)
 
         doc = fitz.open(file)
 
-        self.data[os.path.basename(file)] = await self.extract_data(doc, rect_boxes)
+        self.data[os.path.basename(file)] = await self.extract_data(doc, static_rect_boxes)
 
         # if data is not extracted then do ocr on pdf (convert vectored to electronic)
         values = list(self.data.values())[0]
@@ -153,10 +155,15 @@ class DataPointExtraction:
             await self.convert_vectored_to_electronic(file)
             doc = fitz.open(os.path.join(PDFAnnotationAndExtraction.STATIC_FOLDER,
                                          f'converted_files/{os.path.basename(file)}'))
-            self.data[os.path.basename(file)] = await self.extract_data(doc, rect_boxes)
+            self.data[os.path.basename(file)] = await self.extract_data(doc, static_rect_boxes)
 
-        await self.draw_annotation_and_convert_to_image(doc, rect_boxes)
+        extractor = DynamicDataExtractor(self.uuid)
 
-        results = await self.generate_output_response(rect_boxes)
+        dynamic_extracted_data, table_labels = await extractor.extract_dynamic_data(doc, dynamic_blocks, file)
+        await self.process_dynamic_data_result(dynamic_extracted_data, static_rect_boxes,
+                                               filename=os.path.basename(file))
 
-        return results
+        await self.draw_annotation_and_convert_to_image(doc, static_rect_boxes)
+        results = await self.generate_output_response(static_rect_boxes)
+
+        return results, table_labels

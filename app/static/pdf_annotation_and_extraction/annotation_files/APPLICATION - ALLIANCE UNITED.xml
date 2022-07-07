@@ -10,7 +10,7 @@
       <overlap>0</overlap>
       <bugtracker></bugtracker>
       <created>2022-05-25 11:32:32.909254+00:00</created>
-      <updated>2022-06-22 10:25:35.532181+00:00</updated>
+      <updated>2022-07-04 11:46:29.087010+00:00</updated>
       <subset>default</subset>
       <start_frame>0</start_frame>
       <stop_frame>12</stop_frame>
@@ -90,9 +90,35 @@
             </attribute>
           </attributes>
         </label>
+        <label>
+          <name>driver details</name>
+          <color>#5b2f99</color>
+          <attributes>
+            <attribute>
+              <name>Table</name>
+              <mutable>False</mutable>
+              <input_type>text</input_type>
+              <default_value></default_value>
+              <values></values>
+            </attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>driving history</name>
+          <color>#3ee921</color>
+          <attributes>
+            <attribute>
+              <name>Table</name>
+              <mutable>False</mutable>
+              <input_type>text</input_type>
+              <default_value></default_value>
+              <values></values>
+            </attribute>
+          </attributes>
+        </label>
       </labels>
     </task>
-    <dumped>2022-06-22 10:25:41.490414+00:00</dumped>
+    <dumped>2022-07-04 11:46:32.528239+00:00</dumped>
   </meta>
   <image id="0" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-01.jpg" width="1700" height="2200">
     <box label="insured_name" occluded="0" source="manual" xtl="230.82" ytl="440.42" xbr="786.18" ybr="485.94" z_order="0">
@@ -113,10 +139,31 @@
     </box>
   </image>
   <image id="2" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-03.jpg" width="1700" height="2200">
-    <box label="policy_dates" occluded="0" source="manual" xtl="492.90" ytl="894.20" xbr="1181.60" ybr="956.40" z_order="0">
-      <attribute name="DateRange"></attribute>
+    <box label="driving history" occluded="0" source="manual" xtl="2.97" ytl="1731.81" xbr="393.20" ybr="1797.25" z_order="0">
+      <attribute name="Table">end</attribute>
+    </box>
+    <box label="driving history" occluded="0" source="manual" xtl="125.13" ytl="1543.04" xbr="1668.15" ybr="1603.46" z_order="0">
+      <attribute name="Table">columns</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="29.41" ytl="1161.26" xbr="597.52" ybr="1225.36" z_order="0">
+      <attribute name="Table">start</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="93.51" ytl="1215.16" xbr="1671.10" ybr="1311.30" z_order="0">
+      <attribute name="Table">columns</attribute>
     </box>
     <box label="insurance_type" occluded="0" source="manual" xtl="836.10" ytl="190.90" xbr="1657.67" ybr="267.81" z_order="0">
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="222.42" ytl="1240.08" xbr="302.34" ybr="1303.81" z_order="0">
+      <attribute name="Table">column</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="20.69" ytl="1491.94" xbr="355.72" ybr="1556.04" z_order="0">
+      <attribute name="Table">end</attribute>
+    </box>
+    <box label="driving history" occluded="0" source="manual" xtl="16.89" ytl="1490.18" xbr="341.60" ybr="1555.63" z_order="0">
+      <attribute name="Table">start</attribute>
+    </box>
+    <box label="policy_dates" occluded="0" source="manual" xtl="492.90" ytl="876.70" xbr="1181.60" ybr="969.50" z_order="0">
+      <attribute name="DateRange"></attribute>
     </box>
   </image>
   <image id="3" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-04.jpg" width="1700" height="2200">

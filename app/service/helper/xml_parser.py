@@ -6,7 +6,7 @@ import aiofiles
 from app import logger
 
 
-async def get_bounding_boxes_from_page(uuid, page_image, bounding_box_data, width_ratio, height_ratio):
+async def get_bounding_boxes_from_page(uuid, page_image, bounding_box_data, width_ratio, height_ratio, dynamic_blocks):
     """
         reads bounding boxes from single page and stores in dictionary
         Parameters:
@@ -28,17 +28,24 @@ async def get_bounding_boxes_from_page(uuid, page_image, bounding_box_data, widt
         for box in page_image['box']:
             # dynamic data
             if 'attribute' in box.keys():
-                bounding_box_data[page_no][box['@label']] = [box['attribute']['@name']]
-                bounding_box_data[page_no][box['@label']].extend(
-                    [width_ratio * float(box['@xtl']), height_ratio * float(box['@ytl']),
-                     width_ratio * float(box['@xbr']), height_ratio * float(box['@ybr'])])
+                box['@xtl'] = width_ratio * float(box['@xtl'])
+                box['@ytl'] = height_ratio * float(box['@ytl'])
+                box['@xbr'] = width_ratio * float(box['@xbr'])
+                box['@ybr'] = height_ratio * float(box['@ybr'])
+                if page_no not in dynamic_blocks.keys():
+                    dynamic_blocks[page_no] = [[page_image['@name'], [box]]]
+                else:
+                    dynamic_blocks[page_no].append([page_image['@name'], [box]])
             # static data
             else:
                 bounding_box_data[page_no][box['@label']] = \
                     [width_ratio * float(box['@xtl']), height_ratio * float(box['@ytl']),
                      width_ratio * float(box['@xbr']), height_ratio * float(box['@ybr'])]
+
     except KeyError as e:
         logger.warning(f'Request ID: [{uuid}]  -> {e}')
+
+    return dynamic_blocks
 
 
 async def find_rectangle_boxes(uuid, annotation_file, sample_file):
@@ -48,7 +55,7 @@ async def find_rectangle_boxes(uuid, annotation_file, sample_file):
             annotation_file <.xml file>: annotation file with path
             sample_file <.pdf file>: pdf file for mapping bounding box from annotation_file
         Returns:
-            bounding_box_data <dict>: Python dictionary which contains page wise annotation label and
+            static_bounding_boxes <dict>: Python dictionary which contains page wise annotation label and
                                       its corresponding bounding box
     """
     doc = fitz.open(sample_file)
@@ -70,12 +77,13 @@ async def find_rectangle_boxes(uuid, annotation_file, sample_file):
     width_ratio = pdf_width / image_width
     height_ratio = pdf_height / image_height
 
-    bounding_box_data = {}
+    static_bounding_boxes = {}
+    dynamic_blocks = {}
 
     try:
         # iterating through all pages of pdf
-        get_bounding_box_coroutines = [get_bounding_boxes_from_page(uuid, page_image, bounding_box_data,
-                                                                    width_ratio, height_ratio)
+        get_bounding_box_coroutines = [get_bounding_boxes_from_page(uuid, page_image, static_bounding_boxes,
+                                                                    width_ratio, height_ratio, dynamic_blocks)
                                        for page_image in my_dict['annotations']['image']]
 
         await asyncio.gather(*get_bounding_box_coroutines)
@@ -83,4 +91,4 @@ async def find_rectangle_boxes(uuid, annotation_file, sample_file):
     except KeyError as e:
         logger.warning(f'Request ID: [{uuid}]  -> {e}')
 
-    return bounding_box_data
+    return static_bounding_boxes, dynamic_blocks

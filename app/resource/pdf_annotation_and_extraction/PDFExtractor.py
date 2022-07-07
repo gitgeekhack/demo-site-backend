@@ -43,11 +43,12 @@ class DataExtraction(web.View):
             await save_file(file_object=pdf_file, folder_path=PDFAnnotationAndExtraction.UPLOAD_FOLDER)
 
             extractor = DataPointExtraction(x_uuid)
-            results = await extractor.extract(os.path.join(PDFAnnotationAndExtraction.ANNOTATION_FOLDER,
-                                                           annotation_file + '.xml'),
-                                              os.path.join(PDFAnnotationAndExtraction.UPLOAD_FOLDER, filename))
+            results, table_labels = await extractor.extract(os.path.join(PDFAnnotationAndExtraction.ANNOTATION_FOLDER,
+                                                                         annotation_file + '.xml'),
+                                                            os.path.join(PDFAnnotationAndExtraction.UPLOAD_FOLDER,
+                                                                         filename))
 
-            return {'results': results, 'annotated': annotation_filenames}
+            return {'results': results, 'annotated': annotation_filenames, 'table_labels': table_labels}
         except Exception as e:
             logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": 'Internal Server Error'}

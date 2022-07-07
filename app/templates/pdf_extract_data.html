@@ -22,10 +22,13 @@
     </script>
     <style>
         @media screen and (min-width: 676px) {
-        .modal-dialog {
-          max-width: 1200px; /* New width for default modal */
+            .modal-dialog {
+              max-width: 1350px;
+            }
         }
-    }
+        .modal-body {
+          overflow-x: auto;
+        }
     </style>
 </head>
 <body>
@@ -63,8 +66,8 @@
                     <form id="myform" action="/pdf/extract"
                           method="post" enctype="multipart/form-data">
                         Select Document Type: <select name="document_selector" id="annotation_doc" required>
-                                                <option value="" selected="selected">Select Document</option>
-                                              </select>
+                        <option value="" selected="selected">Select Document</option>
+                    </select>
                         <div class="row m-2">
                             <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 offset-xl-4 offset-lg-4 offset-md-3">
                                 <label class="btn upload-btn d-block" for="gallery-photo-add">
@@ -116,11 +119,27 @@
                                             <strong>{{k}}:</strong>
                                         </p>
                                     </div>
+                                    {% if k in table_labels %}
+                                    <div class="col text-left">
+                                        <div class="modal-body">
+                                            <table border="1" class="table table-bordered">
+                                                <thead>
+                                                <tr style="text-align: left;">
+                                            {{ v|safe }}
+                                            {% if v==None %}
+                                                </thead>
+                                                </table>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
                                     <div class="col-7 ml-auto text-left">
                                         <p class="m-0">
                                             {{v}}
                                         </p>
                                     </div>
+                                    {% endif %}
+
                                 </div>
                                 <hr>
                                 {% endfor %}
@@ -144,6 +163,9 @@
         </div>
     </div>
 </div>
+
+
+
 {% endif %}
 <!-- spinner -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
@@ -192,7 +214,17 @@ if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != '
     }
 };
 
+
 </script>
 <script src="{{ static('js/light-box.js') }}"></script>
+<script>
+function closeModal2() {
+  $('#myModal2').hide();
+}
+function myFunction() {
+  document.getElementById("myModal2").style.display = "block";
+}
+
+</script>
 </body>
 </html>
