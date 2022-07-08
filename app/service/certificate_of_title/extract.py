@@ -1,11 +1,14 @@
 import asyncio
 import json
 import os
+import pickle
 from itertools import chain
 
 import cv2
 import numpy as np
+import pandas as pd
 import torch
+from fuzzywuzzy import fuzz
 from werkzeug.utils import secure_filename
 
 from app import app, logger
@@ -14,6 +17,9 @@ from app.constant import CertificateOfTitle
 from app.service.helper.certificate_of_title_helper import COTHelper
 from app.service.helper.cv_helper import CVHelper
 from app.service.ocr.certificate_of_title.ocr import CertificateOfTitleOCR as OCR
+
+with open('./app/data/make-model.pkl', 'rb') as file:
+    make_model = pickle.load(file)
 
 
 def model_loader():
@@ -185,6 +191,41 @@ class COTDataPointExtractorV1(MonoState):
                 extracted_data[self.response_key.DOCUMENT_TYPE].append(result)
         return extracted_data
 
+    async def __vin_lookup(self, dataframe, make, year):
+        if make and year:
+            return dataframe[(dataframe['Make'] == make) & (dataframe['Year'] == year)]
+        elif make:
+            return dataframe[(dataframe['Make'] == make)]
+        elif year:
+            return dataframe[(dataframe['Year'] == year)]
+        else:
+            return None
+
+    async def __vin_checking(self, extracted_data):
+        df = pd.read_pickle('./app/data/VehicleWithVIN.pkl')
+        vin = extracted_data['vin']
+        make = extracted_data['make']
+        model = extracted_data['model']
+        year = extracted_data['year']
+        result_vin = df[df['VIN'] == vin]
+        if len(result_vin):
+            return result_vin.iloc[0]['VIN'], result_vin.iloc[0]['Model'], result_vin.iloc[0]['Year']
+        result_vins = await self.__vin_lookup(df, make, year)
+        if len(result_vins):
+            result_vins['score'] = result_vins['VIN'].apply(lambda x: fuzz.ratio(x[:12], vin[:12]))
+            temp_vins = result_vins[result_vins['score'] == result_vins['score'].max()]
+            if len(temp_vins) > 1:
+                temp_vins['score1'] = temp_vins['VIN'].apply(lambda x: fuzz.ratio(x[-5:], vin[-5:]))
+                temp_vin = temp_vins[temp_vins['score1'] == temp_vins['score1'].max()]
+                if len(temp_vin):
+                    return temp_vin.iloc[0]['VIN'], temp_vin.iloc[0]['Model'], temp_vin.iloc[0]['Year']
+                else:
+                    return None
+            else:
+                return temp_vins.iloc[0]['VIN'], temp_vins.iloc[0]['Model'], temp_vins.iloc[0]['Year'] if len(
+                    temp_vins) else None
+        return vin, model, year
+
     async def extract(self, file):
         data = {'certificate_of_title': None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
@@ -210,6 +251,9 @@ class COTDataPointExtractorV1(MonoState):
             if results[self.response_key.REMARK]:
                 results = await self.__filter_remark(results)
             results.pop(self.response_key.REMARK)
+            if results['vin']:
+                vin, model, year = await self.__vin_checking(results)
+                if vin: results['vin'], results['model'], results['year'] = vin, model, int(year)
             data['filename'] = filename
             data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
                                                       separators=("\n", " : "))

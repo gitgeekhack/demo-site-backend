@@ -1,12 +1,16 @@
 import difflib
+import pickle
 import re
 from datetime import datetime
 
-from app import logger
 from fuzzywuzzy import fuzz
+
+from app import logger
 from app.constant import Gender, Parser, EyeHairColor
 
 REGX = Parser.Regx
+with open('./app/data/make.pkl', 'rb') as file:
+    make = pickle.load(file)
 
 
 def strip_text(f):
@@ -261,7 +265,6 @@ def parse_vin(text):
             return i_text
 
 
-
 @strip_text
 def parse_year(text):
     year = ''
@@ -270,7 +273,7 @@ def parse_year(text):
     text = text.replace('\n', ' ')
     text_group = re.search(r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b', text)
     if text_group:
-        year = text_group.group(0)
+        year = int(text_group.group(0))
     return year
 
 
@@ -285,7 +288,17 @@ def parse_make(text):
     for i_text in text.split(' '):
         if fuzz.ratio(i_text, 'MAKE') > 49:
             text = text.replace(i_text, '')
-    return text
+    for i_text in text.split(' '):
+        if len(i_text) < 3 and i_text not in ['MG', 'AC']:
+            text = text.replace(i_text, '')
+    text = text.strip()
+    prev_score = 0
+    temp = None
+    for i_make in make:
+        score = fuzz.token_sort_ratio(text, i_make)
+        if score > prev_score:
+            temp, prev_score = i_make, score
+    return temp
 
 
 @strip_text
@@ -356,6 +369,7 @@ def parse_lien_name(text):
     text = text.split('LIENHOLDER')[-1] if 'LIENHOLDER' in text else text
     text = text.split('SECURITY')[-1] if 'SECURITY' in text else text
     text = text.replace('INTEREST HOLDER/LESSOR', '')
+    text = text.replace('OWNER', '')
     text = text.replace('NAME AND ADDRESS', '')
     text = text.replace('FIRST LIEN FAVOR OF', '')
     text = text.replace('FIRST LIEN', '')

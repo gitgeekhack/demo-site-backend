@@ -1,12 +1,13 @@
 import csv
 import os
 
-import pytesseract
 import cv2
+import pytesseract
 
 from app.common.utils import MonoState
 from app.constant import OCRConfig, Parser
-from app.service.helper.certificate_of_title_helper import apply_preprocessing, text_detection, noise_removal
+from app.service.helper.certificate_of_title_helper import apply_preprocessing, text_detection, noise_removal, \
+    bradley_roth_numpy
 from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model, \
     parse_body_style, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
     parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
@@ -39,15 +40,28 @@ class CertificateOfTitleOCR(MonoState):
         images = await text_detection(clean_image)
         text = ''
         for i_image in images:
-            text = text + ' ' + pytesseract.image_to_string(i_image, config=OCRConfig.CertificateOfTitle.VIN)
-        return parse_vin(text)
+            text = text + ' ' + pytesseract.image_to_string(i_image, config=OCRConfig.CertificateOfTitle.VIN_FINE_TUNED)
+        text = parse_vin(text)
+        if not text:
+            text = ''
+            for i_image in images:
+                text = text + ' ' + pytesseract.image_to_string(i_image,
+                                                                config=OCRConfig.CertificateOfTitle.VIN_PRE_TRAINED)
+            text = parse_vin(text)
+        if not text:
+            gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+            brandly_image = await bradley_roth_numpy(gray, t=12)
+            text = pytesseract.image_to_string(brandly_image, config=OCRConfig.CertificateOfTitle.VIN_FINE_TUNED)
+            text = parse_vin(text)
+        return text
 
     async def get_year(self, image):
         image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.YEAR_PSM11, lang='eng')
+        clean_image = await noise_removal(image)
+        text = pytesseract.image_to_string(clean_image, config=OCRConfig.CertificateOfTitle.YEAR_PSM11, lang='eng')
         year = parse_year(text)
         if not year:
-            text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.YEAR_PSM6, lang='eng')
+            text = pytesseract.image_to_string(clean_image, config=OCRConfig.CertificateOfTitle.YEAR_PSM6, lang='eng')
         year = parse_year(text)
         return year
 
@@ -102,11 +116,14 @@ class CertificateOfTitleOCR(MonoState):
         return parse_lien_name(text)
 
     async def get_date(self, image):
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
+        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE_FINE_TUNED, lang='eng')
         date = parse_issue_date(text)
         if not date:
             image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=400)
-            text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE, lang='eng')
+            text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE_FINE_TUNED, lang='eng')
+            date = parse_issue_date(text)
+        if not date:
+            text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.DATE_PRE_TRAINED, lang='eng')
             date = parse_issue_date(text)
         return date
 
