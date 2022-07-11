@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Data Extraction from PDF</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+          integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ static( 'css/style.css') }}">
+    <script>
+        window.onload = function() {
+          var subjectSel = document.getElementById("annotation_doc");
+
+          for (var x in {{annotated|tojson}}) {
+            subjectSel.options[subjectSel.options.length] = new Option(x, x);
+          }
+        }
+    </script>
+    <style>
+        @media screen and (min-width: 676px) {
+            .modal-dialog {
+              max-width: 1350px;
+            }
+        }
+        .modal-body {
+          overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+<!-- Image and text -->
+<nav class="navbar navbar-light bg-white">
+    <div class="container-fluid mt-2 offset-xl-1 offset-lg-1 offset-md-1" style="padding-left: 0;">
+        <a class="navbar-brand" href="/">
+            <img src="https://cdn-gcp.marutitech.com/wp-media/2019/03/maruti-teachlabs-logo.svg" alt="">
+        </a>
+    </div>
+
+</nav>
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-xl-10 col-lg-10 col-md-10 col-sm-12 mx-auto">
+            <div id="nof" class="alert alert-warning" role="alert" style="display:none">
+                Only 5 files are allowed at max &#9995;
+            </div>
+            {% if error %}
+            <div id="error" class="alert alert-danger" role="alert">
+                Something went KaBOOM! &#128165;, Please try again after sometime.
+            </div>
+            {% endif %}
+            {% if file_error %}
+            <div id="file_error" class="alert alert-danger" role="alert">
+                Please make sure you upload valid files, currently only 'pdf' format is supported. &#128125;
+            </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">Try Extracting Data from PDFs!</h4>
+                    <p class="card-text">Choose Type of Documents you are uploading and select
+                        documents to extract data</p>
+
+                    <form id="myform" action="/pdf/extract"
+                          method="post" enctype="multipart/form-data">
+                        Select Document Type: <select name="document_selector" id="annotation_doc" required>
+                        <option value="" selected="selected">Select Document</option>
+                    </select>
+                        <div class="row m-2">
+                            <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 offset-xl-4 offset-lg-4 offset-md-3">
+                                <label class="btn upload-btn d-block" for="gallery-photo-add">
+                                    <input id="gallery-photo-add" type="file" name="input_pdf" style="display:none">
+                                    Browse PDF
+                                </label>
+                            </div>
+                        </div>
+                        <div class="row mt-2 mx-auto" id="thumbnail_gallery">
+                            {% for result in results %}
+                            <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
+                                <img src="{{static(result['image_path'])}}"
+                                     onclick="openModal();currentSlide({{result.image_count}})"
+                                     class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Image not found">
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if results %}
+<div id="myModal" class="modal modal-xl mh-100" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">PDF Data Extraction</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    {% for result in results %}
+                    <div class="col mySlides">
+                        <div class="row px-4">
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-4">
+                                <img src="{{static(result['image_path'])}}" class="img-fluid rounded"
+                                     alt="Image not found" style="border: 2px solid #9c9c9c;">
+                            </div>
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                {% for k,v in result['extracted_data'].items() %}
+                                <div class="row">
+                                    <div class="col-5">
+                                        <p class="m-0">
+                                            <strong>{{k}}:</strong>
+                                        </p>
+                                    </div>
+                                    {% if k in table_labels %}
+                                    <div class="col text-left">
+                                        <div class="modal-body">
+                                            <table border="1" class="table table-bordered">
+                                                <thead>
+                                                <tr style="text-align: left;">
+                                            {{ v|safe }}
+                                            {% if v==None %}
+                                                </thead>
+                                                </table>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% else %}
+                                    <div class="col-7 ml-auto text-left">
+                                        <p class="m-0">
+                                            {{v}}
+                                        </p>
+                                    </div>
+                                    {% endif %}
+
+                                </div>
+                                <hr>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                    <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                </div>
+                <hr>
+                <div class="row mt-3">
+                    {% for result in results %}
+                    <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
+                        <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static(result['image_path'])}}"
+                             onclick="currentSlide({{result.image_count}})" alt="Image not found">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+{% endif %}
+<!-- spinner -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center"
+         role="document">
+        <img src="{{ static( 'img/loader.gif') }}" height="50" alt="Image not found">
+    </div>
+</div>
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
+        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
+        crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+<script>
+$(function(e) {
+    $('#gallery-photo-add').on('change', function() {
+    $('#nof').hide();
+    var files = $(this)[0].files;
+    if(files.length > 100){
+            $('#nof').show();
+            $('#gallery-photo-add').val('');
+    }else{
+            document.getElementById("myform").submit();
+            $('#exampleModal').modal('show'); //Open the model
+    }
+    });
+});
+document.onkeydown = function(e) {
+if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
+        switch (e.keyCode) {
+            case 37:
+                plusSlides(-1);
+                break;
+            case 39:
+                plusSlides(1);
+                break;
+        }
+    }
+};
+
+
+</script>
+<script src="{{ static('js/light-box.js') }}"></script>
+<script>
+function closeModal2() {
+  $('#myModal2').hide();
+}
+function myFunction() {
+  document.getElementById("myModal2").style.display = "block";
+}
+
+</script>
+</body>
+</html>

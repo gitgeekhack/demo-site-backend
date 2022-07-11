@@ -18,6 +18,8 @@ from app.service.helper.certificate_of_title_helper import COTHelper
 from app.service.helper.cv_helper import CVHelper
 from app.service.ocr.certificate_of_title.ocr import CertificateOfTitleOCR as OCR
 
+pd.options.mode.chained_assignment = None
+
 with open('./app/data/make-model.pkl', 'rb') as file:
     make_model = pickle.load(file)
 

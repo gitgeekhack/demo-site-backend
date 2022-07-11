@@ -2,10 +2,10 @@ import os
 from enum import Enum
 
 
-class Parser:
+class DrivingLicenseParser:
     WORLD_CITIES_LIST = './app/data/world_cities.csv'
 
-    class Regx:
+    class Regex:
         NAME = r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{0,1}[\s]{0,1}([A-Z]{0,4}))|)'
         DATE = r'([0-9]{1,2}[\/-][0-9]{1,2}[\/-][0-9]{2,4})'
         LICENSE_NUMBER = r'([0-9A-Z]{1})[\S]([0-9A-Z\-*]*[0-9A-Z\-*\s]*)'
@@ -88,9 +88,13 @@ class DrivingLicense:
                 DATE_OF_BIRTH, ISSUE_DATE]
         DATE_LABELS = [DATE_OF_BIRTH, ISSUE_DATE, EXPIRY_DATE]
 
+    class Section:
+        INPUT_PATH = 'driving_license/input_images'
+
 
 class AllowedFileType:
     IMAGE = ['jpg', 'png', 'jpeg']
+    PDF = ['pdf']
 
 
 class ExceptionMessage:
@@ -172,7 +176,21 @@ class CarDamageDetection:
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_PATH = "./app/model/car_damage_detection/DamagePartDetection.pt"
 
-    class Extension:
-        ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png']
-        PNG = ".png"
-        JPG = ".jpg"
+
+class PDFAnnotationAndExtraction:
+    class Regex:
+        DATE = r'[0-9]{1,2}/[0-9]{1,2}/[[0-9]{4}|[0-9]{2}]'
+
+    class TypesOfDynamicData:
+        DATE_RANGE = 'DateRange'
+        TABLE = 'Table'
+
+    APP_ROOT = os.path.dirname(os.path.abspath(__file__))
+    STATIC_FOLDER = os.path.join(APP_ROOT, 'static', 'pdf_annotation_and_extraction')
+    UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploaded_files')
+    CVAT_ANNOTATION_STORAGE_FOLDER = os.path.join(STATIC_FOLDER, 'cvat_annotations')
+    ANNOTATION_FOLDER = os.path.join(STATIC_FOLDER, 'annotation_files')
+    CONVERTED_PDF_FOLDER = os.path.join(STATIC_FOLDER, 'converted_files')
+    CSV_FOLDER = os.path.join(STATIC_FOLDER, 'csv')
+    PDF_IMAGES_FOLDER = os.path.join(STATIC_FOLDER, 'pdf_images')
+    PDF_IMAGES_PATH = os.path.join('/pdf_annotation_and_extraction', 'pdf_images')

@@ -30,6 +30,7 @@ class DLDataPointExtractorV1(MonoState):
         self.label = DrivingLicense.ObjectDetection.OBJECT_LABELS
         self.cv_helper = CVHelper()
         self.ocr = OCR()
+        self.section = DrivingLicense.Section
         self.ocr_method = {'address': self.ocr.get_address, 'date': self.ocr.get_date, 'gender': self.ocr.get_gender,
                            'license_number': self.ocr.get_license_number, 'name': self.ocr.get_name,
                            'eye_color': self.ocr.get_eye_color, 'hair_color': self.ocr.get_hair_color,
@@ -124,7 +125,7 @@ class DLDataPointExtractorV1(MonoState):
         data = {"driving_license": None}
         np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, 'driving_license/input_images', filename)
+        file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
         input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
         cv2.imwrite(file_path, input_image)
         data['filename'] = filename

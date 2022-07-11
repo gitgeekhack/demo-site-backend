@@ -133,3 +133,7 @@ log/
 logs/
 .idea/
 .DS_Store
+pdf_images/
+converted_files/
+uploaded_files/
+cvat_annotations/

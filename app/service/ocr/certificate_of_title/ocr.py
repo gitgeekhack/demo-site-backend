@@ -5,18 +5,18 @@ import cv2
 import pytesseract
 
 from app.common.utils import MonoState
-from app.constant import OCRConfig, Parser
+from app.constant import OCRConfig, DrivingLicenseParser
 from app.service.helper.certificate_of_title_helper import apply_preprocessing, text_detection, noise_removal, \
     bradley_roth_numpy
-from app.service.helper.parser import parse_title_number, parse_vin, parse_year, parse_make, parse_model, \
-    parse_body_style, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
+from app.service.helper.certificate_of_title_parser import parse_title_number, parse_vin, parse_year, parse_make, \
+    parse_model, parse_body_style, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
     parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
 
 pytesseract.pytesseract.tesseract_cmd = os.getenv('Tesseract_PATH')
 
 
 def load_us_cities():
-    with open(Parser.WORLD_CITIES_LIST, newline='') as csvfile:
+    with open(DrivingLicenseParser.WORLD_CITIES_LIST, newline='') as csvfile:
         reader = csv.reader(csvfile)
         us_cities = [row[0] for row in reader if row[4] == 'United States']
     return us_cities

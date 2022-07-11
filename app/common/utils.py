@@ -1,8 +1,9 @@
 import logging
 import os
 import sys
+import aiofiles
 
-from app.constant import AllowedFileType
+from app.constant import AllowedFileType, PDFAnnotationAndExtraction
 
 
 def load_config(import_name):
@@ -50,7 +51,7 @@ class PackagePathFilter(logging.Filter):
         return True
 
 
-def make_dir(target_path):
+async def make_dir(target_path):
     if not os.path.exists(target_path):
         os.makedirs(target_path)
 
@@ -65,3 +66,15 @@ def get_logger():
                                                    '%(message)s')
     logger.addFilter(PackagePathFilter())
     return logger
+
+
+def is_allowed_file(filename, allowed_extensions):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in allowed_extensions
+
+
+async def save_file(file_object, folder_path):
+    await make_dir(folder_path)
+    output_path = os.path.join(folder_path, file_object.filename)
+
+    async with aiofiles.open(output_path, mode='wb+') as f:
+        await f.write(file_object.file.read())

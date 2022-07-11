@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>4</id>
+      <name>task1</name>
+      <size>13</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker></bugtracker>
+      <created>2022-05-25 11:32:32.909254+00:00</created>
+      <updated>2022-07-04 11:46:29.087010+00:00</updated>
+      <subset>default</subset>
+      <start_frame>0</start_frame>
+      <stop_frame>12</stop_frame>
+      <frame_filter></frame_filter>
+      <segments>
+        <segment>
+          <id>3</id>
+          <start>0</start>
+          <stop>12</stop>
+          <url>http://192.168.3.180:8081/?id=3</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>nirav</username>
+        <email></email>
+      </owner>
+      <assignee></assignee>
+      <labels>
+        <label>
+          <name>insured_name</name>
+          <color>#fa3253</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>insured_address</name>
+          <color>#fa3253</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>broker_name</name>
+          <color>#33ddff</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>broker_address</name>
+          <color>#33ddff</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>policyno</name>
+          <color>#08cf65</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>receipt_date</name>
+          <color>#725665</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>net_amount</name>
+          <color>#261947</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>insurance_type</name>
+          <color>#9fe93f</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>policy_dates</name>
+          <color>#c18d1c</color>
+          <attributes>
+            <attribute>
+              <name>DateRange</name>
+              <mutable>False</mutable>
+              <input_type>text</input_type>
+              <default_value></default_value>
+              <values></values>
+            </attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>driver details</name>
+          <color>#5b2f99</color>
+          <attributes>
+            <attribute>
+              <name>Table</name>
+              <mutable>False</mutable>
+              <input_type>text</input_type>
+              <default_value></default_value>
+              <values></values>
+            </attribute>
+          </attributes>
+        </label>
+        <label>
+          <name>driving history</name>
+          <color>#3ee921</color>
+          <attributes>
+            <attribute>
+              <name>Table</name>
+              <mutable>False</mutable>
+              <input_type>text</input_type>
+              <default_value></default_value>
+              <values></values>
+            </attribute>
+          </attributes>
+        </label>
+      </labels>
+    </task>
+    <dumped>2022-07-04 11:46:32.528239+00:00</dumped>
+  </meta>
+  <image id="0" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-01.jpg" width="1700" height="2200">
+    <box label="insured_name" occluded="0" source="manual" xtl="230.82" ytl="440.42" xbr="786.18" ybr="485.94" z_order="0">
+    </box>
+    <box label="broker_name" occluded="0" source="manual" xtl="226.37" ytl="611.78" xbr="906.16" ybr="661.35" z_order="0">
+    </box>
+    <box label="net_amount" occluded="0" source="manual" xtl="1375.00" ytl="737.20" xbr="1568.70" ybr="802.77" z_order="0">
+    </box>
+    <box label="receipt_date" occluded="0" source="manual" xtl="1170.37" ytl="394.92" xbr="1324.53" ybr="442.26" z_order="0">
+    </box>
+    <box label="insured_address" occluded="0" source="manual" xtl="229.81" ytl="477.90" xbr="846.80" ybr="602.10" z_order="0">
+    </box>
+    <box label="broker_address" occluded="0" source="manual" xtl="225.16" ytl="654.90" xbr="867.60" ybr="784.33" z_order="0">
+    </box>
+  </image>
+  <image id="1" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-02.jpg" width="1700" height="2200">
+    <box label="policyno" occluded="0" source="manual" xtl="80.89" ytl="408.64" xbr="426.51" ybr="457.53" z_order="0">
+    </box>
+  </image>
+  <image id="2" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-03.jpg" width="1700" height="2200">
+    <box label="driving history" occluded="0" source="manual" xtl="2.97" ytl="1731.81" xbr="393.20" ybr="1797.25" z_order="0">
+      <attribute name="Table">end</attribute>
+    </box>
+    <box label="driving history" occluded="0" source="manual" xtl="125.13" ytl="1543.04" xbr="1668.15" ybr="1603.46" z_order="0">
+      <attribute name="Table">columns</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="29.41" ytl="1161.26" xbr="597.52" ybr="1225.36" z_order="0">
+      <attribute name="Table">start</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="93.51" ytl="1215.16" xbr="1671.10" ybr="1311.30" z_order="0">
+      <attribute name="Table">columns</attribute>
+    </box>
+    <box label="insurance_type" occluded="0" source="manual" xtl="836.10" ytl="190.90" xbr="1657.67" ybr="267.81" z_order="0">
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="222.42" ytl="1240.08" xbr="302.34" ybr="1303.81" z_order="0">
+      <attribute name="Table">column</attribute>
+    </box>
+    <box label="driver details" occluded="0" source="manual" xtl="20.69" ytl="1491.94" xbr="355.72" ybr="1556.04" z_order="0">
+      <attribute name="Table">end</attribute>
+    </box>
+    <box label="driving history" occluded="0" source="manual" xtl="16.89" ytl="1490.18" xbr="341.60" ybr="1555.63" z_order="0">
+      <attribute name="Table">start</attribute>
+    </box>
+    <box label="policy_dates" occluded="0" source="manual" xtl="492.90" ytl="876.70" xbr="1181.60" ybr="969.50" z_order="0">
+      <attribute name="DateRange"></attribute>
+    </box>
+  </image>
+  <image id="3" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-04.jpg" width="1700" height="2200">
+  </image>
+  <image id="4" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-05.jpg" width="1700" height="2200">
+  </image>
+  <image id="5" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-06.jpg" width="1700" height="2200">
+  </image>
+  <image id="6" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-07.jpg" width="1700" height="2200">
+  </image>
+  <image id="7" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-08.jpg" width="1700" height="2200">
+  </image>
+  <image id="8" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-09.jpg" width="1700" height="2200">
+  </image>
+  <image id="9" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-10.jpg" width="1700" height="2200">
+  </image>
+  <image id="10" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-11.jpg" width="1700" height="2200">
+  </image>
+  <image id="11" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-12.jpg" width="1700" height="2200">
+  </image>
+  <image id="12" name="ALLIANCE_APP_Adriana Salgad000000000.jpeg-13.jpg" width="1700" height="2200">
+  </image>
+</annotations>

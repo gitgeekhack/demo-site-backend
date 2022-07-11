@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<annotations>
+  <version>1.1</version>
+  <meta>
+    <task>
+      <id>8</id>
+      <name>type_1_document</name>
+      <size>1</size>
+      <mode>annotation</mode>
+      <overlap>0</overlap>
+      <bugtracker></bugtracker>
+      <created>2022-06-09 06:46:05.041784+00:00</created>
+      <updated>2022-06-09 12:09:12.856096+00:00</updated>
+      <subset>default</subset>
+      <start_frame>0</start_frame>
+      <stop_frame>0</stop_frame>
+      <frame_filter></frame_filter>
+      <segments>
+        <segment>
+          <id>7</id>
+          <start>0</start>
+          <stop>0</stop>
+          <url>http://localhost:8080/?id=7</url>
+        </segment>
+      </segments>
+      <owner>
+        <username>nirav</username>
+        <email></email>
+      </owner>
+      <assignee></assignee>
+      <labels>
+        <label>
+          <name>insured</name>
+          <color>#87517d</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>company_name</name>
+          <color>#5afffa</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>policy_number</name>
+          <color>#3cc5c7</color>
+          <attributes>
+          </attributes>
+        </label>
+        <label>
+          <name>date</name>
+          <color>#0ddcc8</color>
+          <attributes>
+          </attributes>
+        </label>
+      </labels>
+    </task>
+    <dumped>2022-06-10 08:40:36.447280+00:00</dumped>
+  </meta>
+  <image id="0" name="NON OWNERS ENGLISH000000000.jpeg-1.jpg" width="1700" height="2200">
+    <box label="insured" occluded="0" source="manual" xtl="276.47" ytl="395.04" xbr="847.49" ybr="462.05" z_order="0">
+    </box>
+    <box label="company_name" occluded="0" source="manual" xtl="395.92" ytl="473.70" xbr="856.23" ybr="539.25" z_order="0">
+    </box>
+    <box label="policy_number" occluded="0" source="manual" xtl="380.18" ytl="549.74" xbr="850.69" ybr="618.21" z_order="0">
+    </box>
+    <box label="date" occluded="0" source="manual" xtl="1100.08" ytl="1814.00" xbr="1556.02" ybr="1898.49" z_order="0">
+    </box>
+  </image>
+</annotations>
