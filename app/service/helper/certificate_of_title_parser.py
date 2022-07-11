@@ -5,9 +5,11 @@ from datetime import datetime
 
 from fuzzywuzzy import fuzz
 
-from app.constant import DrivingLicenseParser
+from app.constant import DrivingLicenseParser, CertificateOfTitle
 
-REGX = DrivingLicenseParser.Regex
+DL_REGEX = DrivingLicenseParser.Regex
+COT_REGEX = CertificateOfTitle.Regex
+
 with open('./app/data/make.pkl', 'rb') as file:
     make = pickle.load(file)
 
@@ -49,7 +51,7 @@ def parse_issue_date(text):
     text = text.replace('/ ', '/')
     text = text.replace(' /', '/')
     text = text.replace(' ', '')
-    date = re.search(REGX.DATE, text)
+    date = re.search(DL_REGEX.DATE, text)
     if date:
         date = date.group(1)
         date = try_parse_date(date)
@@ -73,7 +75,7 @@ def autocorrect_city(city, cities=None):
 
 
 def parse_address(text, cities=None):
-    text_group = re.findall(REGX.ADDRESS, text)
+    text_group = re.findall(DL_REGEX.ADDRESS, text)
     address_texts = []
     address = ''
     if text_group:
@@ -96,20 +98,20 @@ def split_address(address, cities=None):
     city_state_zip = address_split[-1]
     if address_split:
         address['street'] = address_split[0].strip()
-    city_state_zip_group = re.search(REGX.CITY, city_state_zip.replace(address['street'], ''))
+    city_state_zip_group = re.search(DL_REGEX.CITY, city_state_zip.replace(address['street'], ''))
     if city_state_zip_group:
         city = city_state_zip_group.group(1)
         address['city'] = autocorrect_city(city, cities)
         city_state_zip = city_state_zip.replace(city, '')
-        zipcode = re.search(REGX.ZIPCODE, city_state_zip.replace(address['city'], ''))
+        zipcode = re.search(DL_REGEX.ZIPCODE, city_state_zip.replace(address['city'], ''))
         if zipcode:
             address['zipcode'] = zipcode.group()
             city_state_zip = city_state_zip.replace(address['zipcode'], '').strip()
-        state_group = re.search(REGX.STATE, city_state_zip)
+        state_group = re.search(DL_REGEX.STATE, city_state_zip)
         if state_group:
             address['state'] = state_group.group()
         else:
-            state_group = re.search(REGX.STATE_WITH_SPACE, city)
+            state_group = re.search(DL_REGEX.STATE_WITH_SPACE, city)
             address['state'] = state_group.group().strip() if state_group else None
     return address
 
@@ -150,7 +152,7 @@ def parse_year(text):
     text = text.upper()
     text = text.replace('YEAR', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b', text)
+    text_group = re.search(COT_REGEX.YEAR, text)
     if text_group:
         year = int(text_group.group(0))
     return year
@@ -235,7 +237,7 @@ def parse_owner_name(text):
     else:
         text = text.split('\n')
     for i_text in text:
-        name_group = re.findall(r'([A-Z,]{3,14}\s*[A-Z,]{1,14}\s?[A-Z\s]*)', i_text)
+        name_group = re.findall(COT_REGEX.OWNER_NAME, i_text)
         for i_name_group in name_group:
             names.append(i_name_group)
     return names
@@ -259,7 +261,7 @@ def parse_lien_name(text):
     text = text.replace('LIEN', '')
     text = re.sub(r'\n(?=\n)', '', text)
     for i_text in text.split('\n'):
-        name = re.search(r'([A-Z,]{3,14}\s+[A-Z,]{1,14}\s?[A-Z\s]*)', i_text)
+        name = re.search(COT_REGEX.LIEN_NAME, i_text)
         if name:
             return name.group(0)
     return name
@@ -270,7 +272,7 @@ def parse_lien_address(text, cities=None):
     texts = text.split('PO BOX') if 'PO BOX' in text else text
     text = ' '.join(texts).replace('\n', ' ')
     text = re.sub(r' (?= )', '', text)
-    text_group = re.findall(REGX.ADDRESS, text)
+    text_group = re.findall(DL_REGEX.ADDRESS, text)
     address_texts = []
     address = ''
     if text_group:
@@ -300,7 +302,7 @@ def parse_odometer_reading(text):
     text = text.replace('ODOM', '')
     text = text.replace('MILES', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(r'([\d,]{5,})|(EXEMPT)', text)
+    text_group = re.search(COT_REGEX.ODOMETER_READING, text)
     if text_group:
         odometer = text_group.group(0)
         odometer = odometer.replace(',', '')
@@ -311,7 +313,7 @@ def parse_odometer_reading(text):
 def parse_doc_type(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(r'ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT', text)
+    text_group = re.findall(COT_REGEX.DOCUMENT_TYPE, text)
     if text_group:
         result = list(set(text_group))
     return result
@@ -321,9 +323,7 @@ def parse_doc_type(text):
 def parse_title_type(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(
-        r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE',
-        text)
+    text_group = re.findall(COT_REGEX.TITLE_TYPE, text)
     if text_group:
         result = list(set(text_group))
     return result
@@ -333,9 +333,7 @@ def parse_title_type(text):
 def parse_remarks(text):
     result = []
     text = text.replace('\n', ' ')
-    text_group = re.findall(
-        r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE|ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT',
-        text)
+    text_group = re.findall(COT_REGEX.REMARKS, text)
     if text_group:
         result = list(set(text_group))
     return result
