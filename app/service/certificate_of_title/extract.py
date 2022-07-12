@@ -20,9 +20,6 @@ from app.service.ocr.certificate_of_title.ocr import CertificateOfTitleOCR as OC
 
 pd.options.mode.chained_assignment = None
 
-with open('./app/data/make-model.pkl', 'rb') as file:
-    make_model = pickle.load(file)
-
 
 def model_loader():
     torch.hub._validate_not_a_forked_repo = lambda a, b, c: True

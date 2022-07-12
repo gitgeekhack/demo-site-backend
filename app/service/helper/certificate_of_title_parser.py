@@ -3,15 +3,13 @@ import pickle
 import re
 from datetime import datetime
 
+import pandas as pd
 from fuzzywuzzy import fuzz
 
 from app.constant import DrivingLicenseParser, CertificateOfTitle
 
 DL_REGEX = DrivingLicenseParser.Regex
 COT_REGEX = CertificateOfTitle.Regex
-
-with open('./app/data/make.pkl', 'rb') as file:
-    make = pickle.load(file)
 
 
 def strip_text(f):
@@ -160,6 +158,7 @@ def parse_year(text):
 
 @strip_text
 def parse_make(text):
+    make = pd.read_pickle('./app/data/make.pkl')
     text = text.upper()
     text = text.replace('MAKEOFVEHICLE', '')
     text = text.replace('MAKEBODY', '')
