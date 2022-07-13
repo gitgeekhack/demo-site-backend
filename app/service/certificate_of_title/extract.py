@@ -1,7 +1,6 @@
 import asyncio
 import json
 import os
-import pickle
 from itertools import chain
 
 import cv2
@@ -62,10 +61,9 @@ class COTDataPointExtractorV1(MonoState):
         lien = None
         iou = await self.cv_helper.calculate_iou(x=owner_addresses[0]['bbox'], y=owner_addresses[1]['bbox'])
         if iou == 0:
-            owner = owner_addresses[0] if owner_addresses[0]['bbox'][1] < owner_addresses[1]['bbox'][1] else \
-                owner_addresses[1]
-            lien = owner_addresses[0] if owner_addresses[0]['bbox'][1] > owner_addresses[1]['bbox'][1] else \
-                owner_addresses[1]
+            owner, lien = (owner_addresses[0], owner_addresses[1]) if owner_addresses[0]['bbox'][1] < \
+                                                                      owner_addresses[1]['bbox'][1] else (
+            owner_addresses[1], owner_addresses[0])
         else:
             owner = owner_addresses[0] if owner_addresses[0]['score'] > owner_addresses[1]['score'] else \
                 owner_addresses[1]
@@ -175,12 +173,11 @@ class COTDataPointExtractorV1(MonoState):
             text = await self.ocr_method[label](detected_object)
         return [label, text]
 
-    async def __get_all_title_types(self, extracted_data, label):
-        _list = []
+    async def __get_unique_values(self, extracted_data, label):
+        _set = set()
         for data in extracted_data:
-            if data[0].startswith(label) and data[1] not in _list:
-                _list.append(data[1])
-        return [label, list(chain(*_list))]
+            if data[0].startswith(label): _set.add(tuple(data[1]))
+        return [label, list(chain(*_set))]
 
     async def __filter_remark(self, extracted_data):
         for result in extracted_data[self.response_key.REMARK]:
@@ -201,7 +198,7 @@ class COTDataPointExtractorV1(MonoState):
             return None
 
     async def __vin_checking(self, extracted_data):
-        df = pd.read_pickle('./app/data/VehicleWithVIN.pkl')
+        df = pd.read_pickle(self.section.VIN_PICKLE_PATH)
         vin = extracted_data['vin']
         make = extracted_data['make']
         model = extracted_data['model']
@@ -235,14 +232,11 @@ class COTDataPointExtractorV1(MonoState):
 
         results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
         image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
-
         extracted_data_by_label = await self.__extract_data_by_label(image)
-        for i_data in extracted_data_by_label:
-            if self.response_key.OWNER_NAME in i_data: i_data[0] = 'owners'
 
         if len(extracted_data_by_label) > 0:
-            title_data = await self.__get_all_title_types(extracted_data_by_label, self.response_key.TITLE_TYPE)
-            document_data = await self.__get_all_title_types(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
+            title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
+            document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
             _extracted_data = [data for data in extracted_data_by_label if
                                not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
             extracted_data = list(chain([title_data], [document_data], _extracted_data))

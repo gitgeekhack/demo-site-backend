@@ -146,6 +146,8 @@ class CertificateOfTitle:
         DOCUMENT_TYPE = ['ORIGINAL', 'DUPLICATE', 'TRANSFER CERTIFIED COPY', 'NEW', 'REPLACEMENT']
         INPUT_PATH = 'certificate_of_title/input_images'
         MULTIPLE_LABELS_OBJECT = ['title_type', 'owner_address', 'document_type']
+        MAKE_PICKLE_PATH = './app/data/make.pkl'
+        VIN_PICKLE_PATH = './app/data/VehicleWithVIN.pkl'
 
     class Regex:
         YEAR = r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b'

@@ -1,5 +1,4 @@
 import difflib
-import pickle
 import re
 from datetime import datetime
 
@@ -10,6 +9,7 @@ from app.constant import DrivingLicenseParser, CertificateOfTitle
 
 DL_REGEX = DrivingLicenseParser.Regex
 COT_REGEX = CertificateOfTitle.Regex
+SECTION = CertificateOfTitle.Sections
 
 
 def strip_text(f):
@@ -158,7 +158,7 @@ def parse_year(text):
 
 @strip_text
 def parse_make(text):
-    make = pd.read_pickle('./app/data/make.pkl')
+    make = pd.read_pickle(SECTION.MAKE_PICKLE_PATH)
     text = text.upper()
     text = text.replace('MAKEOFVEHICLE', '')
     text = text.replace('MAKEBODY', '')

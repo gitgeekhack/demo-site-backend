@@ -20,7 +20,6 @@ class COTHelper(CVHelper):
 
 
 async def image_resize(image, width=None, height=None, interpolation=cv2.INTER_AREA):
-    dim = None
     (h, w) = image.shape[:2]
     if width is None:
         r = height / float(h)
@@ -55,7 +54,6 @@ async def apply_preprocessing(image, auto_scaling=False, resize_dimension=None):
     th, image = cv2.threshold(normed, 100, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     image = cv2.erode(image, np.ones((3, 3), np.uint8))
     image = cv2.dilate(image, np.ones((3, 3), np.uint8))
-    stack = np.vstack((image, blured1, blured2, normed, image))
     return image
 
 
@@ -142,7 +140,7 @@ async def bradley_roth_numpy(image, s=None, t=None):
         t = 15.0
 
     # Compute integral image
-    intImage = np.cumsum(np.cumsum(img, axis=1), axis=0)
+    intergral_img = np.cumsum(np.cumsum(img, axis=1), axis=0)
 
     # Define grid of points
     (rows, cols) = img.shape[:2]
@@ -191,7 +189,7 @@ async def bradley_roth_numpy(image, s=None, t=None):
     f4_y = f2_y
 
     # Compute areas of each window
-    sums = intImage[f1_y, f1_x] - intImage[f2_y, f2_x] - intImage[f3_y, f3_x] + intImage[f4_y, f4_x]
+    sums = intergral_img[f1_y, f1_x] - intergral_img[f2_y, f2_x] - intergral_img[f3_y, f3_x] + intergral_img[f4_y, f4_x]
 
     # Compute thresholded image and reshape into a 2D grid
     out = np.ones(rows * cols, dtype=bool)
