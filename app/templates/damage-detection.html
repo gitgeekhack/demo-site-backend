@@ -87,6 +87,9 @@
                                 <img src="{{static(result['image_path'])}}" class="img-fluid rounded" alt="Image not found">
                             </div>
                             <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12">
+                                <p style="text-align:center; font-weight:bold">
+                                    Confidence percentage
+                                </p>
                                 {% for k,v in result['detection']|sort(attribute='0') %}
                                 <div class="row">
                                     <div class="col-8">

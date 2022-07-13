@@ -72,6 +72,7 @@ class DamageDetector(MonoState):
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
             make_dir(output_folder_path)
             detection = await self.__predict_labels(input_file_path, output_file_path)
+            detection[0][0] = "Headlights(Broken/Missing)"
             out_path = os.path.join(CarDamageDetection.Path.DETECTED_PATH, 'out_' + filename)
             results.append({'image_path': out_path, 'detection': detection, 'image_count': image_count})
             image_count += 1
