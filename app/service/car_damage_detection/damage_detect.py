@@ -66,11 +66,11 @@ class DamageDetector(MonoState):
             input_file_path = os.path.join(input_folder_path, filename)
             output_folder_path = os.path.join(CarDamageDetection.Path.STATIC_PATH, CarDamageDetection.Path.DETECTED_PATH)
             output_file_path = os.path.join(output_folder_path, 'out_' + filename)
-            make_dir(input_folder_path)
+            await make_dir(input_folder_path)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(input_file_path, input_image)
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
-            make_dir(output_folder_path)
+            await make_dir(output_folder_path)
             detection = await self.__predict_labels(input_file_path, output_file_path)
             detection[0][0] = "Headlights(Broken/Missing)"
             out_path = os.path.join(CarDamageDetection.Path.DETECTED_PATH, 'out_' + filename)
