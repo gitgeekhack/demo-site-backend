@@ -6,7 +6,7 @@ import pytesseract
 
 from app.common.utils import MonoState
 from app.constant import OCRConfig, DrivingLicenseParser
-from app.service.helper.certificate_of_title_helper import apply_preprocessing, text_detection, noise_removal, \
+from app.service.helper.certificate_of_title_helper import apply_preprocessing, text_detection, cropped_object_removal, \
     bradley_roth_numpy
 from app.service.helper.certificate_of_title_parser import parse_title_number, parse_vin, parse_year, parse_make, \
     parse_model, parse_body_style, parse_owner_name, parse_address, parse_lien_name, parse_odometer_reading, \
@@ -27,7 +27,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_title_number(self, image):
         pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        clean_image = await noise_removal(pre_image)
+        clean_image = await cropped_object_removal(pre_image)
         images = await text_detection(clean_image)
         text = ''
         for i_image in images:
@@ -36,7 +36,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_vin(self, image):
         pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        clean_image = await noise_removal(pre_image)
+        clean_image = await cropped_object_removal(pre_image)
         images = await text_detection(clean_image)
         text = ''
         for i_image in images:
@@ -57,7 +57,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_year(self, image):
         image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
-        clean_image = await noise_removal(image)
+        clean_image = await cropped_object_removal(image)
         text = pytesseract.image_to_string(clean_image, config=OCRConfig.CertificateOfTitle.YEAR_PSM11, lang='eng')
         year = parse_year(text)
         if not year:
@@ -67,7 +67,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_make(self, image):
         pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=320)
-        clean_image = await noise_removal(pre_image)
+        clean_image = await cropped_object_removal(pre_image)
         images = await text_detection(clean_image)
         text = ''
         for i_image in images:
@@ -76,7 +76,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_model(self, image):
         pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=320)
-        clean_image = await noise_removal(pre_image)
+        clean_image = await cropped_object_removal(pre_image)
         images = await text_detection(clean_image)
         text = ''
         for i_image in images:
@@ -85,7 +85,7 @@ class CertificateOfTitleOCR(MonoState):
 
     async def get_body_style(self, image):
         pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=320)
-        clean_image = await noise_removal(pre_image)
+        clean_image = await cropped_object_removal(pre_image)
         text = pytesseract.image_to_string(clean_image, config=OCRConfig.CertificateOfTitle.BODY_STYLE)
         return parse_body_style(text)
 
@@ -99,7 +99,11 @@ class CertificateOfTitleOCR(MonoState):
         return odometer
 
     async def get_owner_name(self, image):
-        text = pytesseract.image_to_string(image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
+        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        bradley_roth = await bradley_roth_numpy(gray, t=12)
+        pre_image = await apply_preprocessing(image, auto_scaling=True, resize_dimension=500)
+        clean_image = await cropped_object_removal(pre_image)
+        text = pytesseract.image_to_string(clean_image, config=OCRConfig.CertificateOfTitle.NAME, lang='eng')
         return parse_owner_name(text)
 
     async def get_address(self, image):

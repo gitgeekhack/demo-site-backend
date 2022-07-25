@@ -87,7 +87,7 @@ async def text_detection(image, area=6000):
     return images
 
 
-async def noise_removal(image):
+async def cropped_object_removal(image):
     h, w = image.shape[:2]
     # Ensure only bi-level image with white as foreground
     _, bi_img = cv2.threshold(image, 127, 255, cv2.THRESH_BINARY_INV)
