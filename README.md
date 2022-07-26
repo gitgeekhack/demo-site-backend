@@ -31,6 +31,17 @@ cd demo-site-backend && pip install -r requirements.txt
 python run.py
 ```
 
+### Set Environment Variable Of Tesseract
+
+---
+- Tesseract engine should be installed in order to OCR the image. To interact with Tesseract using python, tesseract path should be configured. Below command is to used set Tesseract environment variable.
+  - #### Ubuntu
+    ```commandline
+    export Tesseract_PATH=/usr/bin/tesseract
+    ```
+  - #### Windows
+    > To access tesseract-OCR from any location you may have to add the directory where the tesseract-OCR binaries are located to the Path variables, probably **C:\Program Files\Tesseract-OCR**.
+    - To set environment variable in Windows machine please refer this [link](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
 ### Configure CVAT
 
 ---
