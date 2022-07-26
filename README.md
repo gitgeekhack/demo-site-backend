@@ -1,6 +1,5 @@
 # demo-site-backend
 
----
 The Marut OCR repository contains proof-of-concepts for the Machine Learning Project. Projects like object detection, OCR (Optical Character Recognition), data annotation, and extraction from PDF documents.
 
 ### List of POCs currently presented in Demo Site
@@ -32,7 +31,7 @@ cd demo-site-backend && pip install -r requirements.txt
 python run.py
 ```
 
-### Configure CVAT 
+### Configure CVAT
 
 ---
 - Grab your local IP address of development machine using terminal (Ubuntu) or CMD (Windows)
@@ -44,4 +43,10 @@ python run.py
     ```commandline 
     ipconfig
     ```
-- Once IP address get, copy it and paste it to line number **49** of `app/templates/pdf-annotation-extraction-homepage.html`
+- Once IP address got, set the environment variable accordingly.
+  - #### Ubuntu
+    ```commandline
+    export CVAT_IP="http://<YOUR_IP_ADDRESS>:8081"
+    ```
+  - #### Windows
+    > To set environment variable in Windows machine please refer this [link](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
