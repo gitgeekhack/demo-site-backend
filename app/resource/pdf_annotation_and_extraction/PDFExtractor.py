@@ -14,7 +14,7 @@ from app.service.helper.annotation_file import extract_annotation_files, get_ann
 class HomePage(web.View):
     @aiohttp_jinja2.template('pdf-annotation-extraction-homepage.html')
     async def get(self):
-        return {}
+        return {'cvat_ip': PDFAnnotationAndExtraction.CVAT_IP}
 
 
 class DataExtraction(web.View):
