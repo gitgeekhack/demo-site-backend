@@ -179,3 +179,4 @@ class PDFAnnotationAndExtraction:
     CSV_FOLDER = os.path.join(STATIC_FOLDER, 'csv')
     PDF_IMAGES_FOLDER = os.path.join(STATIC_FOLDER, 'pdf_images')
     PDF_IMAGES_PATH = os.path.join('/pdf_annotation_and_extraction', 'pdf_images')
+    CVAT_IP = os.getenv('CVAT_IP')
