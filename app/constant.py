@@ -1,5 +1,5 @@
-from enum import Enum
 import os
+from enum import Enum
 
 
 class DrivingLicenseParser:
@@ -7,7 +7,7 @@ class DrivingLicenseParser:
 
     class Regex:
         NAME = r'([A-Z]{3,14}[\s]{0,1}([A-Z]{3,14})[\s]{0,1}([A-Z]{0,14}))(([\s]{0,1}[,]{0,1}[\s]{0,1}([A-Z]{0,4}))|)'
-        DATE = r'([0-9]{0,2}[\/-]([0-9]{0,2})[\/-][0-9]{0,4})'
+        DATE = r'([0-9]{1,2}[\/-][0-9]{1,2}[\/-][0-9]{2,4})'
         LICENSE_NUMBER = r'([0-9A-Z]{1})[\S]([0-9A-Z\-*]*[0-9A-Z\-*\s]*)'
         ADDRESS = r'([0-9]{1,5}\w+[\s]{0,1})([A-Z\s0-9\-,&#\n]*[0-9]{3})'
         CITY = r'([A-Za-z\s]+=?)'
@@ -45,18 +45,22 @@ class OCRConfig:
         LICENSE_CLASS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890   " load_system_dawg=false load_freq_dawg=false'
 
     class CertificateOfTitle:
-        TITLE_NO = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
-        VIN = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 " load_system_dawg=false load_freq_dawg=false'
-        YEAR = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789\n" load_system_dawg=false load_freq_dawg=false'
-        MAKE = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'
-        MODEL = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 -/\n" load_system_dawg=false load_freq_dawg=false'
-        DATE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
-        NAME = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ /\n" load_system_dawg=false load_freq_dawg=false'
-        ADDRESS = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ,\n-" load_system_dawg=false load_freq_dawg=false'
-        BODY_STYLE = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'
-        ODOMETER = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" load_system_dawg=false load_freq_dawg=false'
-        DOCUMENT_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
-        TITLE_TYPE = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
+        TITLE_NO = '-l five --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\n" load_system_dawg=false load_freq_dawg=false'
+        VIN_FINE_TUNED = '-l five --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" load_system_dawg=false load_freq_dawg=false'
+        VIN_PRE_TRAINED = '-l eng --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789" load_system_dawg=false load_freq_dawg=false'
+        YEAR_PSM6 = '-l five --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789 \n" load_system_dawg=false load_freq_dawg=false'
+        YEAR_PSM11 = '-l five --oem 1 --psm 11 -c tessedit_char_whitelist="0123456789 \n" load_system_dawg=false load_freq_dawg=false'
+        MAKE = '-l five --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" load_system_dawg=false load_freq_dawg=false'
+        MODEL = '-l five --oem 1 --psm 7 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789/ \n" load_system_dawg=false load_freq_dawg=false'
+        DATE_FINE_TUNED = '-l five --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
+        DATE_PRE_TRAINED = '-l eng --oem 1 --psm 6 -c tessedit_char_whitelist="0123456789/- " load_system_dawg=false load_freq_dawg=false'
+        NAME = '-l eng --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ ,\n" load_system_dawg=false load_freq_dawg=false'
+        ADDRESS = '-l five --oem 1 --psm 4 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789# ,\n-" load_system_dawg=false load_freq_dawg=false'
+        BODY_STYLE = '-l five --oem 1 --psm 11 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789\n " load_system_dawg=false load_freq_dawg=false'
+        ODOMETER = '-l five --oem 1 --psm 11 -c tessedit_char_whitelist="EXMPTexmpt0123456789 ,\n" load_system_dawg=false load_freq_dawg=false'
+        DOCUMENT_TYPE = '-l five --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" load_system_dawg=false load_freq_dawg=false'
+        TITLE_TYPE = '-l five --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ\n" load_system_dawg=false load_freq_dawg=false'
+        REMARK = '-l five --oem 1 --psm 3 -c tessedit_char_whitelist="ABCDEFGHIJKLMNOPQRSTUVWXYZ \n" load_system_dawg=false load_freq_dawg=false'
 
 
 class DrivingLicense:
@@ -84,6 +88,9 @@ class DrivingLicense:
                 DATE_OF_BIRTH, ISSUE_DATE]
         DATE_LABELS = [DATE_OF_BIRTH, ISSUE_DATE, EXPIRY_DATE]
 
+    class Section:
+        INPUT_PATH = 'driving_license/input_images'
+
 
 class AllowedFileType:
     IMAGE = ['jpg', 'png', 'jpeg']
@@ -109,7 +116,7 @@ class CertificateOfTitle:
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_CONFIDENCE = 0.4
         OBJECT_LABELS = {0: 'title_no', 1: 'vin', 2: 'year', 3: 'make', 4: 'model', 5: 'body_style',
-                         6: 'odometer_reading', 7: 'issue_date', 8: 'owner_name', 9: 'owner_address',
+                         6: 'odometer_reading', 7: 'issue_date', 8: 'owners', 9: 'owner_address',
                          10: 'lienholder_name', 11: 'lienholder_address', 12: 'lien_date', 13: 'document_type',
                          14: 'title_type', 15: 'remark'}
 
@@ -122,15 +129,34 @@ class CertificateOfTitle:
         BODY_STYLE = 'body_style'
         ODOMETER_READING = 'odometer_reading'
         ISSUE_DATE = 'issue_date'
-        OWNER_NAME = 'owner_name'
+        OWNER_NAME = 'owners'
         OWNER_ADDRESS = 'owner_address'
         LIENHOLDER_NAME = 'lienholder_name'
         LIENHOLDER_ADDRESS = 'lienholder_address'
         LIEN_DATE = 'lien_date'
         DOCUMENT_TYPE = 'document_type'
         TITLE_TYPE = 'title_type'
+        REMARK = 'remark'
         KEYS = [TITLE_NO, VIN, YEAR, MAKE, MODEL, BODY_STYLE, ODOMETER_READING, ISSUE_DATE, OWNER_ADDRESS,
                 OWNER_ADDRESS, LIENHOLDER_NAME, LIENHOLDER_ADDRESS, LIEN_DATE, DOCUMENT_TYPE, TITLE_TYPE]
+
+    class Sections:
+        TITLE_TYPE = ['SALVAGE', 'CLEAR', 'REBUILT', 'RECONSTRUCTED', 'ASSEMBLED', 'FLOOD DAMAGE', 'SALVAGE-FIRE',
+                      'NON-REPAIRABLE', 'JUNK', 'NORMAL', 'STANDARD', 'VEHICLE']
+        DOCUMENT_TYPE = ['ORIGINAL', 'DUPLICATE', 'TRANSFER CERTIFIED COPY', 'NEW', 'REPLACEMENT']
+        INPUT_PATH = 'certificate_of_title/input_images'
+        MULTIPLE_LABELS_OBJECT = ['title_type', 'owner_address', 'document_type']
+        MAKE_PICKLE_PATH = './app/data/make.pkl'
+        VIN_PICKLE_PATH = './app/data/VehicleWithVIN.pkl'
+
+    class Regex:
+        YEAR = r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b'
+        OWNER_NAME = r'([A-Z,]{3,14}\s*[A-Z,]{1,14}\s?[A-Z\s]*)'
+        LIEN_NAME = r'([A-Z,]{3,14}\s+[A-Z,]{1,14}\s?[A-Z\s]*)'
+        ODOMETER_READING = r'([\d,]{5,})|(EXEMPT)'
+        DOCUMENT_TYPE = r'ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT'
+        TITLE_TYPE = r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE'
+        REMARKS = r'SALVAGE|CLEAR|REBUILT|RECONSTRUCTED|ASSEMBLED|FLOOD DAMAGE|SALVAGE-FIRE|NON-REPAIRABLE|JUNK|NORMAL|STANDARD|VEHICLE|ORIGINAL|DUPLICATE|TRANSFER CERTIFIED COPY|NEW|REPLACEMENT'
 
 
 class CarDamageDetection:
