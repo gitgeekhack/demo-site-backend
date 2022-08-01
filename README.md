@@ -31,6 +31,8 @@ cd demo-site-backend && pip install -r requirements.txt
 python run.py
 ```
 
+**Note:** Once repository cloned or downloaded, please copy following file `./data/USA Certificate of Title/tesseract_trained_data/five.traineddata` to following location `/usr/share/tesseract-ocr/5/tessdata/` in your development machine.  
+
 ### Set Environment Variable Of Tesseract
 
 ---
