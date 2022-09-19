@@ -148,6 +148,8 @@ class CertificateOfTitle:
         MULTIPLE_LABELS_OBJECT = ['title_type', 'owner_address', 'document_type']
         MAKE_PICKLE_PATH = './app/data/make.pkl'
         VIN_PICKLE_PATH = './app/data/VehicleWithVIN.pkl'
+        BODY_STYLE_PICKLE_PATH = './app/data/body_style.pkl'
+        MODEL_PICKLE_PATH = './app/data/model.pkl'
 
     class Regex:
         YEAR = r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b'

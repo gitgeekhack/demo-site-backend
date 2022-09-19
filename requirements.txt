@@ -24,6 +24,7 @@ fuzzywuzzy==0.18.0
 ghostscript==0.7
 google-auth==2.7.0
 google-auth-oauthlib==0.4.6
+google-cloud-vision==3.1.1
 grpcio==1.46.3
 humanfriendly==10.0
 idna==3.3
