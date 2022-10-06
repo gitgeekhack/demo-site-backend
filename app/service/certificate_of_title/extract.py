@@ -89,9 +89,9 @@ class COTDataPointExtractorV1(MonoState):
             bbox = x[:-2].numpy()
             if self.label[int(x[-1])] == self.response_key.OWNER_ADDRESS:
                 owner_addresses.append({'score': score, 'bbox': bbox})
-            elif self.label[int(x[-1])] == self.response_key.TITLE_TYPE and score > 0.6:
+            elif self.label[int(x[-1])] == self.response_key.TITLE_TYPE and score > CertificateOfTitle.VAL_SCORE:
                 title_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
-            elif self.label[int(x[-1])] == self.response_key.DOCUMENT_TYPE and score > 0.6:
+            elif self.label[int(x[-1])] == self.response_key.DOCUMENT_TYPE and score > CertificateOfTitle.VAL_SCORE:
                 document_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
         return title_types, document_types, owner_addresses
 

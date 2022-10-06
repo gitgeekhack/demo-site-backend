@@ -111,6 +111,7 @@ class EyeHairColor:
 
 
 class CertificateOfTitle:
+    VAL_SCORE = 0.6
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
