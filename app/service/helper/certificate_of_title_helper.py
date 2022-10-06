@@ -52,8 +52,6 @@ async def apply_preprocessing(image, auto_scaling=False, resize_dimension=None):
     divided = np.ma.divide(blured1, blured2).data
     normed = np.uint8(255 * divided / divided.max())
     th, image = cv2.threshold(normed, 100, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
-    image = cv2.erode(image, np.ones((3, 3), np.uint8))
-    image = cv2.dilate(image, np.ones((3, 3), np.uint8))
     return image
 
 

@@ -4,7 +4,7 @@ from datetime import datetime
 
 import pandas as pd
 from fuzzywuzzy import fuzz
-
+from string import punctuation
 from app.constant import DrivingLicenseParser, CertificateOfTitle
 
 DL_REGEX = DrivingLicenseParser.Regex
@@ -40,6 +40,36 @@ def try_parse_date(date):
             except ValueError:
                 pass
     return None
+
+
+def longestRepeatedSubstring(str):
+    n = len(str)
+    LCSRe = [[0 for x in range(n + 1)]
+             for y in range(n + 1)]
+    res = ""
+    res_length = 0
+
+    suffix_index = 0
+    for start_index in range(1, n + 1):
+        for end_index in range(start_index + 1, n + 1):
+
+            if (str[start_index - 1] == str[end_index - 1] and
+                    LCSRe[start_index - 1][end_index - 1] < (end_index - start_index)):
+                LCSRe[start_index][end_index] = LCSRe[start_index - 1][end_index - 1] + 1
+
+                if LCSRe[start_index][end_index] > res_length:
+                    res_length = LCSRe[start_index][end_index]
+                    suffix_index = max(start_index, suffix_index)
+
+            else:
+                LCSRe[start_index][end_index] = 0
+
+    if res_length > 0:
+        for start_index in range(suffix_index - res_length + 1,
+                       suffix_index + 1):
+            res = res + str[start_index - 1]
+
+    return res
 
 
 @strip_text
@@ -117,15 +147,24 @@ def split_address(address, cities=None):
 @strip_text
 def parse_title_number(text):
     text = text.upper()
+    pos = text.find("TITLE")
     text = text.replace('TITLE NUMBER', '')
     text = text.replace('TITLE NO', '')
     text = text.replace('TITLENO', '')
     text = text.replace('TITLE', '')
     text = text.replace('NUMBER', '')
+    text = text.replace('.','')
     text = text.replace('\n', ' ')
     for i_text in text.split(' '):
-        if len(i_text) > 4 and i_text.isalnum() and not i_text.isalpha():
-            return i_text
+        if fuzz.ratio(i_text, "TITLE") > 50:
+            text = text.replace(i_text, '')
+        if fuzz.ratio(i_text, "NUMBER") > 50:
+            text = text.replace(i_text, '')
+        if i_text in punctuation:
+            text = text.replace(i_text, '')
+        if i_text.isalpha():
+            text = text.replace(i_text, '')
+    return text
 
 
 @strip_text
@@ -138,9 +177,27 @@ def parse_vin(text):
     text = text.replace('VIN', '')
     text = text.replace('VEHICLE', '')
     text = text.replace('NUMBER', '')
+    text = text.strip()
+    for ch in punctuation:
+        if ch in text:
+            text = text.replace(ch, '')
+    temp = longestRepeatedSubstring(text)
+    if len(temp) >= 17:
+        text = temp
+    for i_text in text.split('\n'):
+        if len(i_text) == 17:
+            text = i_text
+            break
+        else:
+            temp1 = i_text.replace(' ', '')
+            if temp1.isalpha():
+                text = text.replace(i_text, '')
+            if temp1.isnumeric():
+                text = text.replace(i_text, '')
     text = text.replace('\n', ' ')
+    text = text.replace(' ', '')
     for i_text in text.split(' '):
-        if len(i_text) == 17 and i_text.isalnum() and not i_text.isalpha():
+        if len(i_text) == 17 and i_text.isalnum():
             return i_text
 
 
@@ -150,9 +207,16 @@ def parse_year(text):
     text = text.upper()
     text = text.replace('YEAR', '')
     text = text.replace('\n', ' ')
-    text_group = re.search(COT_REGEX.YEAR, text)
-    if text_group:
-        year = int(text_group.group(0))
+    for i_text in text.split(' '):
+        if i_text.isalpha():
+            text = text.replace(i_text, '')
+        if len(i_text) > 4:
+            text = text.replace(i_text, '')
+        if i_text in punctuation:
+            text = text.replace(i_text, '')
+    if int(text) // 1000 > 2:
+        year = text[::-1]
+    year = text.strip()
     return year
 
 
@@ -164,6 +228,7 @@ def parse_make(text):
     text = text.replace('MAKEBODY', '')
     text = text.replace('MAKE', '')
     text = text.replace('VEHICLE', '')
+
     text = text.replace('\n', ' ')
     for i_text in text.split(' '):
         if fuzz.ratio(i_text, 'MAKE') > 49:
@@ -172,30 +237,71 @@ def parse_make(text):
         if len(i_text) < 3 and i_text not in ['MG', 'AC']:
             text = text.replace(i_text, '')
     text = text.strip()
-    prev_score = 0
-    temp = None
-    for i_make in make:
-        score = fuzz.token_sort_ratio(text, i_make)
-        if score > prev_score:
-            temp, prev_score = i_make, score
-    return temp
+    if text in list(make):
+        return text
+    text = text.split()
+    expected_makes = []
+    for i_text in text:
+        res = [i_make for i_make in list(make) if fuzz.ratio(i_text, i_make) > 49]
+        for i_make in res:
+            if i_make.startswith(i_text[:3]):
+                expected_makes.append([i_text, i_make])
+    fuzz_score = {}
+    for exp in expected_makes:
+        for exp_make in exp[1:]:
+            val = fuzz.ratio(exp[0], exp_make)
+            fuzz_score[exp_make] = val
+    try:
+        max_val = max(list(fuzz_score.values()))
+    except:
+        return None
+    result_make = list(fuzz_score.keys())[list(fuzz_score.values()).index(max_val)]
+    return result_make
 
 
 @strip_text
 def parse_model(text):
+    model = pd.read_pickle(SECTION.MODEL_PICKLE_PATH)
     text = text.upper()
     text = text.replace('DESCRIPTION', '')
     text = text.replace('NAME', '')
     text = text.replace('MODEL', '')
     text = text.replace('\n', ' ')
+    text = text.strip()
     for i_text in text.split(' '):
         if fuzz.ratio(i_text, 'MODEL') > 59:
             text = text.replace(i_text, '')
-    return text
+    if text in list(model):
+        return text
+    text = text.split(' ')
+    for i_text in text:
+        if i_text in list(model):
+            return i_text
+    for i_text in text:
+        if i_text[::-1] in model:
+            return i_text[::-1]
+    expected_models = []
+    for i_text in text:
+        res = [i_model for i_model in list(model) if fuzz.ratio(i_text, i_model) > 49]
+        for i_make in res:
+            if i_make.startswith(i_text[:3]):
+                expected_models.append([i_text, i_make])
+    fuzz_score = {}
+    for exp in expected_models:
+        for exp_make in exp[1:]:
+            val = fuzz.ratio(exp[0], exp_make)
+            fuzz_score[exp_make] = val
+    try:
+        max_val = max(list(fuzz_score.values()))
+    except:
+        return None
+    result_model = list(fuzz_score.keys())[list(fuzz_score.values()).index(max_val)]
+    return result_model
 
 
 @strip_text
 def parse_body_style(text):
+    body_style = pd.read_pickle(SECTION.BODY_STYLE_PICKLE_PATH)
     text = text.upper()
     text = text.replace('BODY', '')
     text = text.replace('TYPE', '')
@@ -209,6 +315,12 @@ def parse_body_style(text):
             text = text.replace(i_text, '')
         if fuzz.ratio(i_text, 'STYLE') > 49:
             text = text.replace(i_text, '')
+        if fuzz.ratio(i_text, 'MAKE') > 49:
+            text = text.replace(i_text, '')
+        if i_text in punctuation:
+            text = text.replace(i_text, '')
+        if i_text in body_style:
+            text = i_text
     return text
 
 

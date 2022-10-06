@@ -111,6 +111,7 @@ class EyeHairColor:
 
 
 class CertificateOfTitle:
+    VAL_SCORE = 0.6
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
@@ -148,6 +149,8 @@ class CertificateOfTitle:
         MULTIPLE_LABELS_OBJECT = ['title_type', 'owner_address', 'document_type']
         MAKE_PICKLE_PATH = './app/data/make.pkl'
         VIN_PICKLE_PATH = './app/data/VehicleWithVIN.pkl'
+        BODY_STYLE_PICKLE_PATH = './app/data/body_style.pkl'
+        MODEL_PICKLE_PATH = './app/data/model.pkl'
 
     class Regex:
         YEAR = r'(19[8-9][0-9]|20[0-9]{2})|\b([12][0-9])\b'

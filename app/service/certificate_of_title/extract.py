@@ -85,11 +85,13 @@ class COTDataPointExtractorV1(MonoState):
         document_types = []
         owner_addresses = []
         for x in detected_object.pred[0]:
+            score = float(x[-2])
+            bbox = x[:-2].numpy()
             if self.label[int(x[-1])] == self.response_key.OWNER_ADDRESS:
-                owner_addresses.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
-            elif self.label[int(x[-1])] == self.response_key.TITLE_TYPE:
+                owner_addresses.append({'score': score, 'bbox': bbox})
+            elif self.label[int(x[-1])] == self.response_key.TITLE_TYPE and score > CertificateOfTitle.VAL_SCORE:
                 title_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
-            elif self.label[int(x[-1])] == self.response_key.DOCUMENT_TYPE:
+            elif self.label[int(x[-1])] == self.response_key.DOCUMENT_TYPE and score > CertificateOfTitle.VAL_SCORE:
                 document_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
         return title_types, document_types, owner_addresses
 
@@ -241,12 +243,6 @@ class COTDataPointExtractorV1(MonoState):
                                not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
             extracted_data = list(chain([title_data], [document_data], _extracted_data))
             results = {**results_dict, **dict(extracted_data)}
-            if results[self.response_key.REMARK]:
-                results = await self.__filter_remark(results)
-            results.pop(self.response_key.REMARK)
-            if results['vin']:
-                vin, model, year = await self.__vin_checking(results)
-                if vin: results['vin'], results['model'], results['year'] = vin, model, int(year)
             data['filename'] = filename
             data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
                                                       separators=("\n", " : "))
