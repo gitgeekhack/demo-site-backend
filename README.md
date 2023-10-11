@@ -15,18 +15,26 @@ The Marut OCR repository contains proof-of-concepts for the Machine Learning Pro
 ---
 - `python == 3.9.x` (Any Patch version would work)
 - `tesseract == 5.1.0`
-- `CVAT == 2.1.0` (In Order to run **PDF Annotation & Extraction** POC, CVAT should be installed in development machine. To install and configure CVAT please refer following [link](https://openvinotoolkit.github.io/cvat/docs/administration/basics/installation/))
+- `CVAT == 2.1.0` (In Order to run **PDF Annotation & Extraction** POC, CVAT should be installed in development machine. To install and configure CVAT please refer following [[link]](https://openvinotoolkit.github.io/cvat/docs/administration/basics/installation/))
   - Once CVAT installed successfully in your development machine, please follow this steps.
 
 ### Getting Started 
 
 ---
+1. Clone the repository
 ```commandline
 git clone https://github.com/gitgeekhack/demo-site-backend.git
 ```
+
+2. pull large files. (if git lfs is not installed please install before running the command [[Link]](https://www.scaler.com/topics/git/git-lfs/))
 ```commandline
-cd demo-site-backend && pip install -r requirements.txt
+git lfs pull
 ```
+3. Install all the requirements
+```commandline
+pip install -r requirements.txt
+```
+4. Run the project
 ```commandline
 python run.py
 ```
@@ -62,4 +70,4 @@ python run.py
     export CVAT_IP="http://<YOUR_IP_ADDRESS>:8081"
     ```
   - #### Windows
-    > To set environment variable in Windows machine please refer this [link](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
+    > To set environment variable in Windows machine please refer this [[link]](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
