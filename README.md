@@ -146,7 +146,7 @@ python run_underwriting_automation.py
 
 ---
 
-To Find the Postman collection in `/demo-site-backend/underwriting-automation/postman-collection`.
+Please Find the Postman collection in `/demo-site-backend/underwriting-automation/postman-collection`.
 
 Export the postman collection in Postman, Follow the instructions [[link](https://learning.postman.com/docs/getting-started/importing-and-exporting/exporting-data/)]
 
