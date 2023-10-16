@@ -1,0 +1,2773 @@
+{
+	"info": {
+		"_postman_id": "52885742-16ea-4dcc-8931-bd0e92bd3b05",
+		"name": "Underwriting-Automation",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "15473797"
+	},
+	"item": [
+		{
+			"name": "CRM",
+			"item": [
+				{
+					"name": "CRM Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/crm/Alliance example 6 Receipt.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/crm-receipt/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"crm-receipt",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "CRM Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/crm/CRM_1_Valentin Gonzalez.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/crm-receipt/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"crm-receipt",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "MVR",
+			"item": [
+				{
+					"name": "MVR Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/mvr/MVR_Alfonso Soto 4.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/mvr/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"mvr",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MVR Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/mvr/MVR_Wendy Pasillas.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/mvr/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"mvr",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "MVR Example 3 Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/mvr/MVR_Alex Vigil.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/mvr/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"mvr",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Non Owners Restrictions",
+			"item": [
+				{
+					"name": "NOR Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/non_owners_letter/non_owners_letter_signed.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/non-owners-letter/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"non-owners-letter",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "VR",
+			"item": [
+				{
+					"name": "VR Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"document_url\": \"{{S3BaseURL}}/vr/MVR Marton Price VR.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/vr/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"vr",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Artisian Use Letter",
+			"item": [
+				{
+					"name": "Artisian Use Letter",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/artisian_use_letter/user/6 ARTISAN USE LETTER 2017 FORD_new.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/artisan-use-letter/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"artisan-use-letter",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "EFT",
+			"item": [
+				{
+					"name": "EFT Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/eft/EFT- MIL6055833.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/eft/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"eft",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pleasure Use Letter",
+			"item": [
+				{
+					"name": "PUL Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/pleasure_use_letter/VER_PLEASURE_LETTER_Pablo Virgen.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/pleasure-use-letter/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"pleasure-use-letter",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUL Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/pleasure_use_letter/VER_PLEASURE_LETTER_Valentin Gonzalez.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/pleasure-use-letter/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"pleasure-use-letter",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PUL Example 3 Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/pleasure_use_letter/VER_PLEASURE_LETTER_Alex Zuniga.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/pleasure-use-letter/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"pleasure-use-letter",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Broker Package",
+			"item": [
+				{
+					"name": "BRPKG Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Luis Urzua.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"broker-package",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BRPKG Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package_2/BROKER_PKG_Wendy Olivares.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"broker-package",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BRPKG Example Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_christina avalos.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"broker-package",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "BRPKG Example 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Rubyanne Torres.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"broker-package",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Same Person Statement",
+			"item": [
+				{
+					"name": "SPS Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/same_person_statement/SAME_PERS_STATEMENT_Bartolo Siquina 2.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/same-person/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"same-person",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SPS Example 2 invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Alfonso Soto.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/same-person/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"same-person",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "SPS Example 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/same_person_statement/SAME_PERS_STATEMENT_Armanza Santacruz, Maria 1.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/same-person/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"same-person",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Stripe Receipt",
+			"item": [
+				{
+					"name": "STRP Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/stripe_receipt/120.99.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/stripe-receipt/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"stripe-receipt",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STRP Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/same_person_statement/SAME_PERS_STATEMENT_Bartolo Siquina 2.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/stripe-receipt/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"stripe-receipt",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "STRP Example 3 Invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/same_person_statement/SAME_PERS_STATEMENT_Bartolo Siquina 2.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/stripe-receipt/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"stripe-receipt",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Promise To Provide",
+			"item": [
+				{
+					"name": "PTP Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/promise_to_provide/VER_PTP_Martin Raya PTP.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/promise-to-provide/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"promise-to-provide",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PTP Example 2 invalid",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Alfonso Soto.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/promise-to-provide/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"promise-to-provide",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "PTP Example 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/promise_to_provide/VER_PTP_Elia Lopez.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/promise-to-provide/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"promise-to-provide",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Driving License",
+			"item": [
+				{
+					"name": "DL Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/dl/DL1.JPG\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/driving-license/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"driving-license",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DL Example 2",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/dl/07eb0db86bd16c795d39787c85bd4c24.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/driving-license/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"driving-license",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DL Example 3",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/dl/ngk7yams8pu2h20ypaqv.jpeg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/driving-license/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"driving-license",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DL Example 4",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/dl/7273609_f24f2590abea43c8b22d3fbae78b0a34.jpeg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/driving-license/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"driving-license",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "DL Example 5",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/indian-dl/20220328_162833.jpg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/driving-license/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"driving-license",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Registration",
+			"item": [
+				{
+					"name": "Reg Example 1",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/registration/Copy of jeep reg (1).jpeg\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/registration/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"registration",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "ITC",
+			"item": [
+				{
+					"name": "ITC Example 1 (Type 4)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Ricardo Marin.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example 2 (Type 1)",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Adriana Salgado.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example 3 (Type 3)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Silvino Barajas.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example 4 (Type 2)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Jazmin Marquez.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example 5 (No data)",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Blanca Mendez.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example Multiple drv/vhcl",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Alfonso Soto.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "ITC Example 7",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/out_Nat Gen Example 1 ITC.pdf.pdf\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/itc/extract",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"itc",
+								"extract"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Insurance Application",
+			"item": [
+				{
+					"name": "Alliance United",
+					"item": [
+						{
+							"name": "Insureance Application Example 1",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/application/ALLIANCE_APP_Alex Zuniga.pdf\",\r\n  \"insurance_company\":\"alliance-united\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/insurance-application/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"insurance-application",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Invalid",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/ITC_Wendy Olivares.pdf\",\r\n  \"insurance_company\":\"alliance-united\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/insurance-application/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"insurance-application",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Insureance Application Multiple drv/vhcl",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/application/ALLIANCE_APP_Alfonso Soto.pdf\",\r\n  \"insurance_company\":\"alliance-united\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/insurance-application/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"insurance-application",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Demo - Jan",
+			"item": [
+				{
+					"name": "MVR",
+					"item": [
+						{
+							"name": "Example 1 - (valid)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/mvr/MVR_Alfonso Soto 3.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/mvr/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"mvr",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Example 2 - (suspended)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/mvr/MVR_DAVID JARMAL CALBERT.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/mvr/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"mvr",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Same Person Statement",
+					"item": [
+						{
+							"name": "Example 1 - (signed)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/same_person_statement/SAME_PERS_STATEMENT_Bartolo Siquina 2.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/same-person/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"same-person",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Broker Package",
+					"item": [
+						{
+							"name": "Example 1 - (signed)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Luis Urzua.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"broker-package",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Example 2 -",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/broker_package/BROKER_PKG_Rubyanne Torres.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/broker-package/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"broker-package",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Pleasure use letter",
+					"item": [
+						{
+							"name": "Example 1 - (without vin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/pleasure_use_letter/VER_PLEASURE_LETTER_Serena Reian Pleasure use letter.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/pleasure-use-letter/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"pleasure-use-letter",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Example 2 - (multiple vehicles with vin)",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/pleasure_use_letter/VER_PLEASURE_LETTER_Daisy Medina.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/pleasure-use-letter/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"pleasure-use-letter",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "ITC",
+					"item": [
+						{
+							"name": "Alfonso Soto",
+							"event": [
+								{
+									"listen": "prerequest",
+									"script": {
+										"exec": [
+											""
+										],
+										"type": "text/javascript"
+									}
+								},
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/itc/Nat Gen Example 1 ITC.pdf\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/itc/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"itc",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Application",
+					"item": [
+						{
+							"name": "Insureance Application Multiple drv/vhcl Copy",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status test\", function () {\r",
+											"    pm.response.to.have.status(200);\r",
+											"});"
+										],
+										"type": "text/javascript"
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "bearer",
+									"bearer": [
+										{
+											"key": "token",
+											"value": "{{Token}}",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"document_url\": \"{{S3BaseURL}}/application/ALLIANCE_APP_Alfonso Soto.pdf\",\r\n  \"insurance_company\":\"alliance-united\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{APIBaseURL}}/v1/insurance-application/extract",
+									"host": [
+										"{{APIBaseURL}}"
+									],
+									"path": [
+										"v1",
+										"insurance-application",
+										"extract"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "Verify",
+			"item": [
+				{
+					"name": "Test Request",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status test\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{Token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "file",
+									"type": "file",
+									"src": []
+								},
+								{
+									"key": "insurance_company",
+									"value": "alliance-united",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{APIBaseURL}}/v1/insurance-application/verify",
+							"host": [
+								"{{APIBaseURL}}"
+							],
+							"path": [
+								"v1",
+								"insurance-application",
+								"verify"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}

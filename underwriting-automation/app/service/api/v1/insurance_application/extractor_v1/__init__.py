@@ -1,0 +1,1 @@
+from app.service.api.v1.insurance_application.extractor_v1.alliance_united import APPAllianceUnitedDataPointExtractorV1
