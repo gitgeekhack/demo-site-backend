@@ -29,31 +29,31 @@ class OCRDrivingLicense(OCRAbc):
         date = parse_date(text)
 
         if not date:
-            logger.info(f'Request ID: [{self.uuid}] Applying Color Mask:[black]')
+            print(f'Request ID: [{self.uuid}] Applying Color Mask:[black]')
             _image_black = await self._apply_black_color_mask(image)
             text = pytesseract.image_to_string(_image_black, config=OCRConfig.DrivingLicense.DATE, lang='eng')
             date = parse_date(text)
 
         if not date:
-            logger.info(f'Request ID: [{self.uuid}] Applying Color Mask:[gray]')
+            print(f'Request ID: [{self.uuid}] Applying Color Mask:[gray]')
             _image_gray = await self._apply_gray_color_mask(image)
             text = pytesseract.image_to_string(_image_gray, config=OCRConfig.DrivingLicense.DATE, lang='eng')
             date = parse_date(text)
 
         if not date:
-            logger.info(f'Request ID: [{self.uuid}] Applying Color Mask:[dark gray]')
+            print(f'Request ID: [{self.uuid}] Applying Color Mask:[dark gray]')
             _image_dark_gray = await self._apply__dark_gray_color_mask(image)
             text = pytesseract.image_to_string(_image_dark_gray, config=OCRConfig.DrivingLicense.DATE, lang='eng')
             date = parse_date(text)
 
         if not date:
-            logger.info(f'Request ID: [{self.uuid}] Applying Color Mask:[red]')
+            print(f'Request ID: [{self.uuid}] Applying Color Mask:[red]')
             _image_red = await self._apply_red_color_mask(image)
             text = pytesseract.image_to_string(_image_red, config=OCRConfig.DrivingLicense.DATE, lang='eng')
             date = parse_date(text)
 
         if not date:
-            logger.info(f'Request ID: [{self.uuid}] Applying Color Mask:[dark red]')
+            print(f'Request ID: [{self.uuid}] Applying Color Mask:[dark red]')
             _image_dark_red = await self._apply_dark_red_color_mask(image)
             text = pytesseract.image_to_string(_image_dark_red, config=OCRConfig.DrivingLicense.DATE, lang='eng')
             date = parse_date(text)

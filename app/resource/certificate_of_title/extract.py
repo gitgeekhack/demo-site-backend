@@ -18,18 +18,22 @@ class COTExtractor(web.View):
     @aiohttp_jinja2.template('certificate-of-title-ocr.html')
     async def post(self):
         x_uuid = uuid.uuid1()
+        filedata = []
         try:
             data = await self.request.post()
-            file = data['file']
-            file_name = file.filename
-            if not is_image_file(file_name):
-                raise InvalidFile(file_name)
-            logger.info(f'Request ID: [{x_uuid}] FileName: [{file_name}]')
+            files = data.getall('file')
+            for file in files:
+                filename = file.filename
+                if not is_image_file(filename):
+                    raise InvalidFile(filename)
+                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                filedata.append(file)
+
             extractor = COTDataPointExtractorV1(x_uuid)
-            data = await extractor.extract(file=file)
-            return {'response': data}
+            data = await extractor.extract(image_data=filedata)
+            return {'results': data}
         except Exception as e:
-            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": 'Internal Server Error'}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

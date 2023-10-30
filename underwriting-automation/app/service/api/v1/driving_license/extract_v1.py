@@ -75,9 +75,9 @@ class DLDataPointExtractorV1(MonoState):
             _skew_finding_objects.append(extracted_objects[0])
             _skew_finding_objects.extend(extracted_objects[2:])
             skew_angle = await self.cv_helper.get_skew_angel(_skew_finding_objects)
-            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
+            print(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
-                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
+                print(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 input_image = await self.cv_helper.fix_skew(input_image, skew_angle)
                 detected_objects = await self.__detect_objects(input_image)
                 object_extraction_coroutines = [
@@ -95,5 +95,5 @@ class DLDataPointExtractorV1(MonoState):
         extracted_data = await asyncio.gather(*object_extraction_coroutines)
         if len(detected_objects.items()) > 0:
             data['driving_license'] = results_dict | dict(extracted_data)
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
         return data

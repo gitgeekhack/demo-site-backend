@@ -16,5 +16,5 @@ def create_app():
     app.router.add_static(app['static_root_url'], 'app/static/')
     app.config = load_config(CONFIG[config_name])
     logger = get_logger()
-    logger.info(f'Starting server for: [{app.config.ENVIRONMENT}]')
+    print(f'Starting server for: [{app.config.ENVIRONMENT}]')
     return app, logger

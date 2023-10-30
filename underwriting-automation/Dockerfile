@@ -17,6 +17,6 @@ ADD ./log.conf ./log.conf
 RUN pip install --upgrade pip==20.2.4
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
-EXPOSE 80
+EXPOSE 90
 CMD gunicorn -c conf.py app:app --log-config log.conf
 #CMD python run.py

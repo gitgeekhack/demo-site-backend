@@ -92,9 +92,9 @@ class DLDataPointExtractorV1(MonoState):
 
         if len(extracted_objects) > 0:
             skew_angle = await self.cv_helper.get_skew_angel(extracted_objects)
-            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
+            print(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
-                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
+                print(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
                 object_extraction_coroutines = [
@@ -121,24 +121,32 @@ class DLDataPointExtractorV1(MonoState):
         logger.warning(f'Unable to extract dates')
         return extracted_data
 
-    async def extract(self, file):
-        data = {"driving_license": None}
-        np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
-        input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-        cv2.imwrite(file_path, input_image)
-        data['filename'] = filename
-        results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
-        image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
+    async def extract(self, image_data):
+        final_results = []
+        image_count = 1
 
-        extracted_data_by_label = await self.__extract_data_by_label(image)
+        for file in image_data:
+            data = {"driving_license": None}
+            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+            cv2.imwrite(file_path, input_image)
+            data['filename'] = filename
+            results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
+            image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
-        if len(extracted_data_by_label) > 0:
-            extracted_data = await self.__dates_per_label(extracted_data_by_label)
-            results = {**results_dict, **dict(extracted_data)}
-            data['driving_license'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
-                                                 separators=("\n", " : "))
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+            extracted_data_by_label = await self.__extract_data_by_label(image)
 
-        return data
+            if len(extracted_data_by_label) > 0:
+                extracted_data = await self.__dates_per_label(extracted_data_by_label)
+                results = {**results_dict, **dict(extracted_data)}
+                data['driving_license'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
+                                                     separators=("\n", " : "))
+                data['image_count'] = image_count
+
+            print(f'Request ID: [{self.uuid}] Response: {data}')
+            final_results.append(data)
+            image_count = image_count + 1
+
+        return final_results

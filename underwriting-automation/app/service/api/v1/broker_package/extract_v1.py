@@ -33,5 +33,5 @@ class BrokerPackageDataPointExtractorV1():
     async def extract(self):
         data = {"broker_package": None}
         data['broker_package'] = await self.__extract_by_type()
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
         return data

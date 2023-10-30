@@ -160,7 +160,7 @@ def parse_height(text):
             if x[1] in SIMILAR_INCH_NUMBERS.keys():
                 x[1] = SIMILAR_INCH_NUMBERS[x[1]]
             if int(x[1]) > 1:
-                logger.info(f"""Incorrect format for height unit -> {x[0]}'{x[1]}{x[2]}\"""")
+                print(f"""Incorrect format for height unit -> {x[0]}'{x[1]}{x[2]}\"""")
                 return None
             height = f"""{x[0]}'{x[1]}{x[2]}\""""
         return height

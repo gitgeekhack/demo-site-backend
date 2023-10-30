@@ -137,5 +137,5 @@ class Template2Extractor(BrokerPackageExtractABC):
                                                                          )
         data = {'signed_date': date, 'broker_fee': broker_fee, 'insured_name': insured_name,
                 'signature': signature}
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
         return data

@@ -82,9 +82,9 @@ class REGDataPointExtractorV1(MonoState):
         extracted_objects = await asyncio.gather(*object_extraction_coroutines)
         if len(extracted_objects) > 0:
             skew_angle = await self.cv_helper.get_skew_angel(extracted_objects)
-            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
+            print(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
-                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
+                print(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 input_image = await self.cv_helper.fix_skew(input_image, skew_angle)
                 detected_objects = await self.__detect_objects(input_image)
                 object_extraction_coroutines = [
@@ -106,6 +106,6 @@ class REGDataPointExtractorV1(MonoState):
             result['is_valid'] = extracted_data['validity'] if 'validity' in extracted_data else None
             result['vehicle'] = await self.__get_vehicle_info(extracted_data)
             data['registration'] = result
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data

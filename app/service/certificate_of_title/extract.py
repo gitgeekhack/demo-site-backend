@@ -146,9 +146,9 @@ class COTDataPointExtractorV1(MonoState):
 
         if len(extracted_objects) > 0:
             skew_angle = await self.cot_helper.get_skew_angel(extracted_objects)
-            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
+            print(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
-                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
+                print(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
                 object_extraction_coroutines = [
@@ -224,27 +224,33 @@ class COTDataPointExtractorV1(MonoState):
                     temp_vins) else None
         return vin, model, year
 
-    async def extract(self, file):
-        data = {'certificate_of_title': None}
-        np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
-        input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-        cv2.imwrite(file_path, input_image)
+    async def extract(self, image_data):
+        final_results = []
+        image_count = 1
 
-        results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
-        image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
-        extracted_data_by_label = await self.__extract_data_by_label(image)
+        for file in image_data:
+            data = {'certificate_of_title': None}
+            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+            cv2.imwrite(file_path, input_image)
 
-        if len(extracted_data_by_label) > 0:
-            title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
-            document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
-            _extracted_data = [data for data in extracted_data_by_label if
-                               not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
-            extracted_data = list(chain([title_data], [document_data], _extracted_data))
-            results = {**results_dict, **dict(extracted_data)}
-            data['filename'] = filename
-            data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
-                                                      separators=("\n", " : "))
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
-        return data
+            results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
+            image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
+            extracted_data_by_label = await self.__extract_data_by_label(image)
+
+            if len(extracted_data_by_label) > 0:
+                title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
+                document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
+                _extracted_data = [data for data in extracted_data_by_label if
+                                   not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
+                extracted_data = list(chain([title_data], [document_data], _extracted_data))
+                results = {**results_dict, **dict(extracted_data)}
+                data['filename'] = filename
+                data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
+                                                          separators=("\n", " : "))
+            final_results.append(data)
+            image_count = image_count + 1
+            print(f'Request ID: [{self.uuid}] Response: {data}')
+        return final_results

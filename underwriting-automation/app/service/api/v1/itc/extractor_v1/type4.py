@@ -94,7 +94,7 @@ class Type4Extractor(ITCExtractABC):
         return result
 
     async def extract(self):
-        logger.info(f'Request ID: [{self.uuid}] Extractor Type:[{self.__class__.__name__}]')
+        print(f'Request ID: [{self.uuid}] Extractor Type:[{self.__class__.__name__}]')
         data = {}
         (data[ITCDocumentTemplate.ResponseKey.INSURED_INFORMATION],
          data[ITCDocumentTemplate.ResponseKey.AGENT_INFORMATION]), data[

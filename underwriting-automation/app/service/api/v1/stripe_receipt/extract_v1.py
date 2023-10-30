@@ -94,6 +94,6 @@ class STRPDataPointExtractorV1:
         else:
             logger.warning(f'Request ID: [{self.uuid}] ')
             raise InvalidPDFStructureTypeException(self.uuid)
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data

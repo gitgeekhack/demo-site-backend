@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Driving License OCR</title>
+    <title>Barcode Detection</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -50,18 +50,30 @@
                             <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 offset-xl-4 offset-lg-4 offset-md-3">
                                 <label class="btn upload-btn d-block" for="gallery-photo-add">
                                     <input id="gallery-photo-add" type="file" name="file" style="display:none" multiple>
-                                    Browse Images
+                                    Upload your own image
                                 </label>
                             </div>
                         </div>
+                    </form>
+                    <form id="sampleform" action="/driving-license" method="post" enctype="multipart/form-data">
                         <div class="row mt-2 mx-auto" id="thumbnail_gallery">
-                            {% if response %}
+                            {% if sample %}
                             <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
-                                <img src="{{static('driving_license/input_images/'+response['filename'])}}"
+                                <img src="{{static('driving_license/input_images/'+sample['filename'])}}"
+                                     onclick="postToDrivingLicense('{{static('driving_license/input_images/'+sample['filename'])}}');"
+                                     class="img-fluid img-thumbnail hover-shadow cursor my-2">
+                                {% if results %}
+                                <pre>HELLO</pre>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                            {% for result in results %}
+                            <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
+                                <img src="{{static('driving_license/input_images/'+result['filename'])}}"
                                      onclick="openModal();currentSlide(1)"
                                      class="img-fluid img-thumbnail hover-shadow cursor my-2">
                             </div>
-                            {% endif %}
+                            {% endfor %}
                         </div>
                     </form>
                 </div>
@@ -69,27 +81,28 @@
         </div>
     </div>
 </div>
-{% if response %}
-<div id="myModal" class="modal modal-xl mh-100" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-xl modal-lg" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Driving License OCR</h5>
-                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                <div class="text-center">
-                    <img src="{{static('driving_license/input_images/'+response['filename'])}}" class="img-fluid rounded"
-                         style="max-height:500px;">
-                </div>
-                <pre class="rounded mx-5">{{response['driving_license']}} </pre>
-            </div>
-        </div>
-    </div>
-</div>
-{% endif %}
+
+
+<script>
+function postToDrivingLicense(filePath) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', '/driving-license', true);
+    var formData = new FormData();
+    var reader = new FileReader();
+    reader.onload = function () {
+        var fileContent = reader.result;
+        var blob = new Blob([fileContent]);
+        var fileName = filePath.substring(filePath.lastIndexOf('/') + 1);
+        var file = new File([blob], fileName);
+        formData.append('file', file);
+        xhr.send(formData);
+    };
+    fetch(filePath)
+        .then(response => response.blob())
+        .then(blob => reader.readAsArrayBuffer(blob));
+}
+</script>
+
 <!-- spinner -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
      aria-labelledby="exampleModalLabel"
@@ -100,6 +113,46 @@
     </div>
 </div>
 <!-- spinner -->
+
+{% if results %}
+<div id="myModal" class="modal modal-xl mh-100" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-xl modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Driving License OCR</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="closeModal()">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+           <div class="modal-body">
+                <div class="row">
+                    {% for result in results %}
+                    <div class="col mySlides">
+                        <div class="text-center">
+                            <div class="text-center">
+                                <img src="{{static('driving_license/input_images/'+result['filename'])}}" class="img-fluid rounded" alt="Image not found">
+                            </div>
+                            <pre class="rounded mx-5">{{result['driving_license']}} </pre>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
+                    <a class="next" onclick="plusSlides(1)">&#10095;</a>
+                </div>
+                <div class="row mt-3">
+                    {% for result in results %}
+                    <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
+                        <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static('driving_license/input_images/'+result['filename'])}}"
+                             onclick="currentSlide({{result.image_count}})" alt="Image not found" style="max-height:500px;">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 
 
 <!-- Optional JavaScript -->

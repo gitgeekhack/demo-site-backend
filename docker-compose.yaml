@@ -1,0 +1,15 @@
+version: '3'
+services:
+  demo-site-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Path to your Dockerfile
+    ports:
+      - "8080:8080"
+  demo-site-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile  # Path to your Dockerfile
+    ports:
+      - "8080:8080"
+
