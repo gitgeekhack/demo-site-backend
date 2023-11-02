@@ -1,8 +1,6 @@
 import copy
-import os
 import boto3
 from PIL import Image
-import pickle
 import numpy as np
 
 
@@ -65,7 +63,6 @@ class TextractHelper:
         height = image.size[1]
 
         response = self.get_textract_response(image_path)
-        # response = pickle.load(open('res2.pkl', 'rb'))
         word_blocks = self.__get_word_blocks(response)
 
         extracted_texts = {}
@@ -81,20 +78,3 @@ class TextractHelper:
             extracted_texts[obj] = ' '.join(text)
 
         return extracted_texts
-
-
-
-# obj = TextractHelper()
-# detected_objects = {'title_no': [423.35104, 83.999855, 543.1073, 117.46348],
-#                    'model': [273.77866, 88.24867, 337.96762, 114.67835],
-#                    'body_style': [335.8979, 86.90511, 418.70792, 117.98486],
-#                    'make': [224.7462, 88.39578, 269.36188, 115.635544],
-#                    'year': [182.43637, 89.36805, 224.74193, 116.45314],
-#                    'issue_date': [32.918015, 114.9484, 120.03333, 140.91197],
-#                    'odometer_reading': [121.361206, 114.48635, 194.133, 140.04453],
-#                    'owners': [35.82526, 165.62361, 200.2895, 200.9949],
-#                    'owner_address': [41.74136, 196.65353, 217.40897, 228.79964]}
-# image_path = '/home/nirav/PycharmProjects/demo-site-backend/app/static/certificate_of_title/input_images/nevada_front_0.png'
-
-
-# print(obj.get_text(image_path, detected_objects))
