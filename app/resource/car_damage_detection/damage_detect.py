@@ -13,7 +13,7 @@ from app.service.car_damage_detection.damage_detect import DamageDetector
 class DamageExtractor(web.View):
     @aiohttp_jinja2.template('damage-detection.html')
     async def get(self):
-        return {}
+        return {'results':[{'image_path': 'damage_detection/Detected/out_images.jpeg', 'detection': [['Headlights(Broken/Missing)', 0], ['Front Windshield', 0], ['Rear Windshield', 0], ['Hood', 0], ['Front Bumper', 0], ['Rear Bumper', 0], ['Fender', 87], ['Door', 90], ['Trunk', 0], ['Taillights', 0], ['Window', 68], ['Missing Wheel', 0], ['Flat Tyre', 0], ['Missing Mirror', 0], ['Interior Damage', 0]], 'image_count': 1}]}
 
     @aiohttp_jinja2.template('damage-detection.html')
     async def post(self):
@@ -26,13 +26,13 @@ class DamageExtractor(web.View):
                 filename = file.filename
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
-                logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                 filedata.append(file)
             detector = DamageDetector(x_uuid)
             results = await detector.detect(image_data=filedata)
             return {'results': results}
         except Exception as e:
-            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": 'Internal Server Error'}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

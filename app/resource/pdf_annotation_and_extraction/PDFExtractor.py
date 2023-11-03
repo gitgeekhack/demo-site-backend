@@ -37,7 +37,7 @@ class DataExtraction(web.View):
             if not is_allowed_file(filename, allowed_extensions=AllowedFileType.PDF):
                 raise InvalidFile(filename)
 
-            logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+            print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
 
             # saving pdf file
             await save_file(file_object=pdf_file, folder_path=PDFAnnotationAndExtraction.UPLOAD_FOLDER)
@@ -50,7 +50,7 @@ class DataExtraction(web.View):
 
             return {'results': results, 'annotated': annotation_filenames, 'table_labels': table_labels}
         except Exception as e:
-            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": 'Internal Server Error'}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

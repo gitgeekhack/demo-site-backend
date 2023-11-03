@@ -37,6 +37,6 @@ class ITCDataPointExtractorV1():
     async def extract(self):
         data = {"itc": None}
         data['itc'] = await self.__extract_by_type(self.doc)
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data

@@ -2,20 +2,23 @@ import asyncio
 import json
 import os
 from itertools import chain
-
+import traceback
 import cv2
 import numpy as np
 import pandas as pd
 import torch
-from fuzzywuzzy import fuzz
 from werkzeug.utils import secure_filename
 
 from app import app, logger
 from app.common.utils import MonoState
 from app.constant import CertificateOfTitle
 from app.service.helper.certificate_of_title_helper import COTHelper
+from app.service.helper.textract import TextractHelper
 from app.service.helper.cv_helper import CVHelper
 from app.service.ocr.certificate_of_title.ocr import CertificateOfTitleOCR as OCR
+from app.service.helper.certificate_of_title_parser import parse_title_number, parse_vin, parse_year, parse_make, \
+    parse_model, parse_body_style, parse_owner_name, parse_lien_name, parse_odometer_reading, \
+    parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
 
 pd.options.mode.chained_assignment = None
 
@@ -23,7 +26,7 @@ pd.options.mode.chained_assignment = None
 def model_loader():
     torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
     model = torch.hub.load(CertificateOfTitle.ObjectDetection.YOLOV5, 'custom',
-                           path=CertificateOfTitle.ObjectDetection.COT_OBJECT_DETECTION_MODEL_PATH, force_reload=True)
+                           path=CertificateOfTitle.ObjectDetection.COT_OBJECT_DETECTION_MODEL_PATH)
     model.conf = CertificateOfTitle.ObjectDetection.MODEL_CONFIDENCE
     return model
 
@@ -39,22 +42,23 @@ class COTDataPointExtractorV1(MonoState):
         self.cv_helper = CVHelper()
         self.cot_helper = COTHelper()
         self.ocr = OCR()
-        self.ocr_method = {self.response_key.TITLE_NO: self.ocr.get_title_number,
-                           self.response_key.VIN: self.ocr.get_vin,
-                           self.response_key.YEAR: self.ocr.get_year,
-                           self.response_key.MAKE: self.ocr.get_make,
-                           self.response_key.MODEL: self.ocr.get_model,
-                           self.response_key.BODY_STYLE: self.ocr.get_body_style,
-                           self.response_key.ODOMETER_READING: self.ocr.get_odometer_reading,
-                           self.response_key.ISSUE_DATE: self.ocr.get_date,
-                           self.response_key.OWNER_NAME: self.ocr.get_owner_name,
+        self.textract_helper = TextractHelper()
+        self.ocr_method = {self.response_key.TITLE_NO: parse_title_number,
+                           self.response_key.VIN: parse_vin,
+                           self.response_key.YEAR: parse_year,
+                           self.response_key.MAKE: parse_make,
+                           self.response_key.MODEL: parse_model,
+                           self.response_key.BODY_STYLE: parse_body_style,
+                           self.response_key.ODOMETER_READING: parse_odometer_reading,
+                           self.response_key.ISSUE_DATE: parse_issue_date,
+                           self.response_key.OWNER_NAME: parse_owner_name,
                            self.response_key.OWNER_ADDRESS: self.ocr.get_address,
-                           self.response_key.LIENHOLDER_NAME: self.ocr.get_lien_name,
-                           self.response_key.LIENHOLDER_ADDRESS: self.ocr.get_lien_address,
-                           self.response_key.LIEN_DATE: self.ocr.get_date,
-                           self.response_key.DOCUMENT_TYPE: self.ocr.get_doc_type,
-                           self.response_key.TITLE_TYPE: self.ocr.get_title_type,
-                           self.response_key.REMARK: self.ocr.get_remark
+                           self.response_key.LIENHOLDER_NAME: parse_lien_name,
+                           self.response_key.LIENHOLDER_ADDRESS: self.ocr.get_address,
+                           self.response_key.LIEN_DATE: parse_issue_date,
+                           self.response_key.DOCUMENT_TYPE: parse_doc_type,
+                           self.response_key.TITLE_TYPE: parse_title_type,
+                           self.response_key.REMARK: parse_remarks
                            }
 
     async def __get_owner_lien_address(self, owner_addresses):
@@ -63,7 +67,7 @@ class COTDataPointExtractorV1(MonoState):
         if iou == 0:
             owner, lien = (owner_addresses[0], owner_addresses[1]) if owner_addresses[0]['bbox'][1] < \
                                                                       owner_addresses[1]['bbox'][1] else (
-            owner_addresses[1], owner_addresses[0])
+                owner_addresses[1], owner_addresses[0])
         else:
             owner = owner_addresses[0] if owner_addresses[0]['score'] > owner_addresses[1]['score'] else \
                 owner_addresses[1]
@@ -137,7 +141,7 @@ class COTDataPointExtractorV1(MonoState):
             _objects[label + str(i)] = i_object
         return _objects
 
-    async def __extract_data_by_label(self, image):
+    async def __extract_data_by_label(self, image, image_path):
         detected_objects = await self.__detect_objects(image)
         object_extraction_coroutines = [
             self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
@@ -151,28 +155,22 @@ class COTDataPointExtractorV1(MonoState):
                 logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
-                object_extraction_coroutines = [
-                    self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
-                    label, detected_object in detected_objects.items()]
-                extracted_objects = await asyncio.gather(*object_extraction_coroutines)
 
-        extracted_objects_with_labels = dict()
-        for i in extracted_objects:
-            extracted_objects_with_labels[i['label']] = i['detected_object']
+        extracted_texts = self.textract_helper.get_text(image_path, detected_objects)
 
-        object_extraction_coroutines = [self.__get_text_from_object(label, detected_object) for label, detected_object
-                                        in extracted_objects_with_labels.items()]
-        extracted_data_by_label = await asyncio.gather(*object_extraction_coroutines)
+        post_process_text_extracted_coroutines = [self.__post_process_text(label, text) for label, text
+                                                  in extracted_texts.items()]
+        extracted_data_by_label = await asyncio.gather(*post_process_text_extracted_coroutines)
 
         return extracted_data_by_label
 
-    async def __get_text_from_object(self, label, detected_object):
+    async def __post_process_text(self, label, text):
         if label.startswith(self.response_key.TITLE_TYPE):
-            text = await self.ocr_method[self.response_key.TITLE_TYPE](detected_object)
+            text = self.ocr_method[self.response_key.TITLE_TYPE](text)
         elif label.startswith(self.response_key.DOCUMENT_TYPE):
-            text = await self.ocr_method[self.response_key.DOCUMENT_TYPE](detected_object)
+            text = self.ocr_method[self.response_key.DOCUMENT_TYPE](text)
         else:
-            text = await self.ocr_method[label](detected_object)
+            text = self.ocr_method[label](text)
         return [label, text]
 
     async def __get_unique_values(self, extracted_data, label):
@@ -181,70 +179,37 @@ class COTDataPointExtractorV1(MonoState):
             if data[0].startswith(label): _set.add(tuple(data[1]))
         return [label, list(chain(*_set))]
 
-    async def __filter_remark(self, extracted_data):
-        for result in extracted_data[self.response_key.REMARK]:
-            if result in self.section.TITLE_TYPE and result not in extracted_data[self.response_key.TITLE_TYPE]:
-                extracted_data[self.response_key.TITLE_TYPE].append(result)
-            elif result in self.section.DOCUMENT_TYPE and result not in extracted_data[self.response_key.DOCUMENT_TYPE]:
-                extracted_data[self.response_key.DOCUMENT_TYPE].append(result)
-        return extracted_data
+    async def extract(self, image_data):
+        final_results = []
+        image_count = 1
 
-    async def __vin_lookup(self, dataframe, make, year):
-        if make and year:
-            return dataframe[(dataframe['Make'] == make) & (dataframe['Year'] == year)]
-        elif make:
-            return dataframe[(dataframe['Make'] == make)]
-        elif year:
-            return dataframe[(dataframe['Year'] == year)]
-        else:
-            return None
+        try:
+            for file in image_data:
+                data = {'certificate_of_title': None}
+                np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+                cv2.imwrite(file_path, input_image)
 
-    async def __vin_checking(self, extracted_data):
-        df = pd.read_pickle(self.section.VIN_PICKLE_PATH)
-        vin = extracted_data['vin']
-        make = extracted_data['make']
-        model = extracted_data['model']
-        year = extracted_data['year']
-        result_vin = df[df['VIN'] == vin]
-        if len(result_vin):
-            return result_vin.iloc[0]['VIN'], result_vin.iloc[0]['Model'], result_vin.iloc[0]['Year']
-        result_vins = await self.__vin_lookup(df, make, year)
-        if len(result_vins):
-            result_vins['score'] = result_vins['VIN'].apply(lambda x: fuzz.ratio(x[:12], vin[:12]))
-            temp_vins = result_vins[result_vins['score'] == result_vins['score'].max()]
-            if len(temp_vins) > 1:
-                temp_vins['score1'] = temp_vins['VIN'].apply(lambda x: fuzz.ratio(x[-5:], vin[-5:]))
-                temp_vin = temp_vins[temp_vins['score1'] == temp_vins['score1'].max()]
-                if len(temp_vin):
-                    return temp_vin.iloc[0]['VIN'], temp_vin.iloc[0]['Model'], temp_vin.iloc[0]['Year']
-                else:
-                    return None
-            else:
-                return temp_vins.iloc[0]['VIN'], temp_vins.iloc[0]['Model'], temp_vins.iloc[0]['Year'] if len(
-                    temp_vins) else None
-        return vin, model, year
+                results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
+                image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
+                image_path = os.path.join(os.getcwd(), file_path)
+                extracted_data_by_label = await self.__extract_data_by_label(image, image_path)
 
-    async def extract(self, file):
-        data = {'certificate_of_title': None}
-        np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
-        input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-        cv2.imwrite(file_path, input_image)
-
-        results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
-        image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
-        extracted_data_by_label = await self.__extract_data_by_label(image)
-
-        if len(extracted_data_by_label) > 0:
-            title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
-            document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
-            _extracted_data = [data for data in extracted_data_by_label if
-                               not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
-            extracted_data = list(chain([title_data], [document_data], _extracted_data))
-            results = {**results_dict, **dict(extracted_data)}
-            data['filename'] = filename
-            data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
-                                                      separators=("\n", " : "))
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
-        return data
+                if len(extracted_data_by_label) > 0:
+                    title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
+                    document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
+                    _extracted_data = [data for data in extracted_data_by_label if
+                                       not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
+                    extracted_data = list(chain([title_data], [document_data], _extracted_data))
+                    results = {**results_dict, **dict(extracted_data)}
+                    data['filename'] = filename
+                    data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
+                                                              separators=("\n", " : "))
+                final_results.append(data)
+                image_count = image_count + 1
+                logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        except Exception as e:
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
+        return final_results

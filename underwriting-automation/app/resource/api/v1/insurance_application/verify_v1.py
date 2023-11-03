@@ -29,7 +29,7 @@ class VerifyV1(web.View):
                 await self.__is_allowed(company_name)
                 if not is_zip_file(file_name):
                     raise InvalidFileException(file_name)
-                logger.info(f'Request ID: [{x_uuid}] FileName: [{file_name}]')
+                print(f'Request ID: [{x_uuid}] FileName: [{file_name}]')
                 verifier = DataPointVerifierV1(x_uuid)
                 data = await verifier.verify(zip_file=file, company_name=company_name)
                 return web.json_response(data=data, status=200)
@@ -39,26 +39,26 @@ class VerifyV1(web.View):
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.MISSING_DOCUMENT,
                         "message": ErrorMessage.MISSING_DOCUMENTS_FOR_VERIFICATION}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except InvalidInsuranceCompanyException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_DOCUMENT,
                         "message": ErrorMessage.INVALID_INSURANCE_COMPANY_APPLICATION}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except InvalidFileException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_DOCUMENT, "message": ErrorMessage.INVALID_DOCUMENT}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except InvalidPDFStructureTypeException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_PDF_STRUCTURE, "message": ErrorMessage.INVALID_PDF_STRUCTURE}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except Exception as e:
-            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": ErrorMessage.SERVER_ERROR}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

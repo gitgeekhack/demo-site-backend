@@ -1,0 +1,16 @@
+version: "3.4"
+
+services:
+  demo_site:
+    build:
+      context: .
+      dockerfile: demo_site.Dockerfile
+    ports:
+      - "80:80"
+
+  underwriting_automation:
+    build:
+      context: ./underwriting-automation
+      dockerfile: underwriting_automation.Dockerfile
+    ports:
+      - "8000:8000"

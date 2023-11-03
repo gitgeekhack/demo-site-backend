@@ -63,7 +63,7 @@ class TableExtractor:
             dynamic_box[3] = min(boxes[0][3], boxes[1][3])
             dynamic_box[3], dynamic_box[1] = dynamic_box[1], dynamic_box[3]
         except IndexError as e:
-            logger.error(f'Request ID: [{self.uuid}]  -> {e}')
+            print(f'Request ID: [{self.uuid}]  -> {e}')
             return None
         return dynamic_box
 
@@ -159,7 +159,7 @@ class TableExtractor:
 
                 result = await self.__generate_table_output_response(result, table_data, table_name, data, dynamic_box)
             except (ValueError, TypeError) as e:
-                logger.error(f'Request ID: [{self.uuid}]  -> {e}')
+                print(f'Request ID: [{self.uuid}]  -> {e}')
                 result = await self.__generate_table_output_response(result, table_data, table_name, None, None)
 
         return result

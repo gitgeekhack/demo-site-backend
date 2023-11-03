@@ -170,5 +170,5 @@ class APPExtractABC():
             try:
                 bbox = bboxes[index]
             except IndexError as e:
-                logger.error(f'Request ID: [{self.uuid}] -> {e}')
+                print(f'Request ID: [{self.uuid}] -> {e}')
         return bbox

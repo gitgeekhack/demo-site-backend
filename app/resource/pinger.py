@@ -6,5 +6,5 @@ from app import logger
 class Pinger(web.View):
 
     async def get(self):
-        logger.info('Pinged')
+        print('Pinged')
         return web.json_response({"message": 'ok'})

@@ -12,6 +12,6 @@ class APPDataPointExtractorV1():
         if company_name == InsuranceCompany.ALLIANCE_UNITED.value:
             extractor = alliance_united.APPAllianceUnitedDataPointExtractorV1(self.uuid, self.file)
             data = await extractor.extract()
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data

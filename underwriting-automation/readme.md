@@ -15,7 +15,7 @@ docker build . -t underwriting-automation
 Create a docker container using the following command.
 
 ```bash
-docker run -d --name underwriting_container -p 80:80 -v underwriting-automation-volume:/var/underwriting-automation/volume/ underwriting-automation
+docker run -d --name underwriting_container -p 90:90 -v underwriting-automation-volume:/var/underwriting-automation/volume/ underwriting-automation
 ```
 ## Start & Stop Docker Container
 Start and Stop the docker container using the following command.

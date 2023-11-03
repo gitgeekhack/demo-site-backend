@@ -68,8 +68,8 @@ class DrivingLicense:
         DL_OBJECT_DETECTION_MODEL_PATH = './app/model/driving_license/DLObjectDetection.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_CONFIDENCE = 0.49
-        OBJECT_LABELS = {0: 'license_number', 1: 'name', 2: 'address', 3: 'date', 4: 'gender', 5: 'height',
-                         6: 'weight', 7: 'hair_color', 8: 'eye_color', 9: 'license_class'}
+        OBJECT_LABELS = {0: 'license_number', 1: 'name', 2: 'address', 3: 'date', 4: 'gender', 5: 'height', 6: 'weight',
+                         7: 'hair_color', 8: 'eye_color', 9: 'license_class'}
 
     class ResponseKeys:
         NAME = 'name'
@@ -91,7 +91,9 @@ class DrivingLicense:
     class Section:
         INPUT_PATH = 'driving_license/input_images'
 
-
+class BarcodeDetection:
+    class Section:
+        INPUT_PATH = 'barcode_detection/input_images'
 class AllowedFileType:
     IMAGE = ['jpg', 'png', 'jpeg']
     PDF = ['pdf']
@@ -99,6 +101,20 @@ class AllowedFileType:
 
 class ExceptionMessage:
     INVALID_FILE_EXCEPTION_MESSAGE = 'Inputted file is invalid'
+    FAILED_TO_DOWNLOAD_FILE_FROM_URL_EXCEPTION_MESSAGE = 'Unable to download file from url'
+    NO_IMAGE_FOUND_EXCEPTION_MESSAGE = "Unable to find image in PDF"
+
+
+class APIEndPointURL:
+    PDF_EXTRACT_FIRST_IMAGE_ENDPOINT_URL = "/api/v1/internal/pdf-extract-first-image"
+    BARCODE_EXTRACT_API_ENDPOINT_URL = "/api/v1/integration/mahindra-logistics/detect-pod"
+
+
+class APIErrorMessage:
+    BAD_REQUEST_PARAMS_MISSING_MESSAGE = "one or more parameter is missing"
+    NO_IAMGE_IN_PDF_MESSAGE = "Unable to find image in PDF"
+    UNABLE_TO_DOWNLOAD_FILE_MESSAGE = "Unable to get input file"
+    INVALID_FILE_MESSAGE = "Invalid input file"
 
 
 class EyeHairColor:
@@ -112,14 +128,14 @@ class EyeHairColor:
 
 class CertificateOfTitle:
     VAL_SCORE = 0.6
+
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_CONFIDENCE = 0.4
         OBJECT_LABELS = {0: 'title_no', 1: 'vin', 2: 'year', 3: 'make', 4: 'model', 5: 'body_style',
-                         6: 'odometer_reading', 7: 'issue_date', 8: 'owners', 9: 'owner_address',
-                         10: 'lienholder_name', 11: 'lienholder_address', 12: 'lien_date', 13: 'document_type',
-                         14: 'title_type', 15: 'remark'}
+                         6: 'odometer_reading', 7: 'issue_date', 8: 'owners', 9: 'owner_address', 10: 'lienholder_name',
+                         11: 'lienholder_address', 12: 'lien_date', 13: 'document_type', 14: 'title_type', 15: 'remark'}
 
     class ResponseKeys:
         TITLE_NO = 'title_no'
@@ -164,23 +180,11 @@ class CertificateOfTitle:
 
 class CarDamageDetection:
     class ColorLabels:
-        CAR_DAMAGE = {
-            "Headlights": (153, 153, 255),
-            "Hood": (153, 204, 255),
-            "Front Bumper": (153, 255, 255),
-            "Rear Bumper": (153, 255, 204),
-            "Front Windshield": (153, 255, 153),
-            "Rear Windshield": (204, 255, 153),
-            "Flat Tyre": (255, 255, 153),
-            "Missing Mirror": (255, 204, 153),
-            "Missing Wheel": (255, 153, 153),
-            "Taillights": (255, 153, 204),
-            "Trunk": (255, 153, 255),
-            "Window": (204, 153, 255),
-            "Door": (224, 2, 224),
-            "Fender": (102, 102, 0),
-            "Interior Damage": (0, 255, 255)
-        }
+        CAR_DAMAGE = {"Headlights": (153, 153, 255), "Hood": (153, 204, 255), "Front Bumper": (153, 255, 255),
+            "Rear Bumper": (153, 255, 204), "Front Windshield": (153, 255, 153), "Rear Windshield": (204, 255, 153),
+            "Flat Tyre": (255, 255, 153), "Missing Mirror": (255, 204, 153), "Missing Wheel": (255, 153, 153),
+            "Taillights": (255, 153, 204), "Trunk": (255, 153, 255), "Window": (204, 153, 255), "Door": (224, 2, 224),
+            "Fender": (102, 102, 0), "Interior Damage": (0, 255, 255)}
 
     class Path:
         STATIC_PATH = "app/static/"

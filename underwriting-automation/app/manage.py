@@ -11,5 +11,5 @@ def create_app():
     config_name = os.getenv('ENVIRONMENT', 'development')
     app.config = load_config(CONFIG[config_name])
     logger = get_logger()
-    logger.info(f'Starting server for: [{app.config.ENVIRONMENT}]')
+    print(f'Starting server for: [{app.config.ENVIRONMENT}]')
     return app, logger

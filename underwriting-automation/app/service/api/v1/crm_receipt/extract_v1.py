@@ -221,6 +221,6 @@ class CRMDataPointExtractorV1():
         blocks_result = await self.__extract_blocks(blocks)
         if blocks_result:
             data['crm_receipt'] = blocks_result
-        logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        print(f'Request ID: [{self.uuid}] Response: {data}')
 
         return data

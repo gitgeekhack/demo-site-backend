@@ -8,6 +8,7 @@ from app.resource.driving_license.extract import DLExtractor
 from app.resource.certificate_of_title.extract import COTExtractor
 from app.resource.car_damage_detection.damage_detect import DamageExtractor
 from app.resource.pdf_annotation_and_extraction.PDFExtractor import HomePage, DataExtraction
+from app.resource.barcode_extraction.extract_barcode import BarCodeExtraction
 
 app.router.add_view('/', Index)
 app.router.add_view('/driving-license', DLExtractor)
@@ -15,3 +16,4 @@ app.router.add_view('/certificate-of-title', COTExtractor)
 app.router.add_view('/car-damage-detection', DamageExtractor)
 app.router.add_view('/pdf', HomePage)
 app.router.add_view('/pdf/extract', DataExtraction)
+app.router.add_view('/barcode-detection', BarCodeExtraction)

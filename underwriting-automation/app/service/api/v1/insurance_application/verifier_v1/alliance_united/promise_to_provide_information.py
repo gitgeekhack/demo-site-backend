@@ -21,10 +21,10 @@ class PromiseToProvideVerifier(AllianceUnitedV1):
                     _date = False
                 date = {'source': SRC_PTP, 'target': {TRG_PTP: _date}}
         except TypeError:
-            logger.info(
+            print(
                 f'Request ID: [{self.uuid}] Found Dates: {self.promise_to_provide.promise_to_provide_agreement_date}')
         except AttributeError:
-            logger.info(
+            print(
                 f'Request ID: [{self.uuid}] promise_to_provide_agreement_date not found')
         return date
 
@@ -38,9 +38,9 @@ class PromiseToProvideVerifier(AllianceUnitedV1):
                 _date = True if 0 <= day_diff < 7 else False
                 date = {'source': SRC_PTP, 'target': {TRG_PTP: _date}}
         except AttributeError:
-            logger.info(f'Request ID: [{self.uuid}] promise_to_provide_by_date not found')
+            print(f'Request ID: [{self.uuid}] promise_to_provide_by_date not found')
         except ValueError:
-            logger.info(
+            print(
                 f'Request ID: [{self.uuid}] Date is not Valid -> {self.promise_to_provide.promise_to_provide_by_date}')
         return date
 

@@ -22,7 +22,7 @@ class VRExtractV1(web.View):
             if self.request.body_exists:
                 payload = await self.request.json()
                 x_uuid = payload.get('uuid', x_uuid)
-                logger.info(f'Request ID: [{x_uuid}] Request Payload: {payload}')
+                print(f'Request ID: [{x_uuid}] Request Payload: {payload}')
                 document_url = payload.get('document_url', None)
                 if document_url:
                     if not is_pdf_url(url=document_url):
@@ -40,20 +40,20 @@ class VRExtractV1(web.View):
         except InvalidFileException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_DOCUMENT, "message": ErrorMessage.INVALID_DOCUMENT}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except FailedToDownloadFileFromURLException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_URL, "message": ErrorMessage.INVALID_URL}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except InvalidPDFStructureTypeException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_PDF_STRUCTURE, "message": ErrorMessage.INVALID_PDF_STRUCTURE}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except Exception as e:
-            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": ErrorMessage.SERVER_ERROR}
-            logger.info(f'Request ID: [{x_uuid}] Response: {response}')
+            print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)
