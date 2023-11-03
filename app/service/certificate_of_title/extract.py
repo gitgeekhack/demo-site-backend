@@ -2,7 +2,7 @@ import asyncio
 import json
 import os
 from itertools import chain
-
+import traceback
 import cv2
 import numpy as np
 import pandas as pd
@@ -183,30 +183,33 @@ class COTDataPointExtractorV1(MonoState):
         final_results = []
         image_count = 1
 
-        for file in image_data:
-            data = {'certificate_of_title': None}
-            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(file_path, input_image)
+        try:
+            for file in image_data:
+                data = {'certificate_of_title': None}
+                np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+                cv2.imwrite(file_path, input_image)
 
-            results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
-            image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
-            image_path = os.path.join(os.getcwd(), file_path)
-            extracted_data_by_label = await self.__extract_data_by_label(image, image_path)
+                results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
+                image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
+                image_path = os.path.join(os.getcwd(), file_path)
+                extracted_data_by_label = await self.__extract_data_by_label(image, image_path)
 
-            if len(extracted_data_by_label) > 0:
-                title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
-                document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
-                _extracted_data = [data for data in extracted_data_by_label if
-                                   not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
-                extracted_data = list(chain([title_data], [document_data], _extracted_data))
-                results = {**results_dict, **dict(extracted_data)}
-                data['filename'] = filename
-                data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
-                                                          separators=("\n", " : "))
-            final_results.append(data)
-            image_count = image_count + 1
-            logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+                if len(extracted_data_by_label) > 0:
+                    title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
+                    document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
+                    _extracted_data = [data for data in extracted_data_by_label if
+                                       not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
+                    extracted_data = list(chain([title_data], [document_data], _extracted_data))
+                    results = {**results_dict, **dict(extracted_data)}
+                    data['filename'] = filename
+                    data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
+                                                              separators=("\n", " : "))
+                final_results.append(data)
+                image_count = image_count + 1
+                logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        except Exception as e:
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
         return final_results
