@@ -13,6 +13,6 @@ RUN pip install gunicorn
 ADD run.py ./run.py
 ADD ./conf.py ./conf.py
 
-EXPOSE 8001
+EXPOSE 80
 CMD gunicorn -c conf.py app:app
 #CMD python run.py

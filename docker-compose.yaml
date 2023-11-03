@@ -6,7 +6,7 @@ services:
       context: .
       dockerfile: demo_site.Dockerfile
     ports:
-      - "8001:8001"
+      - "80:80"
 
   underwriting_automation:
     build:
