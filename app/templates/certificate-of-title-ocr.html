@@ -64,6 +64,46 @@
                             {% endfor %}
                         </div>
                     </form>
+
+                    <p class="card-title">Sample images to try:</p>
+                    <div class="container" style="padding:0px;margin:0px">
+                        <div class="row">
+                            <div class="col-md">
+                                <form id="myform1" action="/certificate-of-title" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('certificate_of_title/input_images/sample_image1.jpg') }}">
+                                    <img src="{{ static('certificate_of_title/input_images/sample_image1.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image1"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform2" action="/certificate-of-title" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('certificate_of_title/input_images/sample_image2.jpg') }}">
+                                    <img src="{{ static('certificate_of_title/input_images/sample_image2.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image2"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform3" action="/certificate-of-title" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('certificate_of_title/input_images/sample_image3.jpg') }}">
+                                    <img src="{{ static('certificate_of_title/input_images/sample_image3.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image3"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -79,13 +119,14 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-           <div class="modal-body">
+            <div class="modal-body">
                 <div class="row">
                     {% for result in results %}
                     <div class="col mySlides">
                         <div class="text-center">
                             <div class="text-center">
-                                <img src="{{static('certificate_of_title/input_images/'+result['filename'])}}" class="img-fluid rounded" alt="Image not found">
+                                <img src="{{static('certificate_of_title/input_images/'+result['filename'])}}"
+                                     class="img-fluid rounded" alt="Image not found">
                             </div>
                             <pre class="rounded mx-5">{{result['certificate_of_title']}} </pre>
                         </div>
@@ -97,8 +138,10 @@
                 <div class="row mt-3">
                     {% for result in results %}
                     <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
-                        <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static('certificate_of_title/input_images/'+result['filename'])}}"
-                             onclick="currentSlide({{result.image_count}})" alt="Image not found" style="max-height:500px;">
+                        <img class="demo cursor img-fluid img-thumbnail my-2"
+                             src="{{static('certificate_of_title/input_images/'+result['filename'])}}"
+                             onclick="currentSlide({{result.image_count}})" alt="Image not found"
+                             style="max-height:500px;">
                     </div>
                     {% endfor %}
                 </div>
@@ -131,39 +174,45 @@
         integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
         crossorigin="anonymous"></script>
 <script>
-$(function(e) {
-    $('#gallery-photo-add').on('change', function() {
-    $('#nof').hide();
-    var files = $(this)[0].files;
-    if(files.length > 100){
-            $('#nof').show();
-            $('#gallery-photo-add').val('');
-    }else{
-            document.getElementById("myform").submit();
-            $('#exampleModal').modal('show'); //Open the model
-    }
-    });
-});
-document.onkeydown = function(e) {
-if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
-        switch (e.keyCode) {
-            case 37:
-                plusSlides(-1);
-                break;
-            case 39:
-                plusSlides(1);
-                break;
+    $(function(e) {
+        $('#gallery-photo-add').on('change', function() {
+        $('#nof').hide();
+        var files = $(this)[0].files;
+        if(files.length > 100){
+                $('#nof').show();
+                $('#gallery-photo-add').val('');
+        }else{
+                document.getElementById("myform").submit();
+                $('#exampleModal').modal('show'); //Open the model
         }
-    }
-};
+        });
+    });
+    document.onkeydown = function(e) {
+    if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
+            switch (e.keyCode) {
+                case 37:
+                    plusSlides(-1);
+                    break;
+                case 39:
+                    plusSlides(1);
+                    break;
+            }
+        }
+    };
 
 
-
-
-
-
-
-
+    document.getElementById('image1').addEventListener('click', function() {
+        document.getElementById('myform1').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image2').addEventListener('click', function() {
+        document.getElementById('myform2').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image3').addEventListener('click', function() {
+        document.getElementById('myform3').submit();
+        $('#exampleModal').modal('show');
+    });
 
 
 </script>

@@ -50,7 +50,7 @@
                             <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 offset-xl-4 offset-lg-4 offset-md-3">
                                 <label class="btn upload-btn d-block" for="gallery-photo-add">
                                     <input id="gallery-photo-add" type="file" name="file" style="display:none" multiple>
-                                    Try yourself!
+                                    Upload your own image
                                 </label>
                             </div>
                         </div>
@@ -64,6 +64,46 @@
                             {% endfor %}
                         </div>
                     </form>
+
+                    <p class="card-title">Sample images to try:</p>
+                    <div class="container" style="padding:0px;margin:0px">
+                        <div class="row">
+                            <div class="col-md">
+                                <form id="myform1" action="/barcode-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('barcode_detection/input_images/sample_image1.jpg') }}">
+                                    <img src="{{ static('barcode_detection/input_images/sample_image1.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image1"
+                                         style="cursor: pointer;height: 250px; width: 350px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform2" action="/barcode-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('barcode_detection/input_images/sample_image2.jpg') }}">
+                                    <img src="{{ static('barcode_detection/input_images/sample_image2.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image2"
+                                         style="cursor: pointer;height: 250px; width: 350px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform3" action="/barcode-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('barcode_detection/input_images/sample_image3.jpg') }}">
+                                    <img src="{{ static('barcode_detection/input_images/sample_image3.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image3"
+                                         style="cursor: pointer;height: 250px; width: 350px; object-fit: contain;">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -157,13 +197,18 @@ if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != '
     }
 };
 
-
-
-
-
-
-
-
+document.getElementById('image1').addEventListener('click', function() {
+    document.getElementById('myform1').submit();
+    $('#exampleModal').modal('show');
+});
+document.getElementById('image2').addEventListener('click', function() {
+    document.getElementById('myform2').submit();
+    $('#exampleModal').modal('show');
+});
+document.getElementById('image3').addEventListener('click', function() {
+    document.getElementById('myform3').submit();
+    $('#exampleModal').modal('show');
+});
 
 
 </script>

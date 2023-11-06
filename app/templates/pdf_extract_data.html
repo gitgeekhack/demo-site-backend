@@ -86,6 +86,40 @@
                             {% endfor %}
                         </div>
                     </form>
+
+                    <p class="card-title">Sample PDFs to try:</p>
+                    <div class="container" style="padding:0px;margin:0px">
+                        <div class="row">
+                            <div class="col-md">
+                                <form id="myform1" action="/pdf/extract" method="post"
+                                      enctype="multipart/form-data">
+                                    <select name="document_selector" required style="display: none;">
+                                        <option value="EFT" selected="selected"></option>
+                                    </select>
+                                    <input type="hidden" name="input_pdf"
+                                           value="{{ static('pdf_annotation_and_extraction/uploaded_files/sample_pdf1.pdf') }}">
+                                    <img src="{{ static('pdf_annotation_and_extraction/uploaded_files/sample_image1.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image1"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform2" action="/pdf/extract" method="post"
+                                      enctype="multipart/form-data">
+                                    <select name="document_selector" required style="display: none;">
+                                        <option value="VER" selected="selected"></option>
+                                    </select>
+                                    <input type="hidden" name="input_pdf"
+                                           value="{{ static('pdf_annotation_and_extraction/uploaded_files/sample_pdf2.pdf') }}">
+                                    <img src="{{ static('pdf_annotation_and_extraction/uploaded_files/sample_image2.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image2"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -125,10 +159,10 @@
                                             <table border="1" class="table table-bordered">
                                                 <thead>
                                                 <tr style="text-align: left;">
-                                            {{ v|safe }}
-                                            {% if v==None %}
+                                                    {{ v|safe }}
+                                                    {% if v==None %}
                                                 </thead>
-                                                </table>
+                                            </table>
                                             {% endif %}
                                         </div>
                                     </div>
@@ -165,7 +199,6 @@
 </div>
 
 
-
 {% endif %}
 <!-- spinner -->
 <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
@@ -188,43 +221,55 @@
         integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
         crossorigin="anonymous"></script>
 <script>
-$(function(e) {
-    $('#gallery-photo-add').on('change', function() {
-    $('#nof').hide();
-    var files = $(this)[0].files;
-    if(files.length > 100){
-            $('#nof').show();
-            $('#gallery-photo-add').val('');
-    }else{
-            document.getElementById("myform").submit();
-            $('#exampleModal').modal('show'); //Open the model
-    }
-    });
-});
-document.onkeydown = function(e) {
-if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
-        switch (e.keyCode) {
-            case 37:
-                plusSlides(-1);
-                break;
-            case 39:
-                plusSlides(1);
-                break;
+    $(function(e) {
+        $('#gallery-photo-add').on('change', function() {
+        $('#nof').hide();
+        var files = $(this)[0].files;
+        if(files.length > 100){
+                $('#nof').show();
+                $('#gallery-photo-add').val('');
+        }else{
+                document.getElementById("myform").submit();
+                $('#exampleModal').modal('show'); //Open the model
         }
-    }
-};
+        });
+    });
+    document.onkeydown = function(e) {
+    if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
+            switch (e.keyCode) {
+                case 37:
+                    plusSlides(-1);
+                    break;
+                case 39:
+                    plusSlides(1);
+                    break;
+            }
+        }
+    };
 
 
 </script>
 <script src="{{ static('js/light-box.js') }}"></script>
 <script>
-function closeModal2() {
-  $('#myModal2').hide();
-}
-function myFunction() {
-  document.getElementById("myModal2").style.display = "block";
-}
+    function closeModal2() {
+      $('#myModal2').hide();
+    }
+    function myFunction() {
+      document.getElementById("myModal2").style.display = "block";
+    }
 
+    document.getElementById('image1').addEventListener('click', function() {
+        document.getElementById('myform1').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image2').addEventListener('click', function() {
+        document.getElementById('myform2').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image3').addEventListener('click', function() {
+        document.getElementById('myform3').submit();
+        $('#exampleModal').modal('show');
+    });
 </script>
 </body>
 </html>

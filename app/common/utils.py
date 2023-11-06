@@ -78,3 +78,12 @@ async def save_file(file_object, folder_path):
 
     async with aiofiles.open(output_path, mode='wb+') as f:
         await f.write(file_object.file.read())
+
+
+def get_file_from_path(filepath):
+    class FileData:
+        def __init__(self):
+            self.filename = os.path.basename(filepath)
+            self.file = open(os.path.join(os.getcwd(), 'app', filepath[1:]), 'rb')
+
+    return FileData()
