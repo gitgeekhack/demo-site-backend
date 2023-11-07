@@ -58,15 +58,10 @@ class PDFTextExtractor:
         self.convert_pdf_to_images()
         self.save_text_to_json()
 
-    def print_text_per_page(self):
-        for i, text in enumerate(self.text_per_page):
-            print(f"Page {i + 1} Text:\n{text}")
-
 
 if __name__ == '__main__':
     input_dir = "/home/kashyap/Desktop/pdf_folder/2da86aa18a93e6ccb63559142407b062.pdf"
-    output_dir = "/home/kashyap/Desktop/pdf_folder/output_dir"
+    output_dir = "app/static/medical_poc_ocr"
 
     pdf_extractor = PDFTextExtractor(input_dir, output_dir)
     pdf_extractor.extract_and_save_text()
-    pdf_extractor.print_text_per_page()
