@@ -1,7 +1,7 @@
 <!doctype html>
 <html lang="en">
 <head>
-    <title>Barcode Detection</title>
+    <title>Driving License OCR</title>
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -54,29 +54,21 @@
                                 </label>
                             </div>
                         </div>
-                    </form>
-                    <form id="sampleform" action="/driving-license" method="post" enctype="multipart/form-data">
                         <div class="row mt-2 mx-auto" id="thumbnail_gallery">
-                            {% if sample %}
-                            <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
-                                <img src="{{static('driving_license/input_images/'+sample['filename'])}}"
-                                     onclick="postToDrivingLicense('{{static('driving_license/input_images/'+sample['filename'])}}');"
-                                     class="img-fluid img-thumbnail hover-shadow cursor my-2">
-                                {% if results %}
-                                <pre>HELLO</pre>
-                                {% endif %}
-                            </div>
-                            {% endif %}
                             {% for result in results %}
                             <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
                                 <img src="{{static('driving_license/input_images/'+result['filename'])}}"
                                      onclick="openModal();currentSlide(1)"
-                                     class="img-fluid img-thumbnail hover-shadow cursor my-2">
+                                     class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Result image">
                             </div>
                             {% endfor %}
                         </div>
                     </form>
+                </div>
+            </div>
 
+            <div class="card mt-4">
+                <div class="card-body">
                     <p class="card-title">Sample images to try:</p>
                     <div class="container" style="padding:0px;margin:0px">
                         <div class="row">
@@ -164,26 +156,56 @@ function postToDrivingLicense(filePath) {
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-           <div class="modal-body">
+            <div class="modal-body">
                 <div class="row">
                     {% for result in results %}
                     <div class="col mySlides">
-                        <div class="text-center">
-                            <div class="text-center">
-                                <img src="{{static('driving_license/input_images/'+result['filename'])}}" class="img-fluid rounded" alt="Image not found">
+                        <div class="row px-4">
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-4">
+                                <img src="{{static('driving_license/input_images/'+result['filename'])}}" class="img-fluid rounded"
+                                     alt="Image not found" style="border: 2px solid #9c9c9c;">
                             </div>
-                            <pre class="rounded mx-5">{{result['driving_license']}} </pre>
+                            <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
+                                {% for k,v in result['driving_license'].items() %}
+                                <div class="row">
+                                    <div class="col-5">
+                                        <p class="m-0">
+                                            <strong>{{k}}:</strong>
+                                        </p>
+                                    </div>
+
+                                    {% if k=='Address' %}
+                                        {% for k1,v1 in v.items() %}
+                                            <div class="col-7 ml-auto text-left">
+                                                <p class="m-0">
+                                                    {{k1}}: {{v1}}
+                                                </p>
+                                            </div>
+                                            <br>
+                                        {% endfor %}
+                                    {% else %}
+                                    <div class="col-7 ml-auto text-left">
+                                        <p class="m-0">
+                                            {{v}}
+                                        </p>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <hr>
+                                {% endfor %}
+                            </div>
                         </div>
                     </div>
                     {% endfor %}
                     <a class="prev" onclick="plusSlides(-1)">&#10094;</a>
                     <a class="next" onclick="plusSlides(1)">&#10095;</a>
                 </div>
+                <hr>
                 <div class="row mt-3">
                     {% for result in results %}
                     <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
                         <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static('driving_license/input_images/'+result['filename'])}}"
-                             onclick="currentSlide({{result.image_count}})" alt="Image not found" style="max-height:500px;">
+                             onclick="currentSlide({{result.image_count}})" alt="Image not found">
                     </div>
                     {% endfor %}
                 </div>

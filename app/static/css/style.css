@@ -164,3 +164,7 @@ pre {
    }
 
 
+.modal-dialog {
+    max-width: 1140px;
+    margin: 1.75rem auto;
+}

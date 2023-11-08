@@ -179,6 +179,21 @@ class COTDataPointExtractorV1(MonoState):
             if data[0].startswith(label): _set.add(tuple(data[1]))
         return [label, list(chain(*_set))]
 
+    async def __update_labels(self, results):
+        updated_results = {}
+        for key in results:
+            prev_key = key
+            key = key.replace('_', ' ')
+            key = key.title()
+            if not results[prev_key]:
+                updated_results[key] = 'NA'
+            else:
+                if isinstance(results[prev_key], dict):
+                    updated_results[key] = await self.__update_labels(results[prev_key])
+                else:
+                    updated_results[key] = results[prev_key]
+        return updated_results
+
     async def extract(self, image_data):
         final_results = []
         image_count = 1
@@ -205,8 +220,9 @@ class COTDataPointExtractorV1(MonoState):
                     extracted_data = list(chain([title_data], [document_data], _extracted_data))
                     results = {**results_dict, **dict(extracted_data)}
                     data['filename'] = filename
-                    data['certificate_of_title'] = json.dumps(results, skipkeys=True, allow_nan=True, indent=6,
-                                                              separators=("\n", " : "))
+                    updated_results = await self.__update_labels(results)
+                    data['certificate_of_title'] = updated_results
+
                 final_results.append(data)
                 image_count = image_count + 1
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')

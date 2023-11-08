@@ -53,7 +53,7 @@ class BarcodeExtraction:
                     raise InvalidFileException()
                 image = cv2.imread(file_path)
                 lr_number = self.detect_lr(image)
-                data['barcode_detection'] = lr_number
+                data['barcode_detection'] = {'Barcode Data': lr_number[0] if lr_number else 'NA'}
                 data['image_count'] = image_count
 
                 results.append(data)
