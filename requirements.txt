@@ -49,6 +49,7 @@ ocrmypdf==13.4.7
 opencv-python==4.6.0.66
 openpyxl==3.0.10
 owner==0.0.10
+packaging==21.3
 pandas==1.4.2
 pdfminer.six==20220524
 pdfplumber==0.7.1
