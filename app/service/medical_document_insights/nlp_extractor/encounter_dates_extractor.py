@@ -9,7 +9,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.docstore.document import Document
 
 
-class BedrockDatesExtractor:
+class BedrockEncounterDatesExtractor:
     def __init__(self):
         # Initialize the Textract client
         os.environ['AWS_PROFILE'] = "default"
@@ -33,7 +33,9 @@ class BedrockDatesExtractor:
         )
         return llm
 
-    def generate_response(self, raw_text, llm):
+    def generate_response(self, json_data, llm):
+        # Data Formatter
+        raw_text = self.data_formatter(json_data)
         # Instantiate the LLM model
         llm = llm
         # Split text
@@ -52,7 +54,7 @@ class BedrockDatesExtractor:
         """
         chain_qa = load_qa_chain(llm, chain_type="refine")
         response = chain_qa.run(input_documents=docs, question=query)
-        return response
+        return self.post_processing(response)
 
     def data_formatter(self, json_data):
         raw_text = "".join(json_data.values())
