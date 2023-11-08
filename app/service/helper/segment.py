@@ -1,43 +1,24 @@
 import argparse
 
-from simple_sentence_segment import sentence_segment
 
-
-def break_sentence(s, seg_len):
+def break_text(text, max_length):
     segments = []
-    points = list(range(0, len(s), seg_len))
-    if points[-1] != len(s): points.append(len(s))
-    for i in range(len(points) - 1):
-        segments.append(s[points[i]:points[i + 1]])
+    current_segment = ""
+    for sentence in text.split('. '):  # Split text into sentences
+        if len(current_segment) + len(sentence) <= max_length:
+            current_segment += sentence + '. '  # Add the sentence to the current segment
+        else:
+            segments.append(current_segment)  # Store the current segment
+            current_segment = sentence + '. '  # Start a new segment with the sentence
+
+    if current_segment:
+        segments.append(current_segment)  # Add the last segment if not empty
+
     return segments
 
 
 def process(text, seg_len):
-
-    # get sentences
-    init_sentences = list()
-    for s, t in sentence_segment(text):
-        init_sentences.append(text[s:t])
-
-    # break large sentences
-    sentences = list()
-    for i, s in enumerate(init_sentences):
-        if len(s) > seg_len:
-            sentences += break_sentence(s, seg_len)
-        else:
-            sentences.append(s)
-
-    # create segments
-    segments = []
-    segment = ""
-    # add sentences until adding the next one makes the segment too long
-    # then store the segment and start with a new one
-    for s in sentences:
-        if len(segment) + len(s) > seg_len:
-            segments.append(segment)
-            segment = ""
-        segment = segment + s
-    segments.append(segment)
+    segments = break_text(text, seg_len)
     return segments
 
 
@@ -50,7 +31,3 @@ def segmentation(text):
 
     args = parser.parse_args()
     return process(text, args.segment_length)
-
-
-
-
