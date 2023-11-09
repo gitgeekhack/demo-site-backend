@@ -47,10 +47,17 @@ class BedrockEncounterDatesExtractor:
         docs = [Document(page_content=t) for t in texts]
 
         query = """
-        'Encounter Date' in medical records refers to the specific day when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service. The encounter date is important for tracking patient care, scheduling follow-up appointments, billing, and medical research.
-        'Event' which is associated with the corresponding 'Encounter Date' is described as all the activities which are happened on that particular 'Encounter Date'.
-        Above text is obtained from the medical record. Give all the actual 'Encounter Date' and corresponding 'Event' in the following JSON format { Encounter Date : Event }. Strictly maintain the given format of JSON.
-        Note: Convert all the 'Encounter Date' in 'dd/mm/yyyy' format. Describe events in more detailed manner.
+        Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' from medical records.
+        'Encounter Date' : In medical record, it is defined as the specific date when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service. 
+        Ensure all the actual 'Encounter Date' are converted to 'dd/mm/yyyy' format. Ensure none of the 'Encounter Date' is left behind.
+        'Event' : It is associated with the corresponding 'Encounter Date'. It is described as all the activities that occurred on that particular 'Encounter Date'. 
+        Ensure all 'Event' descriptions are more detailed, thorough and comprehensive in very long paragraph.
+        You are required to present this output in a specific format using 'Tuple' and 'List'. 
+        Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
+        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date' and 'Event'. It is created using parentheses and should be formatted as (Encounter Date, Event).
+        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ (Encounter Date, Event) ].
+        Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
+        Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
         """
         chain_qa = load_qa_chain(llm, chain_type="refine")
         response = chain_qa.run(input_documents=docs, question=query)
@@ -61,16 +68,10 @@ class BedrockEncounterDatesExtractor:
         return raw_text
 
     def post_processing(self, response):
-        # Use a regular expression to find the dictionary in the string
-        dict_string = re.search(r'\{.*?\}', response, re.DOTALL).group()
-        # Use the json.loads function to convert the string into a dictionary
-        result_json = json.loads(dict_string)
-        # Convert the keys to datetime objects and store in a new dictionary
-        result_with_datetime_keys = {datetime.strptime(date, '%m/%d/%Y'): event for date, event in result_json.items()}
-        # Sort the dictionary by keys (i.e., dates) in ascending order
-        sorted_result = dict(sorted(result_with_datetime_keys.items()))
-        # Convert the datetime objects back to strings
-        sorted_result_with_string_keys = {date.strftime('%m/%d/%Y'): event for date, event in sorted_result.items()}
-
-        output_json = sorted_result_with_string_keys
+        # Use a regular expression to find the list in the string
+        string_of_tuples = re.search(r'\[.*?\]', response, re.DOTALL).group()
+        # Convert the string of tuples into a list of tuples
+        list_of_tuples = eval(string_of_tuples)
+        # Convert the list of tuples to a dictionary
+        output_json = {date: event for date, event in list_of_tuples}
         return output_json
