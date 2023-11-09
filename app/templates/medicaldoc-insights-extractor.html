@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <title>Medical Document POC</title>
+    <style type="text/css">
+      :root {
+        --theme-color:#4B878BFF;
+        --theme-color-light: #f5f5f5;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: Georgia, serif;;
+      }
+      a {
+        text-decoration: none;
+        color: black;
+      }
+      a:active,
+      a:hover {
+        color: white;
+      }
+      .medical-summary-box {
+        display: flex;
+        font-weight: 700;
+        justify-content: flex-end;
+        align-items: center;
+        font-size: 30px;
+        background: var(--theme-color);
+        color: black;
+        padding: 15px 70px;
+        position: relative;
+        z-index: 2;
+      }
+      .sidebar {
+        display: flex;
+        background: var(--theme-color);
+        gap: 20px;
+        flex-direction: column;
+        justify-content: center;
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 1;
+        width: 350px;
+        height: 100vh;
+      }
+      .sidebar-item {
+        font-size: 20px;
+        font-weight: 600;
+        text-align: start;
+        color: black;
+        padding: 20px 30px;
+        margin: 0 0 0 15px;
+        letter-spacing: 0.02em;
+        cursor: pointer;
+      }
+      .sidebar-item:hover,
+      .sidebar-item.active {
+        background: white;
+        color: var(--theme-color);
+        border-top-left-radius: 40px;
+        border-bottom-left-radius: 40px;
+        outline: none;
+      }
+      .content {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+        margin-left: 350px;
+        padding: 30px 70px 70px 70px;
+      }
+      .title {
+        font-size: 30px;
+        color: black;
+        font-weight: 600;
+        text-decoration: underline;
+        text-underline-offset: 10px;
+        padding-bottom: 20px;
+      }
+      .dates-table {
+        table-layout: fixed;
+        overflow: hidden;
+        border-collapse: collapse;
+        width: 100%;
+      }
+      .dates-table tr,
+      .dates-table tr th,
+      .dates-table tr td {
+        padding: 15px;
+        text-align: left;
+        font-size: 18px;
+        color: #333333;
+      }
+      .dates-table tr th:first-child {
+        border-top-left-radius: 40px;
+        border-bottom-left-radius: 40px;
+      }
+      .dates-table tr th:last-child {
+        border-top-right-radius: 40px;
+        border-bottom-right-radius: 40px;
+      }
+      .dates-table tr:nth-of-type(odd) {
+        background: var(--theme-color-light);
+      }
+      .dates-table tr:nth-of-type(odd) td {
+        color: black;
+      }
+      .dates-table tr:nth-of-type(odd) td:first-child {
+        border-top-left-radius: 40px;
+        border-bottom-left-radius: 40px;
+      }
+      .dates-table tr:nth-of-type(odd) td:last-child {
+        border-top-right-radius: 40px;
+        border-bottom-right-radius: 40px;
+      }
+      .dates-table tr th {
+        background: var(--theme-color);
+        text-transform: uppercase;
+        color: black;
+      }
+      .summary-text {
+        text-align: justify;
+        color: #333333;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="medical-summary-box">Medical Summary POC</div>
+    <div>
+      <div class="sidebar">
+        <a class="sidebar-item active" href="#dates">Dates</a>
+        <a class="sidebar-item" href="#summary">Summary</a>
+        <a class="sidebar-item" href="#entities">Entities</a>
+        <a class="sidebar-item" href="#encounters">Encounters</a>
+      </div>
+      <div class="content">
+        <div id="dates">
+          <h2 class="title">Dates</h2>
+          <table class="dates-table">
+            <tr>
+              <th>No</th>
+              <th>Injury Date</th>
+              <th>Admission Date</th>
+              <th>Discharge Date</th>
+            </tr>
+            {% for date in data.PHI_dates['Injury Date'] %}
+              <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ date }}</td>
+                <td>{{ data.PHI_dates['Admission Date'][loop.index0] }}</td>
+                <td>{{ data.PHI_dates['Discharge Date'][loop.index0] }}</td>
+              </tr>
+            {% endfor %}
+          </table>
+        </div>
+        <div id="summary">
+          <h2 class="title">Summary</h2>
+          <p class="summary-text">
+            {{ data.summary.summary }}
+          </p>
+        </div>
+        <div id="entities">
+          <h2 class="title">Entities</h2>
+          <table class="dates-table">
+            <tr>
+              <th>No</th>
+              <th>Diagnosis</th>
+              <th>Treatment</th>
+            </tr>
+             {% for page_data in data.entities %}
+                <tr>
+                  <td> {{page_data}}</td>
+                  <td>
+                    {% for diagnosis in data.entities[page_data].diagnosis %}
+                      {{ diagnosis }}<br>
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% for treatment in data.entities[page_data].treatment %}
+                      {{ treatment }}<br>
+                    {% endfor %}
+                  </td>
+                </tr>
+              {% endfor %}
+
+          </table>
+        </div>
+        <div id="encounters">
+          <h2 class="title">Encounters</h2>
+          <table class="dates-table">
+            <tr>
+              <th>Encounter Date</th>
+              <th>Event</th>
+            </tr>
+            {% for key, value in data.document_origanizer.items() %}
+            <tr>
+              <td>{{ key }}</td>
+              <td>{{ value }}</td>
+            </tr>
+            {% endfor %}
+          </table>
+        </div>
+      </div>
+    </div>
+    <script type="text/javascript">
+      window.addEventListener("load", () => {
+        window.scrollTo(0, 0);
+      });
+      const items = document.querySelectorAll(".sidebar-item");
+      items.forEach((item) => {
+        item.addEventListener("click", () => {
+          items.forEach((item) => {
+            item.classList.remove("active");
+          });
+          item.classList.add("active");
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Medical Documents Insights Extractor</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap CSS -->
+
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+          integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+    <link href="https://fonts.googleapis.com/css?family=Nunito&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ static('css/style.css') }}">
+
+</head>
+<body>
+<!-- Image and text -->
+<nav class="navbar navbar-light bg-white">
+    <div class="container-fluid mt-2 offset-xl-1 offset-lg-1 offset-md-1" style="padding-left: 0;">
+        <a class="navbar-brand" href="/">
+            <img src="https://cdn-gcp.marutitech.com/wp-media/2019/03/maruti-teachlabs-logo.svg" alt="">
+        </a>
+    </div>
+
+</nav>
+<div class="container-fluid mt-3">
+    <div class="row">
+        <div class="col-xl-10 col-lg-10 col-md-10 col-sm-12 mx-auto">
+            <div id="nof" class="alert alert-warning" role="alert" style="display:none">
+                Only 1 file is allowed at max &#9995;
+            </div>
+            {% if error %}
+            <div id="error" class="alert alert-danger" role="alert">
+               Something went KaBOOM! &#128165;, Please try again after sometime.
+            </div>
+            {% endif %}
+            {% if file_error %}
+            <div id="file_error" class="alert alert-danger" role="alert">
+                Please make sure you upload valid files, currently only {'pdf'} format is supported. &#128125;
+            </div>
+            {% endif %}
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Try Medical Documents Insights Extractor!</h5>
+                    <p class="card-text">Upload a Medical document to extract insights like Summary, Entities, PHI dates and Encounter dates</p>
+                    <div class="text-center m-2">
+                        <div class="col-xl-4 col-lg-4 col-md-6 col-sm-12 mx-auto">
+                            <form id="upload-form" action="/med-doc/extract" method="post" enctype="multipart/form-data">
+                                <div class="row">
+                                    <div class="col">
+                                        <label class="btn upload-btn btn-block" for="input_pdf">
+                                            <input id="input_pdf" type="file" name="input_pdf" style="display:none">
+                                            Upload
+                                        </label>
+                                    </div>
+                                    <div class="col">
+                                        <button type="submit" class="btn upload-btn btn-block">Extract Data</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("upload-form").addEventListener("submit", function (event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        // Create a FormData object to capture the uploaded file
+        var formData = new FormData(document.getElementById("upload-form"));
+
+        // Use the fetch API to send the file to the server for processing
+        fetch("/med-doc/extract", {
+            method: "POST",
+            body: formData
+        })
+        .then(response => response.text()) // Assuming the server responds with processed data as text
+        .then(data => {
+           if (data === "success") {
+                // Redirect to a new URL after a successful form submission
+                window.location.href = "/new-url"; // Replace "/med-doc/extract" with the desired URL
+            } else {
+                // Handle the case where processing was not successful (e.g., display an error message)
+                var resultDiv = document.getElementById("result");
+                resultDiv.innerHTML = "Processing failed.";
+            }
+    });
+</script>
+<div id="result"></div>
+</body>
+</html>

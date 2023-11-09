@@ -1,4 +1,5 @@
 from app.manage import create_app
+from app.resource.medical_document_insight_extraction.insight_extraction import MedDocHomePage, MedicalDocExtractorView
 
 app, logger = create_app()
 
@@ -17,3 +18,5 @@ app.router.add_view('/car-damage-detection', DamageExtractor)
 app.router.add_view('/pdf', HomePage)
 app.router.add_view('/pdf/extract', DataExtraction)
 app.router.add_view('/barcode-detection', BarCodeExtraction)
+app.router.add_view('/med-doc', MedDocHomePage)
+app.router.add_view('/med-doc/extract', MedicalDocExtractorView)
