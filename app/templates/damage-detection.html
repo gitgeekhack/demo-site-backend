@@ -31,18 +31,20 @@
             </div>
             {% if error %}
             <div id="error" class="alert alert-danger" role="alert">
-               Something went KaBOOM! &#128165;, Please try again after sometime.
+                Something went KaBOOM! &#128165;, Please try again after sometime.
             </div>
             {% endif %}
             {% if file_error %}
             <div id="file_error" class="alert alert-danger" role="alert">
-                Please make sure you upload valid images, currently only {'jpg', 'jpeg', 'png'} formats are supported. &#128125;
+                Please make sure you upload valid images, currently only {'jpg', 'jpeg', 'png'} formats are supported.
+                &#128125;
             </div>
             {% endif %}
             <div class="card">
                 <div class="card-body">
                     <h5 class="card-title">Try Damage Detection!</h5>
-                    <p class="card-text">Use the below button to upload your images of damaged car and get the annotations for the
+                    <p class="card-text">Use the below button to upload your images of damaged car and get the
+                        annotations for the
                         damaged parts. You can upload multiple images at once up to 5 images.</p>
                     <form id="myform" action="/car-damage-detection" method="post" enctype="multipart/form-data">
                         <div class="row m-2">
@@ -65,6 +67,47 @@
                     </form>
                 </div>
             </div>
+
+            <div class="card mt-4">
+                <div class="card-body">
+                    <p class="card-title">Sample images to try:</p>
+                    <div class="container" style="padding:0px;margin:0px">
+                        <div class="row">
+                            <div class="col-md">
+                                <form id="myform1" action="/car-damage-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('damage_detection/Uploaded/sample_image1.jpg') }}">
+                                    <img src="{{ static('damage_detection/Uploaded/sample_image1.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image1" style="cursor: pointer;height: 250px; width: 500px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform2" action="/car-damage-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('damage_detection/Uploaded/sample_image2.jpg') }}">
+                                    <img src="{{ static('damage_detection/Uploaded/sample_image2.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image2" style="cursor: pointer;height: 250px; width: 500px; object-fit: contain;">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform3" action="/car-damage-detection" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file"
+                                           value="{{ static('damage_detection/Uploaded/sample_image3.jpg') }}">
+                                    <img src="{{ static('damage_detection/Uploaded/sample_image3.jpg') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image3" style="cursor: pointer;height: 250px; width: 500px; object-fit: contain;">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -84,7 +127,8 @@
                     <div class="col mySlides">
                         <div class="row px-4">
                             <div class="col-xl-7 col-lg-7 col-md-12 col-sm-12 mb-4">
-                                <img src="{{static(result['image_path'])}}" class="img-fluid rounded" alt="Image not found">
+                                <img src="{{static(result['image_path'])}}" class="img-fluid rounded"
+                                     alt="Image not found">
                             </div>
                             <div class="col-xl-5 col-lg-5 col-md-12 col-sm-12">
                                 <p style="text-align:center; font-weight:bold">
@@ -112,7 +156,8 @@
                                                  aria-valuemax="100"
                                             ></div>
                                             {% else %}
-                                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{v}}%"
+                                            <div class="progress-bar bg-warning" role="progressbar"
+                                                 style="width: {{v}}%"
                                                  aria-valuenow="{{v}}" aria-valuemin="0"
                                                  aria-valuemax="100"
                                             ></div>
@@ -161,32 +206,46 @@
 <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
         integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
         crossorigin="anonymous"></script>
+
 <script>
-$(function(e) {
-    $('#gallery-photo-add').on('change', function() {
-    $('#nof').hide();
-    var files = $(this)[0].files;
-    if(files.length > 100){
-            $('#nof').show();
-            $('#gallery-photo-add').val('');
-    }else{
-            document.getElementById("myform").submit();
-            $('#exampleModal').modal('show'); //Open the model
-    }
-    });
-});
-document.onkeydown = function(e) {
-if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
-        switch (e.keyCode) {
-            case 37:
-                plusSlides(-1);
-                break;
-            case 39:
-                plusSlides(1);
-                break;
+    $(function(e) {
+        $('#gallery-photo-add').on('change', function() {
+        $('#nof').hide();
+        var files = $(this)[0].files;
+        if(files.length > 100){
+                $('#nof').show();
+                $('#gallery-photo-add').val('');
+        }else{
+                document.getElementById("myform").submit();
+                $('#exampleModal').modal('show'); //Open the model
         }
-    }
-};
+        });
+    });
+    document.onkeydown = function(e) {
+    if($("#myModal").css("display") !='none' && $("#myModal").css("visibility") != 'hidden') {
+            switch (e.keyCode) {
+                case 37:
+                    plusSlides(-1);
+                    break;
+                case 39:
+                    plusSlides(1);
+                    break;
+            }
+        }
+    };
+
+    document.getElementById('image1').addEventListener('click', function() {
+        document.getElementById('myform1').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image2').addEventListener('click', function() {
+        document.getElementById('myform2').submit();
+        $('#exampleModal').modal('show');
+    });
+    document.getElementById('image3').addEventListener('click', function() {
+        document.getElementById('myform3').submit();
+        $('#exampleModal').modal('show');
+    });
 
 </script>
 <script src="{{ static('js/light-box.js') }}"></script>

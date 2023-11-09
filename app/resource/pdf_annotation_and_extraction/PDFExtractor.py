@@ -6,7 +6,7 @@ import traceback
 from app import logger
 from app.business_rule_exception import InvalidFile
 from app.constant import PDFAnnotationAndExtraction, AllowedFileType
-from app.common.utils import is_allowed_file, save_file
+from app.common.utils import is_allowed_file, save_file, get_file_from_path
 from app.service.pdf_annotation_and_extraction.PDFExtractor import DataPointExtraction
 from app.service.helper.annotation_file import extract_annotation_files, get_annotation_filenames
 
@@ -32,15 +32,17 @@ class DataExtraction(web.View):
             data = await self.request.post()
             pdf_file = data.get('input_pdf')
             annotation_file = data.get('document_selector')  # document type selected by user
+            if isinstance(pdf_file, str):
+                pdf_file = get_file_from_path(pdf_file)
+            else:
+                # saving pdf file
+                await save_file(file_object=pdf_file, folder_path=PDFAnnotationAndExtraction.UPLOAD_FOLDER)
 
             filename = pdf_file.filename
             if not is_allowed_file(filename, allowed_extensions=AllowedFileType.PDF):
                 raise InvalidFile(filename)
 
             print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-
-            # saving pdf file
-            await save_file(file_object=pdf_file, folder_path=PDFAnnotationAndExtraction.UPLOAD_FOLDER)
 
             extractor = DataPointExtraction(x_uuid)
             results, table_labels = await extractor.extract(os.path.join(PDFAnnotationAndExtraction.ANNOTATION_FOLDER,

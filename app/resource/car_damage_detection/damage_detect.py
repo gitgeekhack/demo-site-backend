@@ -1,3 +1,4 @@
+import os.path
 import traceback
 import uuid
 
@@ -6,14 +7,14 @@ from aiohttp import web
 
 from app import logger
 from app.business_rule_exception import InvalidFile
-from app.common.utils import is_image_file
+from app.common.utils import is_image_file, get_file_from_path
 from app.service.car_damage_detection.damage_detect import DamageDetector
 
 
 class DamageExtractor(web.View):
     @aiohttp_jinja2.template('damage-detection.html')
     async def get(self):
-        return {'results':[{'image_path': 'damage_detection/Detected/out_images.jpeg', 'detection': [['Headlights(Broken/Missing)', 0], ['Front Windshield', 0], ['Rear Windshield', 0], ['Hood', 0], ['Front Bumper', 0], ['Rear Bumper', 0], ['Fender', 87], ['Door', 90], ['Trunk', 0], ['Taillights', 0], ['Window', 68], ['Missing Wheel', 0], ['Flat Tyre', 0], ['Missing Mirror', 0], ['Interior Damage', 0]], 'image_count': 1}]}
+        return {}
 
     @aiohttp_jinja2.template('damage-detection.html')
     async def post(self):
@@ -23,6 +24,8 @@ class DamageExtractor(web.View):
             data = await self.request.post()
             files = data.getall('file')
             for file in files:
+                if isinstance(file, str):
+                    file = get_file_from_path(file)
                 filename = file.filename
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
