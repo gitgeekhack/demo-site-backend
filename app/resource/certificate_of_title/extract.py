@@ -6,7 +6,7 @@ from aiohttp import web
 
 from app import logger
 from app.business_rule_exception import InvalidFile
-from app.common.utils import is_image_file
+from app.common.utils import is_image_file, get_file_from_path
 from app.service.certificate_of_title.extract import COTDataPointExtractorV1
 
 
@@ -23,6 +23,8 @@ class COTExtractor(web.View):
             data = await self.request.post()
             files = data.getall('file')
             for file in files:
+                if isinstance(file, str):
+                    file = get_file_from_path(file)
                 filename = file.filename
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
