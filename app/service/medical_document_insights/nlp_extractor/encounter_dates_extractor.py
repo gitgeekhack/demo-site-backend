@@ -64,7 +64,7 @@ class BedrockEncounterDatesExtractor:
         try:
             return self.post_processing(response)
         except:
-            return "Something went wrong..."
+            return {'error': f'Something went wrong'}
 
     def data_formatter(self, json_data):
         raw_text = "".join(json_data.values())
