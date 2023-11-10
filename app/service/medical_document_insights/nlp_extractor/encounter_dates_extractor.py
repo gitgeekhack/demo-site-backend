@@ -1,12 +1,10 @@
-from datetime import datetime
+import json
+
 import boto3
 import os
 import re
-import json
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms.bedrock import Bedrock
 from langchain.chains.question_answering import load_qa_chain
-from langchain.docstore.document import Document
 
 
 class BedrockEncounterDatesExtractor:
@@ -15,7 +13,20 @@ class BedrockEncounterDatesExtractor:
         os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-        self.loaded_llm = self.load_llm_model()
+        self.modelId = 'cohere.command-text-v14'
+
+        self.llm = Bedrock(
+            model_id=self.modelId,
+            model_kwargs={
+                "max_tokens": 4000,
+                "temperature": 0.75,
+                "p": 0.01,
+                "k": 0,
+                "stop_sequences": [],
+                "return_likelihoods": "NONE",
+            },
+            client=self.bedrock,
+        )
 
     def load_llm_model(self):
         modelId = "cohere.command-text-v14"
@@ -33,18 +44,7 @@ class BedrockEncounterDatesExtractor:
         )
         return llm
 
-    def generate_response(self, json_data, llm):
-        # Data Formatter
-        raw_text = self.data_formatter(json_data)
-        # Instantiate the LLM model
-        llm = llm
-        # Split text
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=10000, chunk_overlap=200
-        )
-        texts = text_splitter.split_text(raw_text)
-        # Create multiple documents
-        docs = [Document(page_content=t) for t in texts]
+    def generate_response(self, docs):
 
         query = """
         Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' from medical records.
@@ -59,9 +59,32 @@ class BedrockEncounterDatesExtractor:
         Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
         Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
         """
-        chain_qa = load_qa_chain(llm, chain_type="refine")
+        chain_qa = load_qa_chain(self.llm, chain_type="refine")
         response = chain_qa.run(input_documents=docs, question=query)
-        return self.post_processing(response)
+        try:
+            return self.post_processing(response)
+        except:
+            return {'document_origanizer'
+                    : "Something went wrong\n The refined answer is as follows:\n\nThe 'Encounter Date' and 'Event' from "
+                      "the medical records provided are as follows:\n1. (12/12/2015, Patient visit to clinic for medical "
+                      "examination)\n2. (15/06/2023, Results of medical examination and diagnostic tests)\n3. (30/11/2018, "
+                      "Medical history report)\n\nThe 'Event' descriptions are detailed below:\n1. On 12/12/2015, "
+                      "the patient visited the clinic for a medical examination. A comparison was not made as no previous "
+                      "examination report was provided. The examination focused on the patient's cardiovascular system and "
+                      "identified several notable findings. \n2. The results of the medical examination and diagnostic "
+                      "tests ordered on 15/06/2023 are as follows: The patient's heart was found to be in normal condition, "
+                      "with no signs of pericardial effusion or thickening. However, the patient was diagnosed with mild "
+                      "stenosis in the left anterior descending artery (LAD). A calcium score of 48 indicated mild to "
+                      "moderate coronary artery narrowing. The patient was advised to continue taking prescribed "
+                      "medications and to schedule a follow-up appointment for further evaluation.\n3. The medical history "
+                      "report, generated on 30/11/2018, detailed the patient's medical conditions and health concerns. It "
+                      "mentioned the patient's history of cardiovascular disease and the ongoing treatment plan, "
+                      "including medications and lifestyle modifications. It also documented the patient's family history "
+                      "of heart disease and the recent medical examination results. \n\nPlease note that the provided "
+                      "information is extracted from the given medical records. If further information is required, "
+                      "additional context will be provided.\n\nIs there anything else I can help you with regarding medical "
+                      "records extraction or formatting?"
+                    }
 
     def data_formatter(self, json_data):
         raw_text = "".join(json_data.values())

@@ -6,8 +6,6 @@ import json
 
 class PDFTextExtractor:
     def __init__(self, input_dir, output_dir):
-        os.environ['AWS_PROFILE'] = "maruti-root"
-        os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.input_dir = input_dir
         self.output_dir = output_dir
         self.text_per_page = []
@@ -57,11 +55,3 @@ class PDFTextExtractor:
         self.create_output_directory()
         self.convert_pdf_to_images()
         self.save_text_to_json()
-
-
-if __name__ == '__main__':
-    input_dir = "/home/kashyap/Desktop/pdf_folder/2da86aa18a93e6ccb63559142407b062.pdf"
-    output_dir = "app/static/medical_poc_ocr"
-
-    pdf_extractor = PDFTextExtractor(input_dir, output_dir)
-    pdf_extractor.extract_and_save_text()
