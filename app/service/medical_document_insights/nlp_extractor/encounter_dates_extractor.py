@@ -1,12 +1,10 @@
-from datetime import datetime
+import json
+
 import boto3
 import os
 import re
-import json
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms.bedrock import Bedrock
 from langchain.chains.question_answering import load_qa_chain
-from langchain.docstore.document import Document
 
 
 class BedrockEncounterDatesExtractor:
@@ -15,7 +13,20 @@ class BedrockEncounterDatesExtractor:
         os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-        self.loaded_llm = self.load_llm_model()
+        self.modelId = 'cohere.command-text-v14'
+
+        self.llm = Bedrock(
+            model_id=self.modelId,
+            model_kwargs={
+                "max_tokens": 4000,
+                "temperature": 0.75,
+                "p": 0.01,
+                "k": 0,
+                "stop_sequences": [],
+                "return_likelihoods": "NONE",
+            },
+            client=self.bedrock,
+        )
 
     def load_llm_model(self):
         modelId = "cohere.command-text-v14"
@@ -33,18 +44,7 @@ class BedrockEncounterDatesExtractor:
         )
         return llm
 
-    def generate_response(self, json_data, llm):
-        # Data Formatter
-        raw_text = self.data_formatter(json_data)
-        # Instantiate the LLM model
-        llm = llm
-        # Split text
-        text_splitter = RecursiveCharacterTextSplitter(
-            chunk_size=10000, chunk_overlap=200
-        )
-        texts = text_splitter.split_text(raw_text)
-        # Create multiple documents
-        docs = [Document(page_content=t) for t in texts]
+    def generate_response(self, docs):
 
         query = """
         Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' from medical records.
@@ -59,9 +59,12 @@ class BedrockEncounterDatesExtractor:
         Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
         Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
         """
-        chain_qa = load_qa_chain(llm, chain_type="refine")
+        chain_qa = load_qa_chain(self.llm, chain_type="refine")
         response = chain_qa.run(input_documents=docs, question=query)
-        return self.post_processing(response)
+        try:
+            return self.post_processing(response)
+        except:
+            return "Something went wrong..."
 
     def data_formatter(self, json_data):
         raw_text = "".join(json_data.values())

@@ -15,14 +15,14 @@ def post_processing(segment):
             traits = [trait['Name'] for trait in entity['Traits']]
             if 'DIAGNOSIS' in traits and 'HYPOTHETICAL' not in traits and 'NEGATION' not in traits and 'LOW_CONFIDENCE' not in traits:
                 # if entity['Traits'][traits.index('DIAGNOSIS')]['Score'] >= 0.9:
-                if entity['Text'] not in entity_result['diagnosis']:
-                    entity_result['diagnosis'].append(entity['Text'])
+                if entity['Text'].capitalize() not in entity_result['diagnosis']:
+                    entity_result['diagnosis'].append((entity['Text']).capitalize())
         elif entity['Category'] == 'TEST_TREATMENT_PROCEDURE' and entity[
             'Type'] == 'TREATMENT_NAME' or entity['Type'] == 'PROCEDURE_NAME':  #and entity['Score'] >= 0.9
             traits = [trait['Name'] for trait in entity['Traits']]
             if 'NEGATION' not in traits or 'HYPOTHETICAL' not in traits:
-                if entity['Text'] not in entity_result['treatment']:
-                    entity_result['treatment'].append(entity['Text'])
+                if entity['Text'].capitalize() not in entity_result['treatment']:
+                    entity_result['treatment'].append((entity['Text']).capitalize())
     return entity_result
 
 
