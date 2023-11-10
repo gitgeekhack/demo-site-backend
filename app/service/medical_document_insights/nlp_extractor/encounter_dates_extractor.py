@@ -64,27 +64,7 @@ class BedrockEncounterDatesExtractor:
         try:
             return self.post_processing(response)
         except:
-            return {'document_origanizer'
-                    : "Something went wrong\n The refined answer is as follows:\n\nThe 'Encounter Date' and 'Event' from "
-                      "the medical records provided are as follows:\n1. (12/12/2015, Patient visit to clinic for medical "
-                      "examination)\n2. (15/06/2023, Results of medical examination and diagnostic tests)\n3. (30/11/2018, "
-                      "Medical history report)\n\nThe 'Event' descriptions are detailed below:\n1. On 12/12/2015, "
-                      "the patient visited the clinic for a medical examination. A comparison was not made as no previous "
-                      "examination report was provided. The examination focused on the patient's cardiovascular system and "
-                      "identified several notable findings. \n2. The results of the medical examination and diagnostic "
-                      "tests ordered on 15/06/2023 are as follows: The patient's heart was found to be in normal condition, "
-                      "with no signs of pericardial effusion or thickening. However, the patient was diagnosed with mild "
-                      "stenosis in the left anterior descending artery (LAD). A calcium score of 48 indicated mild to "
-                      "moderate coronary artery narrowing. The patient was advised to continue taking prescribed "
-                      "medications and to schedule a follow-up appointment for further evaluation.\n3. The medical history "
-                      "report, generated on 30/11/2018, detailed the patient's medical conditions and health concerns. It "
-                      "mentioned the patient's history of cardiovascular disease and the ongoing treatment plan, "
-                      "including medications and lifestyle modifications. It also documented the patient's family history "
-                      "of heart disease and the recent medical examination results. \n\nPlease note that the provided "
-                      "information is extracted from the given medical records. If further information is required, "
-                      "additional context will be provided.\n\nIs there anything else I can help you with regarding medical "
-                      "records extraction or formatting?"
-                    }
+            return {'response': f'Something went wrong\n{response}'}
 
     def data_formatter(self, json_data):
         raw_text = "".join(json_data.values())
