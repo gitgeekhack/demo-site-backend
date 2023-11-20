@@ -5,10 +5,10 @@ import json
 from langchain.llms.bedrock import Bedrock
 from langchain.chains.question_answering import load_qa_chain
 
+
 class BedrockDatesExtractor:
     def __init__(self):
         # Initialize the Textract client
-        os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.modelId = 'cohere.command-text-v14'

@@ -13,14 +13,10 @@ class PDFTextExtractor:
         self.document_page_counter = 1
         self.textract = boto3.client('textract', region_name="us-east-1")
 
-    def create_output_directory(self):
-        if not os.path.exists(self.output_dir):
-            os.makedirs(self.output_dir)
-
     def convert_pdf_to_images(self):
         pdf_images = pdf2image.convert_from_path(self.input_dir)
         self.pdf_folder_name = os.path.basename(self.input_dir).replace(".pdf", "")
-        pdf_output_dir = os.path.join(self.output_dir, self.pdf_folder_name)
+        pdf_output_dir = os.path.join(self.output_dir, "pdf_images", self.pdf_folder_name)
 
         if not os.path.exists(pdf_output_dir):
             os.makedirs(pdf_output_dir, exist_ok=True)
@@ -47,11 +43,13 @@ class PDFTextExtractor:
         return self.page_text_json
 
     def save_text_to_json(self):
-        json_file_path = os.path.join(self.output_dir, f"{self.pdf_folder_name}_text.json")
+        json_output_dir = os.path.join(self.output_dir, "json_save")
+        if not os.path.exists(json_output_dir):
+            os.makedirs(json_output_dir, exist_ok=True)
+        json_file_path = os.path.join(json_output_dir, f"{self.pdf_folder_name}_text.json")
         with open(json_file_path, 'w') as json_file:
             json.dump(self.page_text_json, json_file, indent=4)
 
     def extract_and_save_text(self):
-        self.create_output_directory()
         self.convert_pdf_to_images()
         self.save_text_to_json()
