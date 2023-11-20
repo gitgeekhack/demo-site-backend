@@ -22,17 +22,26 @@ class DocumentInsightExtractor:
 
     def extract(self):
         file_content_bytesio = io.BytesIO(self.document.file.read())
-        input_dir = os.path.join(os.path.dirname(os.path.abspath('static/medical_insights_poc')), self.document.filename)
+
+        input_ = os.path.join(os.path.dirname(os.path.abspath('app/static')),
+                              'static/medical_insights_poc')
+        if not os.path.exists(input_):
+            os.mkdir(input_)
+        pdf_files_directory = os.path.join(input_, 'pdf_files')
+        if not os.path.exists(pdf_files_directory):
+            os.mkdir(pdf_files_directory)
+        input_dir = os.path.join(pdf_files_directory, self.document.filename)
         with open(input_dir, "wb+") as pdf_file:
             pdf_file.write(file_content_bytesio.getvalue())
         pdf_name = input_dir.split("/")[-1].split(".")[0]
-        output_dir = "static/medical_documents"
+        output_dir = "app/static/medical_insights_poc"
 
         result = dict()
 
         pdf_extractor = PDFTextExtractor(input_dir, output_dir)
         pdf_extractor.extract_and_save_text()
-        with open(f'{output_dir}/{pdf_name}_text.json', 'r') as file:
+        json_dir = "app/static/medical_insights_poc/json_save"
+        with open(f'{json_dir}/{pdf_name}_text.json', 'r') as file:
             data = json.loads(file.read())
 
         raw_text = "".join(data.values())

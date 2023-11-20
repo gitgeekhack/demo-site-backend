@@ -6,7 +6,6 @@ from langchain.chains.summarize import load_summarize_chain
 
 class LanguageModelWrapper:
     def __init__(self):
-        os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.modelId = 'cohere.command-text-v14'
