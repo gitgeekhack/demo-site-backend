@@ -156,11 +156,16 @@ class COTDataPointExtractorV1(MonoState):
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
 
-        extracted_texts = self.textract_helper.get_text(image_path, detected_objects)
+        extracted_texts = {}
+        if detected_objects:
+            extracted_texts = self.textract_helper.get_text(image_path, detected_objects)
 
         post_process_text_extracted_coroutines = [self.__post_process_text(label, text) for label, text
                                                   in extracted_texts.items()]
         extracted_data_by_label = await asyncio.gather(*post_process_text_extracted_coroutines)
+
+        if not extracted_data_by_label:
+            extracted_data_by_label = [[self.label[i], None] for i in self.label]
 
         return extracted_data_by_label
 
@@ -176,7 +181,9 @@ class COTDataPointExtractorV1(MonoState):
     async def __get_unique_values(self, extracted_data, label):
         _set = set()
         for data in extracted_data:
-            if data[0].startswith(label): _set.add(tuple(data[1]))
+            if data[0].startswith(label):
+                if data[1]:
+                    _set.add(tuple(data[1]))
         return [label, list(chain(*_set))]
 
     async def __update_labels(self, results):

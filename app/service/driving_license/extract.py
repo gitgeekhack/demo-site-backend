@@ -108,6 +108,10 @@ class DLDataPointExtractorV1(MonoState):
         object_extraction_coroutines = [self.__get_text_from_object(label, detected_object) for label, detected_object
                                         in extracted_objects_with_labels.items()]
         extracted_data_by_label = await asyncio.gather(*object_extraction_coroutines)
+
+        if not extracted_data_by_label:
+            extracted_data_by_label = [(self.label[i], None) for i in self.label]
+
         return extracted_data_by_label
 
     async def __dates_per_label(self, extracted_data):
