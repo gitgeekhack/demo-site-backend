@@ -1,5 +1,4 @@
 from app.manage import create_app
-from app.resource.medical_document_insight_extraction.insight_extraction import MedDocHomePage, MedicalDocExtractorView
 
 app, logger = create_app()
 
@@ -10,6 +9,7 @@ from app.resource.certificate_of_title.extract import COTExtractor
 from app.resource.car_damage_detection.damage_detect import DamageExtractor
 from app.resource.pdf_annotation_and_extraction.PDFExtractor import HomePage, DataExtraction
 from app.resource.barcode_extraction.extract_barcode import BarCodeExtraction
+from app.resource.medical_document_insight_extraction.insight_extraction import MedDocHomePage, MedicalDocExtractorView
 
 app.router.add_view('/', Index)
 app.router.add_view('/driving-license', DLExtractor)

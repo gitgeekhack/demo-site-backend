@@ -13,6 +13,7 @@ The Marut OCR repository contains proof-of-concepts for the Machine Learning Pro
 3. Vehicle Damage Part Detection
 4. PDF Data Annotation & Extraction
 5. Veronica's Underwriting Automation
+6. Medical Insights Extractor
 
 ## Prerequisite 
 
