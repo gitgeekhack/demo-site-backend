@@ -174,7 +174,7 @@ function postToDrivingLicense(filePath) {
                                         </p>
                                     </div>
 
-                                    {% if k=='Address' %}
+                                    {% if k=='Address' and v!='NA' %}
                                         {% for k1,v1 in v.items() %}
                                             <div class="col-7 ml-auto text-left">
                                                 <p class="m-0">

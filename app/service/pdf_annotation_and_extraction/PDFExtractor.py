@@ -43,7 +43,8 @@ class DataPointExtraction:
         try:
             for page_no, datapoints in rect_boxes.items():
                 for label, bounding_box in datapoints.items():
-                    single_file_data[label] = doc[page_no].get_textbox(bounding_box)
+                    text = doc[page_no].get_textbox(bounding_box)
+                    single_file_data[label] = text if text else 'NA'
         except IndexError as e:
             logger.warning(f'Request ID: [{self.uuid}]  -> {e}')
 
@@ -59,15 +60,13 @@ class DataPointExtraction:
         try:
             total_pages = doc.page_count
             for key in rect_boxes.keys():
+                if key>=doc.page_count:
+                    break
                 for rect in rect_boxes[key].values():
                     if rect is not None:
                         doc[key].add_rect_annot(fitz.Rect(rect))
 
-            try:
-                shutil.rmtree(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER)
-            except OSError as e:
-                logger.warning(f'Request ID: [{self.uuid}]  -> {e}')
-
+            shutil.rmtree(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER, ignore_errors=True)
             await make_dir(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER)
             for page_no in range(total_pages):
                 pix = doc[page_no].get_pixmap()

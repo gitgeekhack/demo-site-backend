@@ -142,7 +142,7 @@
                                         </p>
                                     </div>
 
-                                    {% if k=='Owner Address' or k=='Lienholder Address' and v!='NA' %}
+                                    {% if k in ['Owner Address', 'Lienholder Address'] and v!='NA' %}
                                         {% for k1,v1 in v.items() %}
                                             <div class="col-7 ml-auto text-left">
                                                 <p class="m-0">
