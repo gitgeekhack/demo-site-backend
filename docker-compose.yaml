@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: demo_site.Dockerfile
+    environment:
+      Tesseract_PATH: "/usr/bin/tesseract"
+      CVAT_IP: "http://localhost:8080/"
     ports:
       - "80:80"
 
@@ -12,5 +15,7 @@ services:
     build:
       context: ./underwriting-automation
       dockerfile: underwriting_automation.Dockerfile
+    environment:
+      Tesseract_PATH: "/usr/bin/tesseract"
     ports:
       - "8000:8000"

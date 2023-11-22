@@ -11,8 +11,6 @@ ADD ./requirements.txt ./requirements.txt
 RUN pip install --upgrade pip==23.3
 RUN pip install -r requirements.txt
 RUN pip install gunicorn
-
-ENV Tesseract_PATH=/usr/bin/tesseract
 ADD ./run_underwriting_automation.py ./run.py
 ADD ./conf.py ./conf.py
 ADD ./log.conf ./log.conf
