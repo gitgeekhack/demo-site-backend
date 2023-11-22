@@ -1,6 +1,8 @@
 import os
 from enum import Enum
 
+USER_DATA_PATH = os.getenv("USER_DATA_PATH")
+
 
 class DrivingLicenseParser:
     WORLD_CITIES_LIST = './app/data/world_cities.csv'
@@ -208,8 +210,7 @@ class PDFAnnotationAndExtraction:
     UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploaded_files')
     CVAT_ANNOTATION_STORAGE_FOLDER = os.path.join(STATIC_FOLDER, 'cvat_annotations')
     ANNOTATION_FOLDER = os.path.join(STATIC_FOLDER, 'annotation_files')
-    CONVERTED_PDF_FOLDER = os.path.join(STATIC_FOLDER, 'converted_files')
+    CONVERTED_PDF_FOLDER = os.path.join(USER_DATA_PATH, 'converted_files')
     CSV_FOLDER = os.path.join(STATIC_FOLDER, 'csv')
-    PDF_IMAGES_FOLDER = os.path.join(STATIC_FOLDER, 'pdf_images')
-    PDF_IMAGES_PATH = os.path.join('/pdf_annotation_and_extraction', 'pdf_images')
+    PDF_IMAGES_FOLDER = os.path.join(USER_DATA_PATH, 'pdf_images')
     CVAT_IP = os.getenv('CVAT_IP')

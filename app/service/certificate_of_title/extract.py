@@ -11,7 +11,7 @@ from werkzeug.utils import secure_filename
 
 from app import app, logger
 from app.common.utils import MonoState
-from app.constant import CertificateOfTitle
+from app.constant import CertificateOfTitle, USER_DATA_PATH
 from app.service.helper.certificate_of_title_helper import COTHelper
 from app.service.helper.textract import TextractHelper
 from app.service.helper.cv_helper import CVHelper
@@ -210,7 +210,7 @@ class COTDataPointExtractorV1(MonoState):
                 data = {'certificate_of_title': None}
                 np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
                 filename = secure_filename(file.filename)
-                file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+                file_path = os.path.join(USER_DATA_PATH, filename)
                 input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
                 cv2.imwrite(file_path, input_image)
 
