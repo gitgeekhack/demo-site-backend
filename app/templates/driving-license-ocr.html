@@ -57,7 +57,7 @@
                         <div class="row mt-2 mx-auto" id="thumbnail_gallery">
                             {% for result in results %}
                             <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
-                                <img src="{{static('driving_license/input_images/'+result['filename'])}}"
+                                <img src="/get-resource?file_name={{result['filename']}}"
                                      onclick="openModal();currentSlide(1)"
                                      class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Result image">
                             </div>
@@ -162,7 +162,7 @@ function postToDrivingLicense(filePath) {
                     <div class="col mySlides">
                         <div class="row px-4">
                             <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-4">
-                                <img src="{{static('driving_license/input_images/'+result['filename'])}}" class="img-fluid rounded"
+                                <img src="/get-resource?file_name={{result['filename']}}" class="img-fluid rounded"
                                      alt="Image not found" style="border: 2px solid #9c9c9c;">
                             </div>
                             <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
@@ -204,7 +204,7 @@ function postToDrivingLicense(filePath) {
                 <div class="row mt-3">
                     {% for result in results %}
                     <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
-                        <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static('driving_license/input_images/'+result['filename'])}}"
+                        <img class="demo cursor img-fluid img-thumbnail my-2" src="/get-resource?file_name={{result['filename']}}"
                              onclick="currentSlide({{result.image_count}})" alt="Image not found">
                     </div>
                     {% endfor %}

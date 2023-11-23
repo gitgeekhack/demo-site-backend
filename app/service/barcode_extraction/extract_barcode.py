@@ -1,19 +1,17 @@
-import json
-import traceback
 from werkzeug.utils import secure_filename
 import os
-import requests
 from pyzbar import pyzbar
-from app import app
-from app.constant import BarcodeDetection as BE
+from app.constant import USER_DATA_PATH
 from app.business_rule_exception import NoImageFoundException, InvalidFileException
 from app.service.helper.image_helper import ImageHelper
 import cv2
 import numpy as np
 
+
 class BarcodeExtraction:
     def __init__(self, uuid):
         self.uuid = uuid
+
     def detection(self, image):
         barcodes = pyzbar.decode(image)
         barcodeData = []
@@ -34,7 +32,6 @@ class BarcodeExtraction:
                 lr_number = self.detection(obj_det_image)
         return lr_number
 
-
     def extract(self, image_data):
         results = []
         image_count = 1
@@ -43,7 +40,7 @@ class BarcodeExtraction:
             data = {"barcode_detection": None}
             np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config.INPUT_FOLDER, BE.Section.INPUT_PATH, filename)
+            file_path = os.path.join(USER_DATA_PATH, filename)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(file_path, input_image)
             data['filename'] = filename

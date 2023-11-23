@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 from app import logger, app
 from app.common.utils import MonoState
-from app.constant import DrivingLicense
+from app.constant import DrivingLicense, USER_DATA_PATH
 from app.service.helper.cv_helper import CVHelper
 from app.service.ocr.driving_license.ocr import OCRDrivingLicense as OCR
 
@@ -148,7 +148,7 @@ class DLDataPointExtractorV1(MonoState):
             data = {"driving_license": None}
             np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
             filename = secure_filename(file.filename)
-            file_path = os.path.join(app.config.INPUT_FOLDER, self.section.INPUT_PATH, filename)
+            file_path = os.path.join(USER_DATA_PATH, filename)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(file_path, input_image)
             data['filename'] = filename

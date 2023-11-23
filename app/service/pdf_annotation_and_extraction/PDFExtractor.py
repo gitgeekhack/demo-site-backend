@@ -7,7 +7,7 @@ from app import logger
 import os
 from app.service.helper.xml_parser import find_rectangle_boxes
 from app.service.helper.dynamic_data_extractor import DynamicDataExtractor
-from app.constant import PDFAnnotationAndExtraction
+from app.constant import PDFAnnotationAndExtraction, USER_DATA_PATH
 
 
 class DataPointExtraction:
@@ -112,12 +112,12 @@ class DataPointExtraction:
                 extracted_data = {}
                 for label in rect_boxes[page_no].keys():
                     extracted_data[label] = list(self.data.values())[0][label]
-                image_path = os.path.join(PDFAnnotationAndExtraction.PDF_IMAGES_PATH, f'image{page_no}.jpg')
+                image_path = os.path.join(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER, f'image{page_no}.jpg')
                 results.append(
                     {'image_path': image_path, 'extracted_data': extracted_data, 'image_count': image_count})
                 image_count += 1
             else:
-                image_path = os.path.join(PDFAnnotationAndExtraction.PDF_IMAGES_PATH, f'image{page_no}.jpg')
+                image_path = os.path.join(PDFAnnotationAndExtraction.PDF_IMAGES_FOLDER, f'image{page_no}.jpg')
                 results.append({'image_path': image_path, 'extracted_data': {}, 'image_count': image_count})
                 image_count += 1
         except KeyError as e:
@@ -150,10 +150,9 @@ class DataPointExtraction:
 
         # if data is not extracted then do ocr on pdf (convert vectored to electronic)
         values = list(self.data.values())[0]
-        if list(values.values()).count('') > 0:
+        if list(values.values()).count('NA') > 0:
             await self.convert_vectored_to_electronic(file)
-            doc = fitz.open(os.path.join(PDFAnnotationAndExtraction.STATIC_FOLDER,
-                                         f'converted_files/{os.path.basename(file)}'))
+            doc = fitz.open(os.path.join(PDFAnnotationAndExtraction.CONVERTED_PDF_FOLDER, os.path.basename(file)))
             self.data[os.path.basename(file)] = await self.extract_data(doc, static_rect_boxes)
 
         extractor = DynamicDataExtractor(self.uuid)

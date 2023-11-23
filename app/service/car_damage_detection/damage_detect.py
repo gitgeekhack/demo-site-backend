@@ -8,7 +8,7 @@ from werkzeug.utils import secure_filename
 from app import logger
 from app.common.utils import MonoState
 from app.common.utils import make_dir
-from app.constant import CarDamageDetection
+from app.constant import CarDamageDetection, USER_DATA_PATH
 from app.service.helper.cv_helper import Annotator
 
 
@@ -62,18 +62,14 @@ class DamageDetector(MonoState):
         for file_data in image_data:
             np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
             filename = secure_filename(file_data.filename)
-            input_folder_path = os.path.join(CarDamageDetection.Path.STATIC_PATH, CarDamageDetection.Path.UPLOADED_PATH)
-            input_file_path = os.path.join(input_folder_path, filename)
-            output_folder_path = os.path.join(CarDamageDetection.Path.STATIC_PATH, CarDamageDetection.Path.DETECTED_PATH)
-            output_file_path = os.path.join(output_folder_path, 'out_' + filename)
-            await make_dir(input_folder_path)
+            input_file_path = os.path.join(USER_DATA_PATH, filename)
+            output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(input_file_path, input_image)
             print(f"Request ID: [{self.uuid}]Input image/s received...")
-            await make_dir(output_folder_path)
             detection = await self.__predict_labels(input_file_path, output_file_path)
             detection[0][0] = "Headlights(Broken/Missing)"
-            out_path = os.path.join(CarDamageDetection.Path.DETECTED_PATH, 'out_' + filename)
+            out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
             results.append({'image_path': out_path, 'detection': detection, 'image_count': image_count})
             image_count += 1
         print(f'Request ID: [{self.uuid}] results obtained: [{results}]')

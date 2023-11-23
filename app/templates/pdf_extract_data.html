@@ -79,7 +79,7 @@
                         <div class="row mt-2 mx-auto" id="thumbnail_gallery">
                             {% for result in results %}
                             <div class="col-xl-2 col-lg-2 col-md-3 col-sm-3 col-4">
-                                <img src="{{static(result['image_path'])}}"
+                                <img src="/get-resource?file_name={{result['image_path']}}"
                                      onclick="openModal();currentSlide({{result.image_count}})"
                                      class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Image not found">
                             </div>
@@ -146,7 +146,7 @@
                     <div class="col mySlides">
                         <div class="row px-4">
                             <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12 mb-4">
-                                <img src="{{static(result['image_path'])}}" class="img-fluid rounded"
+                                <img src="/get-resource?file_name={{result['image_path']}}" class="img-fluid rounded"
                                      alt="Image not found" style="border: 2px solid #9c9c9c;">
                             </div>
                             <div class="col-xl-6 col-lg-6 col-md-12 col-sm-12">
@@ -192,7 +192,7 @@
                 <div class="row mt-3">
                     {% for result in results %}
                     <div class="col-xl-2 col-lg-2 col-md-3 col-sm-4 col-3">
-                        <img class="demo cursor img-fluid img-thumbnail my-2" src="{{static(result['image_path'])}}"
+                        <img class="demo cursor img-fluid img-thumbnail my-2" src="/get-resource?file_name={{result['image_path']}}"
                              onclick="currentSlide({{result.image_count}})" alt="Image not found">
                     </div>
                     {% endfor %}
