@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Car Damage Detection</title>
+    <link rel="stylesheet" type="text/css" href="../static/index_style.css">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body>
+    <h1>Car Damage Detection</h1>
+    {% if error %}
+      <p style="color: red;">{{ error }}</p>
+    {% endif %}
+    <form action="/predict" method="POST" enctype="multipart/form-data" onsubmit="return validateForm()">
+      <p style="text-align: center; font-weight: bold; font-size: 20px;"> Please Select Image To Upload</p>
+      <input type="file" name="file" accept=".jpg, .jpeg, .png" multiple>
+      <input type="submit" value="Upload">
+    </form>
+    <script>
+      function validateForm() {
+        const fileInput = document.querySelector('input[type="file"]');
+        const files = fileInput.files;
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i];
+          const fileType = file.type.toLowerCase();
+          if (!fileType.includes('jpeg') && !fileType.includes('jpg') && !fileType.includes('png')) {
+            alert(`${file.name} is not a valid image file. Please select only jpg, jpeg, or png files.`);
+            return false;
+          }
+        }
+        return true;
+      }
+    </script>
+  </body>
+</html>
+
+
+
+

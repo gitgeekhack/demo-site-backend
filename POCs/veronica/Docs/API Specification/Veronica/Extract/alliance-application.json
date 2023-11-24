@@ -1,0 +1,39 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Alliance Application",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.veronica.com/api/extract/v1"
+    }
+  ],
+  "paths": {
+    "/alliance-application": {
+      "post": {
+        "summary": "",
+        "operationId": "post-alliance-application",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "bearer_token": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "examplekey": []
+    }
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "ITC",
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "https://api.veronica.com/api/extract/v1"
+    }
+  ],
+  "paths": {
+    "/itc": {
+      "post": {
+        "summary": "",
+        "operationId": "post-itc",
+        "responses": {
+          "200": {
+            "description": "OK"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "bearer_token": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "examplekey": []
+    }
+  ]
+}

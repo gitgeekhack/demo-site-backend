@@ -1,0 +1,45 @@
+.header {
+    height : 3%;
+    width : 100%;
+    color : black;
+    font-size : 1vmax;
+    padding : 1%;
+}
+
+.center {
+    margin: 0;
+    position: absolute;
+    top: 40%;
+    left: 47%;
+}
+
+.loader {
+    border-radius: 50%;
+    border: 10px solid white;
+    border-top: 10px solid #4380e0;
+    width: 100px;
+    height: 100px;
+    -webkit-animation: spin 2s linear infinite;
+    animation: spin 2s linear infinite;
+}
+
+@-webkit-keyframes spin {
+    0% { -webkit-transform: rotate(0deg); }
+    100% { -webkit-transform: rotate(360deg); }
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.overlay {
+    background: #e9e9e9;
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    opacity: 0.9;
+}

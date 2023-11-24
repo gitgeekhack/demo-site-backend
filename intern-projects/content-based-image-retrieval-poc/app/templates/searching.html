@@ -1,0 +1,130 @@
+{% extends 'base.html' %}
+
+
+{% block title %}
+    <title>Search Similar Images</title>
+{% endblock %}
+
+
+{% block additional_script %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.css">
+    <style>
+        .gallery {
+        padding: 40px;
+        }
+
+        .gallery img {
+        width: 100%;
+        border-radius: 0;
+        position: relative;
+        }
+
+        .hidden_images{
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+
+{% block heading %}
+    <div class="display-6 newnav" style="height:1.4em;">
+        <a style="margin-left:2%; text-align:center;">Search Images</a>
+        <a href="/" style="float:right; margin-right:2%;"><button class="btn btn-outline-light">Home</button></a>
+    </div>
+{% endblock %}
+
+
+{% block data %}
+    <div style="margin-left:2%; margin-right:2%;">
+	    <br>
+        <p style="font-size:1.5em;">Select input image for searching similar images</p>
+
+        <form method="post" action="/search" enctype="multipart/form-data" id="form_loading">
+            <input type="file" name="input_image" autocomplete="off" required>
+            <input type="submit" class="btn btn-dark" value="Search" />
+        </form>
+
+        <div class="row gallery" style="padding-left:0px; padding-right:0px; padding-bottom:0px">
+            {% if search_image %}
+                <p style="font-size:1.2em; margin-bottom:0px">Search Image:</p>
+                <div class="col-sm-6 col-md-4 col-lg-2">
+                    <div class="thumbnail">
+                        <a href="{{ static('Uploaded_images/'+search_image) }}">
+                            <img class="diplay_image" src="{{ static('Uploaded_images/'+search_image) }}"
+                                 style="padding:5px; object-fit:cover;" height="270" width="250" alt="Failed to load image">
+                        </a>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+
+        <div class="row gallery" style="padding-left:0px; padding-right:0px;" id="main_gallery">
+            {% if image_names %}
+                <p style="font-size:1.2em">Similar Images: </p>
+                {% if image_names|length <= neighbors %}
+                    {% for image in image_names %}
+                        <div class="col-sm-6 col-md-4 col-lg-2">
+                            <div class="thumbnail">
+                                <a href="{{ static('Uploaded_images/'+image) }}">
+                                    <img class="diplay_image" src="{{ static('Uploaded_images/'+image) }}"
+                                         style="padding:5px; object-fit:cover;" height="270" width="250" alt="Failed to load image">
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+
+                {% if image_names|length > neighbors %}
+                    {% for image in image_names[:neighbors] %}
+                        <div class="col-sm-6 col-md-4 col-lg-2">
+                            <div class="thumbnail">
+                                <a href="{{ static('Uploaded_images/'+image) }}">
+                                    <img class="diplay_image" src="{{ static('Uploaded_images/'+image) }}"
+                                         style="padding:5px; object-fit:cover;" height="270" width="250" alt="Failed to load image">
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+
+                    {% for image in image_names[neighbors:] %}
+
+                        <div class="col-sm-6 col-md-4 col-lg-2 hidden_images">
+                            <div class="thumbnail">
+                                <a href="{{ static('Uploaded_images/'+image) }}">
+                                    <img class="diplay_image" src="{{ static('Uploaded_images/'+image) }}"
+                                         style="padding:5px; object-fit:cover;" height="270" width="250" alt="Failed to load image">
+                                </a>
+                            </div>
+                        </div>
+
+                    {% endfor %}
+
+                    <div class="col-sm-6 col-md-4 col-lg-2">
+                        <div class="thumbnail">
+                            <button type="button" class="btn btn-outline-dark" onclick="load_page()"
+                                    style="padding:5px; height:270px; width:100%; text-align:center;" id="load_button">Load More</button>
+                        </div>
+                    </div>
+                {% endif %}
+
+            {% endif %}
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/baguettebox.js/1.11.1/baguetteBox.min.js"></script>
+    <script>
+        baguetteBox.run(".gallery", {
+          animation: "slideIn"
+        });
+
+        function load_page()
+        {
+             document.getElementById("load_button").style.display = "none";
+             const items = document.getElementsByClassName("hidden_images");
+             for (const slide of items) {
+                  slide.style.display = "initial";
+                }
+
+        }
+    </script>
+{% endblock %}

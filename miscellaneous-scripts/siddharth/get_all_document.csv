@@ -1,0 +1,161 @@
+DocumentDetailID,DocumentS3URL,ParentStartPage,Type
+395733,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/1909d00666ce8163651557ccb3c14b3455b71115_hash.pdf/1909d00666ce8163651557ccb3c14b3455b71115_hash.pdf,98,Admission_Sheet
+410992,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/397e7b09daa38bff0d8afc9e90cac017d424821f_hash.pdf/397e7b09daa38bff0d8afc9e90cac017d424821f_hash.pdf,3,Admission_Sheet
+424578,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/57bcc5c9e25a094bbe5bca462fb87fc8fc4ff093_hash.pdf/57bcc5c9e25a094bbe5bca462fb87fc8fc4ff093_hash.pdf,11,Admission_Sheet
+394154,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/13477d47164a7577f5b65a70445de21bfef25d6d_hash.pdf/13477d47164a7577f5b65a70445de21bfef25d6d_hash.pdf,94,Admission_Sheet
+445802,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/8524e0daefe38f505571c6827a45aba2b9c69562_hash.pdf/8524e0daefe38f505571c6827a45aba2b9c69562_hash.pdf,13,Admission_Sheet
+391408,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/107370166c8c929128a98f40c8adf1a562af49df_hash.pdf/107370166c8c929128a98f40c8adf1a562af49df_hash.pdf,6,Ambulance
+391887,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11022022AMBULANCE+88.pdf/11022022AMBULANCE+88.pdf,2,Ambulance
+418200,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/486541eca6fd0ee5df7af14b32f90a722d7f2e8a_hash.pdf/486541eca6fd0ee5df7af14b32f90a722d7f2e8a_hash.pdf,1,Ambulance
+455523,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/9a7baa676d517d74fec9cabc50384873c2b0288c_hash.pdf/9a7baa676d517d74fec9cabc50384873c2b0288c_hash.pdf,11,Ambulance
+391719,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11022022AMBULANCE+30.pdf/11022022AMBULANCE+30.pdf,1,Ambulance
+266306,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/011073a80e24e4801725f1315fd2d0276d988e1e_hash.pdf/011073a80e24e4801725f1315fd2d0276d988e1e_hash.pdf,5,Anesthesia
+393876,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/12d8453c3aafdabe74572ad17e1fdf0aa110eda5_hash.pdf/12d8453c3aafdabe74572ad17e1fdf0aa110eda5_hash.pdf,17,Anesthesia
+422478,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/52efed848966611e220718092ab800e30d1ecd20_hash.pdf/52efed848966611e220718092ab800e30d1ecd20_hash.pdf,1,Anesthesia
+434991,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/6e0f03f06ef9e0cd6c2317bddcbb74b702381124_hash.pdf/6e0f03f06ef9e0cd6c2317bddcbb74b702381124_hash.pdf,10,Anesthesia
+445035,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/8375f37e90e67b5462e0f592f2b3e6f56dae4a55_hash.pdf/8375f37e90e67b5462e0f592f2b3e6f56dae4a55_hash.pdf,6,Anesthesia
+283453,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/264c837eee7afc5cf82653957e3dac2d18aa7e17-1_hash.pdf/264c837eee7afc5cf82653957e3dac2d18aa7e17-1_hash.pdf,1,Chiro
+303832,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/52af3ce8b19531309dd6e6268136cb2d87f72395-1_hash.pdf/52af3ce8b19531309dd6e6268136cb2d87f72395-1_hash.pdf,1,Chiro
+367750,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/df3216f5cc77a66e91f48c02aa9e632691d78851_hash.pdf/df3216f5cc77a66e91f48c02aa9e632691d78851_hash.pdf,2,Chiro
+374588,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/eeba5278ee3e795e7d8fe0d5937835a093c496c7_hash.pdf/eeba5278ee3e795e7d8fe0d5937835a093c496c7_hash.pdf,1,Chiro
+383565,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/f7fcbbf9547ab6110b25a5c93a9aea5220861fea-1_hash.pdf/f7fcbbf9547ab6110b25a5c93a9aea5220861fea-1_hash.pdf,1,Chiro
+386940,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/02f3a89577e114bb3ef8296228eafa5f7dc3e045_hash.pdf/02f3a89577e114bb3ef8296228eafa5f7dc3e045_hash.pdf,21,Dentistry
+476691,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/c6c617511249d0103abcdd34dbaefe834cba224d_hash.pdf/c6c617511249d0103abcdd34dbaefe834cba224d_hash.pdf,3,Dentistry
+410261,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/38348dcaa4555cb48a7a94fc3b1e9de4a1a19cb2_hash.pdf/38348dcaa4555cb48a7a94fc3b1e9de4a1a19cb2_hash.pdf,45,Dentistry
+395590,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/18c20a25a32cf8d37d696da611876ecf4b287235_hash.pdf/18c20a25a32cf8d37d696da611876ecf4b287235_hash.pdf,5,Dentistry
+386940,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/02f3a89577e114bb3ef8296228eafa5f7dc3e045_hash.pdf/02f3a89577e114bb3ef8296228eafa5f7dc3e045_hash.pdf,18,Dentistry
+432572,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/69c95781393ad9fdb50fcd83af753290673f85c9_hash.pdf/69c95781393ad9fdb50fcd83af753290673f85c9_hash.pdf,35,Discharge_Summary
+401924,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/27df0756114fb48f32c6d6691a56e77c.pdf/27df0756114fb48f32c6d6691a56e77c.pdf,100,Discharge_Summary
+402785,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/2965e43fde893cd23f5d37da9902f3348b852238_hash.pdf/2965e43fde893cd23f5d37da9902f3348b852238_hash.pdf,11,Discharge_Summary
+483319,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/d1e2ec85dd94e00d94192aa5e4aecf32dc88b53e_hash.pdf/d1e2ec85dd94e00d94192aa5e4aecf32dc88b53e_hash.pdf,61,Discharge_Summary
+483319,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/d1e2ec85dd94e00d94192aa5e4aecf32dc88b53e_hash.pdf/d1e2ec85dd94e00d94192aa5e4aecf32dc88b53e_hash.pdf,46,Discharge_Summary
+390243,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/0d5d6a9c765d762cdbcc8ec19de0214dd7fe487f_hash.pdf/0d5d6a9c765d762cdbcc8ec19de0214dd7fe487f_hash.pdf,1,DME
+455809,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/9b39a8cc32e2074501ba7d074438148cffd91321_hash.pdf/9b39a8cc32e2074501ba7d074438148cffd91321_hash.pdf,1,DME
+424380,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/5771661e758ddd9f09412c8df43b5491563aa55d_hash.pdf/5771661e758ddd9f09412c8df43b5491563aa55d_hash.pdf,1,DME
+448094,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/89e6f50a5093f133306428f42852c967b0365c15_hash.pdf/89e6f50a5093f133306428f42852c967b0365c15_hash.pdf,1,DME
+480625,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/ce137fa3330d8b962b3a5092ebfd28341fd0aaa7_hash.pdf/ce137fa3330d8b962b3a5092ebfd28341fd0aaa7_hash.pdf,2,DME
+395496,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/1828de785b5a4cd6508b44595476d72d255d592d_hash.pdf/1828de785b5a4cd6508b44595476d72d255d592d_hash.pdf,18,Emergency
+402609,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/293abeb5153de8c3f76d2b94f0037432505b873b_hash.pdf/293abeb5153de8c3f76d2b94f0037432505b873b_hash.pdf,18,Emergency
+408679,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/3413d933dd43c1ce2ca32c9028835ac2d6204f5b_hash.pdf/3413d933dd43c1ce2ca32c9028835ac2d6204f5b_hash.pdf,8,Emergency
+408981,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/3512bf01a9fe1a07d758d78d07b9e84dc69153df_hash.pdf/3512bf01a9fe1a07d758d78d07b9e84dc69153df_hash.pdf,36,Emergency
+401924,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/27df0756114fb48f32c6d6691a56e77c.pdf/27df0756114fb48f32c6d6691a56e77c.pdf,20,Emergency
+394765,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/15d4007f84765ef61ccdbce6833e786e4e062cf7_hash.pdf/15d4007f84765ef61ccdbce6833e786e4e062cf7_hash.pdf,3,Gastroenterology
+392162,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11022022GASTRO+55.pdf/11022022GASTRO+55.pdf,1,Gastroenterology
+385282,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023GASTRO+96-101+97.pdf/01052023GASTRO+96-101+97.pdf,1,Gastroenterology
+392080,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11022022GASTRO+43.pdf/11022022GASTRO+43.pdf,2,Gastroenterology
+430133,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/63c2da59c1d9f3be49f408e212c206bb0d8f04a0_hash.pdf/63c2da59c1d9f3be49f408e212c206bb0d8f04a0_hash.pdf,4,Gastroenterology
+455004,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/98d612698fded78d73e6262785bbda3e794a59a5_hash.pdf/98d612698fded78d73e6262785bbda3e794a59a5_hash.pdf,100,Gynecology
+392263,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11022022OB+55.pdf/11022022OB+55.pdf,1,Gynecology
+392666,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11282022ONCOLOGY+8.pdf/11282022ONCOLOGY+8.pdf,2,Gynecology
+407244,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/30d7a64750f4d8d27d7b13c4dafb503a7fbb1383-1_hash.pdf/30d7a64750f4d8d27d7b13c4dafb503a7fbb1383-1_hash.pdf,9,Gynecology
+430654,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/648d12b682378f87a773b16742db16fa4f55dcbb_hash.pdf/648d12b682378f87a773b16742db16fa4f55dcbb_hash.pdf,17,Gynecology
+266097,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/002b2125963774317afc807dc2f66af1794fbe4a-1_hash.pdf/002b2125963774317afc807dc2f66af1794fbe4a-1_hash.pdf,2,Hosp Records
+302967,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/50d51680de37dd173fa2ddee0da638512f5ec129_hash.pdf/50d51680de37dd173fa2ddee0da638512f5ec129_hash.pdf,1,Hosp Records
+388230,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/074e05e0a891a8318dd152a79cce73ea.pdf/074e05e0a891a8318dd152a79cce73ea.pdf,62,Hosp Records
+389447,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/0ab64572eba94edfb652c61304a460ce75089e9e_hash.pdf/0ab64572eba94edfb652c61304a460ce75089e9e_hash.pdf,32,Hosp Records
+393329,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11a2b829859a7b9f70e5b8b84b7b1880bc1413c2_hash.pdf/11a2b829859a7b9f70e5b8b84b7b1880bc1413c2_hash.pdf,4,Hosp Records
+504882,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/22aff9782e2e40be8538e83553652f47.pdf/22aff9782e2e40be8538e83553652f47.pdf,104,Hospital Records
+504728,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/b636dab641c5743b04231d7f4fdaca15.pdf/b636dab641c5743b04231d7f4fdaca15.pdf,73,Hospital Records
+504872,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/56207cd369b0742156defb0daf7ff752.pdf/56207cd369b0742156defb0daf7ff752.pdf,230,Hospital Records
+504155,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/2da86aa18a93e6ccb63559142407b062.pdf/2da86aa18a93e6ccb63559142407b062.pdf,70,Hospital Records
+514392,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/afcc4eb3bc9ffa95a3bf351edfdab3e6.pdf/afcc4eb3bc9ffa95a3bf351edfdab3e6.pdf,399,Hospital Records
+267308,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/03b369438ebbf7ddf6852c06b9b62e1da4b74569_hash.pdf/03b369438ebbf7ddf6852c06b9b62e1da4b74569_hash.pdf,1,Imaging Record
+275808,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/1644e0eaf8527c97ac1ca57dfb46ec455f0ddb82_hash.pdf/1644e0eaf8527c97ac1ca57dfb46ec455f0ddb82_hash.pdf,1,Imaging Record
+282137,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/233f05f43e91f8432627d90661159bc60f56eed8_hash.pdf/233f05f43e91f8432627d90661159bc60f56eed8_hash.pdf,8,Imaging Record
+295604,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/3e8320a94c840cfca4943209fafcdf7307d686d1_hash.pdf/3e8320a94c840cfca4943209fafcdf7307d686d1_hash.pdf,58,Imaging Record
+299610,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/48806cc9f2c9a0e7d61af8df1d85d4dda9f4928a-1_hash.pdf/48806cc9f2c9a0e7d61af8df1d85d4dda9f4928a-1_hash.pdf,3,Imaging Record
+439746,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/77599b679d71c245b06a0cca385001117ddc95b1_hash.pdf/77599b679d71c245b06a0cca385001117ddc95b1_hash.pdf,1,IME
+450209,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/8f5d4a391e5bd93ba3d41f4c72424c43f0afb3cc-14_hash.pdf/8f5d4a391e5bd93ba3d41f4c72424c43f0afb3cc-14_hash.pdf,1,IME
+503106,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/fff867fa109c07d7f7401899db0f889ce2c72b66-1_hash.pdf/fff867fa109c07d7f7401899db0f889ce2c72b66-1_hash.pdf,11,IME
+396686,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/1beea3bf97ab7833ec8e0fcf40d3c5bc842eca9e_hash.pdf/1beea3bf97ab7833ec8e0fcf40d3c5bc842eca9e_hash.pdf,1,IME
+445048,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/837b2406beb34002eaa59f5d6d49cce5f1c48392_hash.pdf/837b2406beb34002eaa59f5d6d49cce5f1c48392_hash.pdf,24,IME
+442483,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/7c18f55cffa2ae52f3b2e54943cd4758b0da1745_hash.pdf/7c18f55cffa2ae52f3b2e54943cd4758b0da1745_hash.pdf,1,Infectious_Disease
+487420,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/dc8d79c7347491db36e02fe8479d10cc.pdf/dc8d79c7347491db36e02fe8479d10cc.pdf,92,Infectious_Disease
+385308,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023INF+DIS+1-10+6.pdf/01052023INF+DIS+1-10+6.pdf,1,Infectious_Disease
+385289,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023INF+DIS+1-10+1.pdf/01052023INF+DIS+1-10+1.pdf,1,Infectious_Disease
+385304,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023INF+DIS+1-10+3.pdf/01052023INF+DIS+1-10+3.pdf,1,Infectious_Disease
+386207,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023refwmedicalrecords(2)+OB+160-165+165.pdf/01052023refwmedicalrecords(2)+OB+160-165+165.pdf,4,Lab_Form
+386327,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023refwmedicalrecords(5)+ONCOLOGY+100-104+103.pdf/01052023refwmedicalrecords(5)+ONCOLOGY+100-104+103.pdf,28,Lab_Form
+387515,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/055443bee1cb0cab3fd8b13172b0e808e3f9db7a_hash.pdf/055443bee1cb0cab3fd8b13172b0e808e3f9db7a_hash.pdf,49,Lab_Form
+400163,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/24490156be296014721c5641a5a46ab03e60abd4_hash.pdf/24490156be296014721c5641a5a46ab03e60abd4_hash.pdf,87,Lab_Form
+400163,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/24490156be296014721c5641a5a46ab03e60abd4_hash.pdf/24490156be296014721c5641a5a46ab03e60abd4_hash.pdf,73,Lab_Form
+383553,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/c85d38c3948c3a31369a55a401b47c06a7cbc698_hash.pdf/c85d38c3948c3a31369a55a401b47c06a7cbc698_hash.pdf,102,MD Record
+385019,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/00a9c5ab64903739837f61390b59ae98b285764e_hash.pdf/00a9c5ab64903739837f61390b59ae98b285764e_hash.pdf,10,MD Record
+385346,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023OB+101-130+108.pdf/01052023OB+101-130+108.pdf,1,MD Record
+385390,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023OB+101-130+130.pdf/01052023OB+101-130+130.pdf,1,MD Record
+385964,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023PEDIATRICS+206-210+(2)209.pdf/01052023PEDIATRICS+206-210+(2)209.pdf,1,MD Record
+418628,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/49eeda584421abf1e8c3716f12b0bdd25ef25f84_hash.pdf/49eeda584421abf1e8c3716f12b0bdd25ef25f84_hash.pdf,1,Neuro/Psych Eval
+475470,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/c3b08adb27c150f84bb04e29d198fddd3e9b0bfc_hash.pdf/c3b08adb27c150f84bb04e29d198fddd3e9b0bfc_hash.pdf,16,Neuro/Psych Eval
+489218,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/e162a7db23bfc47b196e92b392c5e8cd37c38fbc_hash.pdf/e162a7db23bfc47b196e92b392c5e8cd37c38fbc_hash.pdf,2,Neuro/Psych Eval
+414607,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/40743a29aee45e4e6ef2b56463cfb4569a94e7b3_hash.pdf/40743a29aee45e4e6ef2b56463cfb4569a94e7b3_hash.pdf,1,Neuro/Psych Eval
+493015,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/e9505c9d01968121fc091304060815c79d5b9e73-1_hash.pdf/e9505c9d01968121fc091304060815c79d5b9e73-1_hash.pdf,2,Neuro/Psych Eval
+388496,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/083a9bb98f0f1437d4da706530a87c5fd1bb7f5c_hash.pdf/083a9bb98f0f1437d4da706530a87c5fd1bb7f5c_hash.pdf,2,Neurological
+394082,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/133a46a3afd7f7e5b6268d54d1fb6fc9114c7c5a_hash.pdf/133a46a3afd7f7e5b6268d54d1fb6fc9114c7c5a_hash.pdf,4,Neurological
+397862,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/1f4e940f833c065daee57421dbb2c823ee39f7ce_hash.pdf/1f4e940f833c065daee57421dbb2c823ee39f7ce_hash.pdf,10,Neurological
+399096,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/2248bd6f8828d90aa76776c811aa6f25b56f87d5_hash.pdf/2248bd6f8828d90aa76776c811aa6f25b56f87d5_hash.pdf,8,Neurological
+410828,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/39515e863c18849cea4e3337dfdb93ffe80f67f5_hash.pdf/39515e863c18849cea4e3337dfdb93ffe80f67f5_hash.pdf,48,Neurological
+385490,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023ONCOLOGY+58-69+58.pdf/01052023ONCOLOGY+58-69+58.pdf,4,Oncology
+385513,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023ONCOLOGY+58-69+66.pdf/01052023ONCOLOGY+58-69+66.pdf,1,Oncology
+385470,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023ONCOLOGY+50-57+52.pdf/01052023ONCOLOGY+50-57+52.pdf,2,Oncology
+477026,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/c7b1951186a012372096c463717f2143d78deb0c-1_hash.pdf/c7b1951186a012372096c463717f2143d78deb0c-1_hash.pdf,110,Oncology
+385502,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023ONCOLOGY+58-69+60.pdf/01052023ONCOLOGY+58-69+60.pdf,11,Oncology
+371813,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/e8ccf2d7dac08fce4b2add4cdcf454ea1950dc5f_hash.pdf/e8ccf2d7dac08fce4b2add4cdcf454ea1950dc5f_hash.pdf,1,Operative Report
+389382,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/0a8f871b64eda966fd2c8815b0201d436b6dd6f2-2_hash.pdf/0a8f871b64eda966fd2c8815b0201d436b6dd6f2-2_hash.pdf,12,Operative Report
+394154,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/13477d47164a7577f5b65a70445de21bfef25d6d_hash.pdf/13477d47164a7577f5b65a70445de21bfef25d6d_hash.pdf,87,Operative Report
+393413,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11b88ca2de36379f3b1a20bdd5226e3fc8d7219c_hash.pdf/11b88ca2de36379f3b1a20bdd5226e3fc8d7219c_hash.pdf,24,Operative Report
+400449,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/24d3cec10812769522eff10e6b45336beb5ef81f-1_hash.pdf/24d3cec10812769522eff10e6b45336beb5ef81f-1_hash.pdf,1,Operative Report
+392793,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11282022OPHTALMOLOGY+5.pdf/11282022OPHTALMOLOGY+5.pdf,1,Ophthalmology
+432560,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/69b42a461ea1087e7749c97e4738830a55260a8f_hash.pdf/69b42a461ea1087e7749c97e4738830a55260a8f_hash.pdf,13,Ophthalmology
+443549,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/7ff8c4fd4244278377ffae05a7fbff65a20bb312_hash.pdf/7ff8c4fd4244278377ffae05a7fbff65a20bb312_hash.pdf,3,Ophthalmology
+500619,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/fa7aeeed499a37aebc4f0e2a4f02dde0df018b57_hash.pdf/fa7aeeed499a37aebc4f0e2a4f02dde0df018b57_hash.pdf,10,Ophthalmology
+412207,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/3bf5db342891def4d000fbf2d8f1223ca3012914_hash.pdf/3bf5db342891def4d000fbf2d8f1223ca3012914_hash.pdf,12,Ophthalmology
+504773,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/3d9ab00302414f904b3d0ac5a0c8707d.pdf/3d9ab00302414f904b3d0ac5a0c8707d.pdf,1,Orthopaedic
+504746,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/b730e9bf3018c8d4cdb7c1b3fd5d4064.pdf/b730e9bf3018c8d4cdb7c1b3fd5d4064.pdf,421,Orthopaedic
+509643,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/9170c325267bc3c56133e1111b0ce0e8.pdf/9170c325267bc3c56133e1111b0ce0e8.pdf,67,Orthopaedic
+509921,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/66b9631cf428e9b05cbdeb5dc415fdc0.pdf/66b9631cf428e9b05cbdeb5dc415fdc0.pdf,1,Orthopaedic
+511002,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/9d650a5cb3077b8defc313e728642862.pdf/9d650a5cb3077b8defc313e728642862.pdf,14,Orthopaedic
+287825,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/2f7f7f5dcd4cb5610846b7cc6b6b569ef9d33229-1_hash.pdf/2f7f7f5dcd4cb5610846b7cc6b6b569ef9d33229-1_hash.pdf,1,Orthropaedic
+302894,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/50b1b101496d7b3a12c0aa35c0f00e65.pdf/50b1b101496d7b3a12c0aa35c0f00e65.pdf,1,Orthropaedic
+305549,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/570c8f28052bb1f4afeb3b5763cd4b9ea10cce85_hash.pdf/570c8f28052bb1f4afeb3b5763cd4b9ea10cce85_hash.pdf,1,Orthropaedic
+338319,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/a0e1c8f2b5e8323bcdb62d9a23557fd407f87f89_hash.pdf/a0e1c8f2b5e8323bcdb62d9a23557fd407f87f89_hash.pdf,1,Orthropaedic
+383681,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/6331f3ecee74dc3d7ca06a7db88c899732267715_hash.pdf/6331f3ecee74dc3d7ca06a7db88c899732267715_hash.pdf,1,Orthropaedic
+385681,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023PATHOLOGY+40-43+40.pdf/01052023PATHOLOGY+40-43+40.pdf,1,Pathology_Result
+392915,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11282022PATHOLOGY+29.pdf/11282022PATHOLOGY+29.pdf,5,Pathology_Result
+392944,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11282022PATHOLOGY+7.pdf/11282022PATHOLOGY+7.pdf,3,Pathology_Result
+433678,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/6b5e3b9e0e7bb52a3fa78313094224a657bde323_hash.pdf/6b5e3b9e0e7bb52a3fa78313094224a657bde323_hash.pdf,1,Pathology_Result
+386236,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023refwmedicalrecords(4)+ONCOLOGY+70-74+70.pdf/01052023refwmedicalrecords(4)+ONCOLOGY+70-74+70.pdf,13,Pathology_Result
+386540,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/019f1ae0a7fc95d2ba0387c58abbb3cab0364641_hash.pdf/019f1ae0a7fc95d2ba0387c58abbb3cab0364641_hash.pdf,10,Pediatrics
+393063,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11282022PEDIATRICS+37.pdf/11282022PEDIATRICS+37.pdf,1,Pediatrics
+385794,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023PEDIATRICS+131-150+140.pdf/01052023PEDIATRICS+131-150+140.pdf,3,Pediatrics
+401924,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/27df0756114fb48f32c6d6691a56e77c.pdf/27df0756114fb48f32c6d6691a56e77c.pdf,241,Pediatrics
+427804,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/5f7897401e44205cb0b5a0b64b4f9fb4f4bbc70b_hash.pdf/5f7897401e44205cb0b5a0b64b4f9fb4f4bbc70b_hash.pdf,88,Pediatrics
+267191,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/035df79308ee461e5f6862d68a2989e0eb2e7b69_hash.pdf/035df79308ee461e5f6862d68a2989e0eb2e7b69_hash.pdf,1,Physical Therapy
+358445,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/ca0ed4e6cf1b5d7fb57ddfbd84dec6352ce3f9c7_hash.pdf/ca0ed4e6cf1b5d7fb57ddfbd84dec6352ce3f9c7_hash.pdf,34,Physical Therapy
+384540,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/f3d564601838a99e97c9b61f9ba77aa136f1d0b9_hash.pdf/f3d564601838a99e97c9b61f9ba77aa136f1d0b9_hash.pdf,27,Physical Therapy
+389038,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/09af82ae620071819b915807bb7691c33cc87ce5_hash.pdf/09af82ae620071819b915807bb7691c33cc87ce5_hash.pdf,72,Physical Therapy
+388496,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/083a9bb98f0f1437d4da706530a87c5fd1bb7f5c_hash.pdf/083a9bb98f0f1437d4da706530a87c5fd1bb7f5c_hash.pdf,74,Physical Therapy
+407540,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/31a89ccfa093dc632a3661c3d85a3318fc3273fb_hash.pdf/31a89ccfa093dc632a3661c3d85a3318fc3273fb_hash.pdf,7,Psychiatry
+407805,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/320af2a4bad735301e2fc8b41409aded7f661f0b_hash.pdf/320af2a4bad735301e2fc8b41409aded7f661f0b_hash.pdf,1,Psychiatry
+431496,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/66f6c9b9faffdab13962b15f0ab63eca0d653f2e_hash.pdf/66f6c9b9faffdab13962b15f0ab63eca0d653f2e_hash.pdf,12,Psychiatry
+431496,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/66f6c9b9faffdab13962b15f0ab63eca0d653f2e_hash.pdf/66f6c9b9faffdab13962b15f0ab63eca0d653f2e_hash.pdf,4,Psychiatry
+469374,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/b778cc8454a5e9e70c8993724c46974a673d4478_hash.pdf/b778cc8454a5e9e70c8993724c46974a673d4478_hash.pdf,48,Psychiatry
+393457,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11f24880c2c4d04db2f47d15c682db8a.pdf/11f24880c2c4d04db2f47d15c682db8a.pdf,160,Psychological_Eval
+504232,https://pareit-dev-datalabeling-anno-hash.s3.us-east-2.amazonaws.com/8257e9a1df298b9b47db817335097751.pdf/8257e9a1df298b9b47db817335097751.pdf,5,Psychological_Eval
+286233,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/2bd152856618c6b44392f47db3df7abc.pdf/2bd152856618c6b44392f47db3df7abc.pdf,137,Psychological_Eval
+393457,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11f24880c2c4d04db2f47d15c682db8a.pdf/11f24880c2c4d04db2f47d15c682db8a.pdf,201,Psychological_Eval
+480371,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/cd809412d35ec8e6c592ce88b02276c4d3148afb_hash.pdf/cd809412d35ec8e6c592ce88b02276c4d3148afb_hash.pdf,17,Psychological_Eval
+322148,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/7c2467d00487b0d2c1c344f40a3820cc7a4f228e_hash.pdf/7c2467d00487b0d2c1c344f40a3820cc7a4f228e_hash.pdf,1,Referral/Request
+324258,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/8121d2853d7dd8ee1b9bdcdaf3e13da42c3f9e49_hash.pdf/8121d2853d7dd8ee1b9bdcdaf3e13da42c3f9e49_hash.pdf,1,Referral/Request
+358153,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/c92022e912631261fda0a4d1cd7fed3644e1334e_hash.pdf/c92022e912631261fda0a4d1cd7fed3644e1334e_hash.pdf,1,Referral/Request
+394215,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/13952906e04d01eb44a68d89f0c5698308c7c536_hash.pdf/13952906e04d01eb44a68d89f0c5698308c7c536_hash.pdf,6,Referral/Request
+394231,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/13c23d04087e7ad25d8b8adc9a35cf717d994664_hash.pdf/13c23d04087e7ad25d8b8adc9a35cf717d994664_hash.pdf,1,Referral/Request
+287511,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/2ebdfe24d1d90cd956cb5cbdc28b8ffe.pdf/2ebdfe24d1d90cd956cb5cbdc28b8ffe.pdf,39,Summary
+386264,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01052023refwmedicalrecords(4)+ONCOLOGY+80-84+81.pdf/01052023refwmedicalrecords(4)+ONCOLOGY+80-84+81.pdf,1,Summary
+386628,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/01c70aad55a05def8c3aa41f15591a1a501e9fc1_hash.pdf/01c70aad55a05def8c3aa41f15591a1a501e9fc1_hash.pdf,145,Summary
+393454,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11ed7d9b10bd4a068ba2f98fd38a84cb4310a698_hash.pdf/11ed7d9b10bd4a068ba2f98fd38a84cb4310a698_hash.pdf,9,Summary
+393457,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/11f24880c2c4d04db2f47d15c682db8a.pdf/11f24880c2c4d04db2f47d15c682db8a.pdf,268,Summary
+499346,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/f6df46ffaedd0da7bbfcfdcbeed1d1e89ec52556_hash.pdf/f6df46ffaedd0da7bbfcfdcbeed1d1e89ec52556_hash.pdf,70,Supplemental Doc
+389918,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/0c123745a606f0fa1f77867a47d91f27ae6745e5_hash.pdf/0c123745a606f0fa1f77867a47d91f27ae6745e5_hash.pdf,25,Supplemental Doc
+414453,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/3fb5768c95f3d7221483da7798371215b02801b8_hash.pdf/3fb5768c95f3d7221483da7798371215b02801b8_hash.pdf,31,Supplemental Doc
+454418,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/973a800cf9e7823d8713c5c896a45870aac9aeaf_hash.pdf/973a800cf9e7823d8713c5c896a45870aac9aeaf_hash.pdf,60,Supplemental Doc
+454418,https://pareit-dev-datalabeling-anno.s3.us-east-2.amazonaws.com/973a800cf9e7823d8713c5c896a45870aac9aeaf_hash.pdf/973a800cf9e7823d8713c5c896a45870aac9aeaf_hash.pdf,43,Supplemental Doc

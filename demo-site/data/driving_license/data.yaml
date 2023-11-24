@@ -1,0 +1,6 @@
+train: ../train/images
+test: ../test/images
+val: ../valid/images
+
+nc: 10
+names: [license_number,name,address,date,gender,height,weight,hair_color,eye_color,license_class]
