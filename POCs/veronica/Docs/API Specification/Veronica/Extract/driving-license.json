@@ -1,0 +1,224 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Extract Driving License Data Points API",
+    "version": "1.0",
+    "description": ""
+  },
+  "servers": [
+    {
+      "url": "https://www.veronicainsurance.com/api/driving-license"
+    }
+  ],
+  "paths": {
+    "/v1/extract": {
+      "post": {
+        "summary": "Extract Driving License Data points",
+        "operationId": "post-driving-license",
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "driving_license": {
+                          "type": "object",
+                          "properties": {
+                            "name": {
+                              "type": "string",
+                              "description": "The extracted name from the Driving License. If unable to extract value will be null."
+                            },
+                            "address": {
+                              "type": "string",
+                              "description": "The extracted address from the Driving License. If unable to extract value will be null."
+                            },
+                            "date_of_birth": {
+                              "type": "string",
+                              "description": "The extracted date of birth from the Driving License. If unable to extract value will be null."
+                            },
+                            "exp_date": {
+                              "type": "string",
+                              "description": "The extracted expiry date of the Driving Licesne.  If unable to extract value will be null."
+                            },
+                            "license_number": {
+                              "type": "string",
+                              "description": "The extracted license number from the Driving License. If unable to extract value will be null."
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "data": {
+                        "driving_license": {
+                          "name": "John Doe",
+                          "address": "15th street, NYC",
+                          "date_of_birth": "1987-04-28",
+                          "exp_date": "2029-04-28",
+                          "license_number": "D4636307"
+                        }
+                      }
+                    }
+                  },
+                  "example-2": {
+                    "value": {
+                      "data": {
+                        "driving_license": {
+                          "name": null,
+                          "address": "15th street, NYC",
+                          "date_of_birth": "1987-04-28",
+                          "exp_date": "2029-04-28",
+                          "license_number": null
+                        }
+                      }
+                    }
+                  },
+                  "example-3": {
+                    "value": {
+                      "data": {
+                        "driving_license": null
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request\n\n|code                      |message                         |\n|------                    |---------                       |\n|invalid_document          | Input document is invalid      |\n|missing_document          | Missing required input document|\n|invalid_document_url      | Input document URL is invalid  |",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "string"
+                    },
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "code": "invalid_document",
+                      "message": "Input document is invalid"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Unauthorized"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal Server Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "message": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "examples": {
+                  "example-1": {
+                    "value": {
+                      "message": "Internal server error"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "description": "",
+                "type": "object",
+                "x-examples": {
+                  "example-1": {
+                    "document_url": ""
+                  }
+                },
+                "properties": {
+                  "document_url": {
+                    "type": "string",
+                    "description": "The input document URL of the Driving License for which data points need to be extracted."
+                  }
+                },
+                "required": [
+                  "document_url"
+                ]
+              },
+              "examples": {
+                "example-1": {
+                  "value": {
+                    "document_url": "string"
+                  }
+                }
+              }
+            }
+          },
+          "description": ""
+        },
+        "x-internal": false,
+        "security": [
+          {
+            "bearer_token": []
+          }
+        ],
+        "description": "This API extracts and retuns the data points from the driving license."
+      },
+      "parameters": []
+    }
+  },
+  "components": {
+    "schemas": {},
+    "securitySchemes": {
+      "bearer_token": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "examplekey": []
+    }
+  ]
+}
