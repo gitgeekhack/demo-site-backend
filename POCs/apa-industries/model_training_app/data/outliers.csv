@@ -1,0 +1,266 @@
+units_sold,firstSold,vehicleMaxQty,isDevelopment,make,category,year,TotalVIO,no_of_days,HasPartsAuthorityPurchased,HasWorldPacPurchased,HasSSFPurchased,sale_year_rank
+5211,2019-04-05,1,True,Chevrolet,Engine,2020,751274,365,True,True,False,2
+5211,2019-04-05,1,True,Pontiac,Engine,2020,751274,365,True,True,False,2
+5211,2019-04-05,1,True,Saturn,Engine,2020,751274,365,True,True,False,2
+6792,2019-02-01,24,True,Porsche,Engine,2019,51156,332,True,False,False,1
+6738,2018-12-04,2,False,Aston Martin,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Audi,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,BMW,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Buick,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Cadillac,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Chevrolet,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Chrysler,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Dodge,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Fisker,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Ford,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Freightliner,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Genesis,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,GMC,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Hyundai,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Jaguar,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Jeep,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Kia,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Lamborghini,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Land Rover,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Lincoln,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Mercedes-Benz,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Mini,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Mitsubishi,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Porsche,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Rolls Royce,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Saab,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Saturn,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Seat,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Subaru,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Volkswagen,Electrical,2020,7142799,365,True,True,False,3
+6738,2018-12-04,2,False,Volvo,Electrical,2020,7142799,365,True,True,False,3
+5724,2018-07-23,26,True,BMW,Engine,2019,853164,365,True,True,True,2
+5503,2018-05-26,14,True,Porsche,Body,2020,45225,365,True,False,True,3
+5696,2018-01-13,15,True,BMW,Engine,2019,730446,365,True,True,True,2
+7629,2017-06-21,1,False,BMW,Engine,2020,468419,365,True,True,True,4
+14939,2017-06-21,1,False,BMW,Engine,2020,730446,365,True,True,True,4
+15670,2017-06-21,1,False,BMW,Engine,2019,730446,365,True,True,True,3
+14288,2017-06-21,1,False,BMW,Engine,2018,730446,365,True,True,True,2
+7946,2017-05-04,1,False,Mini,Engine,2020,433619,365,True,True,True,4
+7748,2017-05-04,1,False,Mini,Engine,2019,433619,365,True,True,True,3
+8729,2017-02-06,1,False,BMW,Cooling,2020,2972159,365,True,True,True,4
+5190,2017-02-06,1,False,BMW,Cooling,2019,2972159,365,True,True,True,3
+5916,2016-08-01,2,False,BMW,Cooling,2018,1165553,365,True,True,True,3
+9518,2016-01-22,1,False,Audi,Engine,2019,104661,365,True,True,True,4
+9518,2016-01-22,1,False,Volkswagen,Engine,2019,104661,365,True,True,True,4
+8966,2015-03-13,1,False,BMW,Engine,2020,2687641,365,True,True,True,6
+7721,2015-03-13,1,False,BMW,Engine,2019,2687641,365,True,True,True,5
+6894,2014-10-03,1,False,Audi,Engine,2017,2567509,365,True,True,False,4
+6894,2014-10-03,1,False,Seat,Engine,2017,2567509,365,True,True,False,4
+6894,2014-10-03,1,False,Volkswagen,Engine,2017,2567509,365,True,True,False,4
+6259,2014-08-18,20,False,Audi,Body,2020,1368571,365,True,True,False,7
+5811,2014-08-18,20,False,Audi,Body,2017,1368571,365,True,True,False,4
+6259,2014-08-18,20,False,Volkswagen,Body,2020,1368571,365,True,True,False,7
+5811,2014-08-18,20,False,Volkswagen,Body,2017,1368571,365,True,True,False,4
+8425,2014-06-19,1,False,Audi,Engine,2016,796042,365,True,True,True,3
+8425,2014-06-19,1,False,Volkswagen,Engine,2016,796042,365,True,True,True,3
+6525,2014-04-28,1,False,BMW,Engine,2017,1742829,365,True,True,False,4
+7262,2014-04-28,1,False,BMW,Engine,2016,1742829,365,True,True,False,3
+13396,2014-04-16,1,False,Mercedes-Benz,Fuel,2020,1159151,365,True,True,True,7
+7730,2014-04-16,1,False,Mercedes-Benz,Fuel,2019,1159151,365,True,True,True,6
+31311,2014-04-16,1,False,Mercedes-Benz,Fuel,2018,1159151,365,True,True,True,5
+16464,2014-04-16,1,False,Mercedes-Benz,Fuel,2016,1159151,365,True,True,True,3
+26692,2014-04-16,1,False,Mercedes-Benz,Fuel,2017,1159151,365,True,True,True,4
+5798,2013-09-12,1,False,BMW,Climate Control,2019,1634322,365,True,True,False,7
+6408,2013-09-12,1,False,BMW,Climate Control,2018,1634322,365,True,True,False,6
+9376,2013-09-12,1,False,BMW,Climate Control,2016,1634322,365,True,True,False,4
+5657,2013-05-21,8,False,Volvo,Body,2018,665866,365,True,True,False,6
+16424,2013-04-09,16,False,Mercedes-Benz,Body,2020,1273371,365,True,True,True,8
+18539,2013-04-09,16,False,Mercedes-Benz,Body,2019,1273371,365,True,True,True,7
+7313,2013-04-09,16,False,Mercedes-Benz,Body,2018,1273371,365,True,True,True,6
+7994,2013-04-09,16,False,Mercedes-Benz,Body,2017,1273371,365,True,True,True,5
+11277,2013-04-09,16,False,Mercedes-Benz,Body,2016,1273371,365,True,True,True,4
+8130,2013-01-11,1,False,Audi,Fuel,2016,614890,365,True,True,False,4
+8130,2013-01-11,1,False,Volkswagen,Fuel,2016,614890,365,True,True,False,4
+9353,2012-11-14,2,False,BMW,Body,2019,3744694,365,True,True,True,8
+9749,2012-11-14,2,False,BMW,Body,2018,3744694,365,True,True,True,7
+8912,2012-11-14,2,False,BMW,Body,2017,3744694,365,True,True,True,6
+5560,2012-11-14,2,False,BMW,Body,2016,3744694,365,True,True,True,5
+9353,2012-11-14,2,False,Mini,Body,2019,3744694,365,True,True,True,8
+9749,2012-11-14,2,False,Mini,Body,2018,3744694,365,True,True,True,7
+8912,2012-11-14,2,False,Mini,Body,2017,3744694,365,True,True,True,6
+5560,2012-11-14,2,False,Mini,Body,2016,3744694,365,True,True,True,5
+5960,2012-10-09,1,False,BMW,Cooling,2019,540267,365,True,True,True,8
+9612,2012-10-09,1,False,BMW,Cooling,2016,540267,365,True,True,True,5
+11632,2012-10-09,1,False,BMW,Cooling,2017,540267,365,True,True,True,6
+8432,2012-10-09,1,False,BMW,Cooling,2018,540267,365,True,True,True,7
+8140,2012-07-03,1,False,Volvo,Cooling,2016,173424,365,True,True,True,5
+5681,2012-04-10,2,False,Volvo,Suspension,2016,451196,365,True,True,True,5
+8936,2012-02-28,2,False,Mercedes-Benz,Body,2020,2041904,365,True,True,True,9
+10309,2012-02-28,2,False,Mercedes-Benz,Body,2019,2041904,365,True,True,True,8
+11383,2012-02-28,2,False,Mercedes-Benz,Body,2018,2041904,365,True,True,True,7
+8177,2012-02-28,2,False,Mercedes-Benz,Body,2017,2041904,365,True,True,True,6
+11510,2012-02-28,2,False,Mercedes-Benz,Body,2016,2041904,365,True,True,True,5
+14865,2012-02-06,22,False,BMW,Engine,2020,1203139,365,True,True,False,9
+10642,2012-02-06,22,False,BMW,Engine,2019,1203139,365,True,True,False,8
+12022,2012-02-06,22,False,BMW,Engine,2018,1203139,365,True,True,False,7
+19671,2012-02-06,22,False,BMW,Engine,2017,1203139,365,True,True,False,6
+31252,2012-02-06,22,False,BMW,Engine,2016,1203139,365,True,True,False,5
+14865,2012-02-06,22,False,Land Rover,Engine,2020,1203139,365,True,True,False,9
+10642,2012-02-06,22,False,Land Rover,Engine,2019,1203139,365,True,True,False,8
+12022,2012-02-06,22,False,Land Rover,Engine,2018,1203139,365,True,True,False,7
+19671,2012-02-06,22,False,Land Rover,Engine,2017,1203139,365,True,True,False,6
+31252,2012-02-06,22,False,Land Rover,Engine,2016,1203139,365,True,True,False,5
+5397,2012-01-26,1,True,Volvo,Fuel,2016,259740,365,True,True,True,5
+5609,2011-12-06,2,False,Volvo,Suspension,2017,797128,365,True,True,True,7
+7006,2011-12-06,2,False,Volvo,Suspension,2016,797128,365,True,True,True,6
+5217,2011-07-25,10,False,Saab,Body,2018,278806,365,True,True,False,8
+11862,2011-07-25,10,False,Saab,Body,2017,278806,365,True,True,False,7
+11243,2011-07-25,10,False,Saab,Body,2016,278806,365,True,True,False,6
+5217,2011-07-25,10,False,Volvo,Body,2018,278806,365,True,True,False,8
+11862,2011-07-25,10,False,Volvo,Body,2017,278806,365,True,True,False,7
+11243,2011-07-25,10,False,Volvo,Body,2016,278806,365,True,True,False,6
+5859,2011-02-18,1,False,Volvo,Fuel,2016,621310,365,True,True,True,6
+7221,2010-12-03,2,False,BMW,Engine,2016,102195,365,True,True,False,7
+7221,2010-12-03,2,False,Land Rover,Engine,2016,102195,365,True,True,False,7
+14337,2010-11-29,1,False,Mercedes-Benz,Steering,2020,1956863,365,True,True,False,11
+12148,2010-11-29,1,False,Mercedes-Benz,Steering,2019,1956863,365,True,True,False,10
+16519,2010-11-29,1,False,Mercedes-Benz,Steering,2018,1956863,365,True,True,False,9
+15402,2010-11-29,1,False,Mercedes-Benz,Steering,2017,1956863,365,True,True,False,8
+23822,2010-11-29,1,False,Mercedes-Benz,Steering,2016,1956863,365,True,True,False,7
+5968,2010-10-22,1,False,BMW,Engine,2018,950131,365,True,True,True,9
+6752,2010-10-22,1,False,BMW,Engine,2017,950131,365,True,True,True,8
+7800,2010-10-22,1,False,BMW,Engine,2016,950131,365,True,True,True,7
+12637,2010-10-11,1,False,Audi,Cooling,2020,4825683,365,True,True,False,11
+15569,2010-10-11,1,False,Audi,Cooling,2019,4825683,365,True,True,False,10
+16430,2010-10-11,1,False,Audi,Cooling,2018,4825683,365,True,True,False,9
+18272,2010-10-11,1,False,Audi,Cooling,2017,4825683,365,True,True,False,8
+26158,2010-10-11,1,False,Audi,Cooling,2016,4825683,365,True,True,False,7
+12637,2010-10-11,1,False,Volkswagen,Cooling,2020,4825683,365,True,True,False,11
+15569,2010-10-11,1,False,Volkswagen,Cooling,2019,4825683,365,True,True,False,10
+16430,2010-10-11,1,False,Volkswagen,Cooling,2018,4825683,365,True,True,False,9
+18272,2010-10-11,1,False,Volkswagen,Cooling,2017,4825683,365,True,True,False,8
+26158,2010-10-11,1,False,Volkswagen,Cooling,2016,4825683,365,True,True,False,7
+5797,2010-05-26,1,False,BMW,Cooling,2019,652512,365,True,True,True,10
+7265,2010-04-29,4,False,BMW,Body,2020,142212,365,True,True,True,11
+14058,2010-04-29,4,False,BMW,Body,2019,142212,365,True,True,True,10
+9973,2010-04-29,4,False,BMW,Body,2018,142212,365,True,True,True,9
+8398,2010-04-29,4,False,BMW,Body,2017,142212,365,True,True,True,8
+7818,2010-04-29,4,False,BMW,Body,2016,142212,365,True,True,True,7
+7265,2010-04-29,4,False,Chevrolet,Body,2020,142212,365,True,True,True,11
+14058,2010-04-29,4,False,Chevrolet,Body,2019,142212,365,True,True,True,10
+9973,2010-04-29,4,False,Chevrolet,Body,2018,142212,365,True,True,True,9
+8398,2010-04-29,4,False,Chevrolet,Body,2017,142212,365,True,True,True,8
+7818,2010-04-29,4,False,Chevrolet,Body,2016,142212,365,True,True,True,7
+6434,2010-04-05,1,False,Audi,Cooling,2016,730319,365,True,True,True,7
+6434,2010-04-05,1,False,Volkswagen,Cooling,2016,730319,365,True,True,True,7
+11209,2010-02-10,28,False,Jaguar,Engine,2019,81233,365,True,True,False,10
+14909,2010-02-10,28,False,Jaguar,Engine,2018,81233,365,True,True,False,9
+14600,2010-02-10,28,False,Jaguar,Engine,2017,81233,365,True,True,False,8
+19434,2010-02-10,28,False,Jaguar,Engine,2016,81233,365,True,True,False,7
+6020,2010-01-28,1,False,Audi,Engine,2016,230234,365,True,True,False,7
+6020,2010-01-28,1,False,Volkswagen,Engine,2016,230234,365,True,True,False,7
+8204,2010-01-28,1,False,Volkswagen,Cooling,2016,322106,365,True,True,False,7
+8186,2010-01-28,1,False,Audi,Cooling,2016,1161122,365,True,True,False,7
+8186,2010-01-28,1,False,Volkswagen,Cooling,2016,1161122,365,True,True,False,7
+5763,2010-01-28,1,False,Volkswagen,Engine,2017,491920,365,True,True,True,8
+9378,2010-01-28,1,False,Volkswagen,Engine,2016,491920,365,True,True,True,7
+6403,2010-01-28,2,False,Audi,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Audi,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Audi,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Audi,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Audi,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,BMW,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,BMW,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,BMW,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,BMW,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,BMW,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,Dodge,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Dodge,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Dodge,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Dodge,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Dodge,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,Land Rover,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Land Rover,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Land Rover,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Land Rover,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Land Rover,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,Mercedes-Benz,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Mercedes-Benz,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Mercedes-Benz,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Mercedes-Benz,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Mercedes-Benz,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,Porsche,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Porsche,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Porsche,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Porsche,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Porsche,Body,2016,7859381,365,True,True,False,7
+6403,2010-01-28,2,False,Volkswagen,Body,2020,7859381,365,True,True,False,11
+5600,2010-01-28,2,False,Volkswagen,Body,2019,7859381,365,True,True,False,10
+6872,2010-01-28,2,False,Volkswagen,Body,2018,7859381,365,True,True,False,9
+8641,2010-01-28,2,False,Volkswagen,Body,2017,7859381,365,True,True,False,8
+7792,2010-01-28,2,False,Volkswagen,Body,2016,7859381,365,True,True,False,7
+5963,2010-01-28,1,False,Audi,Climate Control,2020,4139187,365,True,True,False,11
+7510,2010-01-28,1,False,Audi,Climate Control,2019,4139187,365,True,True,False,10
+7226,2010-01-28,1,False,Audi,Climate Control,2018,4139187,365,True,True,False,9
+11344,2010-01-28,1,False,Audi,Climate Control,2017,4139187,365,True,True,False,8
+5963,2010-01-28,1,False,Volkswagen,Climate Control,2020,4139187,365,True,True,False,11
+7510,2010-01-28,1,False,Volkswagen,Climate Control,2019,4139187,365,True,True,False,10
+7226,2010-01-28,1,False,Volkswagen,Climate Control,2018,4139187,365,True,True,False,9
+11344,2010-01-28,1,False,Volkswagen,Climate Control,2017,4139187,365,True,True,False,8
+5950,2009-09-16,1,False,BMW,Cooling,2019,2972159,365,True,True,False,11
+7457,2009-09-16,1,False,BMW,Cooling,2018,2972159,365,True,True,False,10
+8567,2009-09-16,1,False,BMW,Cooling,2017,2972159,365,True,True,False,9
+7854,2009-09-16,1,False,BMW,Cooling,2016,2972159,365,True,True,False,8
+6188,2009-08-14,1,False,Land Rover,Fuel,2016,67334,365,True,True,True,8
+5973,2009-03-18,1,False,BMW,Cooling,2019,899735,365,True,True,True,11
+7982,2009-03-18,1,False,BMW,Cooling,2018,899735,365,True,True,True,10
+7707,2009-03-18,1,False,BMW,Cooling,2017,899735,365,True,True,True,9
+5812,2009-03-18,1,False,BMW,Cooling,2016,899735,365,True,True,True,8
+7424,2009-03-04,1,False,BMW,Fuel,2017,783637,365,True,True,False,9
+10902,2009-03-04,1,False,BMW,Fuel,2016,783637,365,True,True,False,8
+5334,2009-01-14,4,True,Jaguar,Engine,2016,73318,365,True,True,False,8
+5588,2009-01-14,4,True,Jaguar,Engine,2017,73318,365,True,True,False,9
+11727,2008-10-08,3,False,Maybach,Brakes,2019,2423575,365,True,True,False,12
+15171,2008-10-08,3,False,Maybach,Brakes,2018,2423575,365,True,True,False,11
+6246,2008-10-08,3,False,Maybach,Brakes,2017,2423575,365,True,True,False,10
+6645,2008-10-08,3,False,Maybach,Brakes,2016,2423575,365,True,True,False,9
+11727,2008-10-08,3,False,Mercedes-Benz,Brakes,2019,2423575,365,True,True,False,12
+15171,2008-10-08,3,False,Mercedes-Benz,Brakes,2018,2423575,365,True,True,False,11
+6246,2008-10-08,3,False,Mercedes-Benz,Brakes,2017,2423575,365,True,True,False,10
+6645,2008-10-08,3,False,Mercedes-Benz,Brakes,2016,2423575,365,True,True,False,9
+5814,2008-09-19,1,False,BMW,Fuel,2016,807835,365,True,True,True,9
+5957,2008-09-05,3,False,BMW,Fuel,2018,1021401,365,True,True,True,11
+6656,2008-09-05,3,False,BMW,Fuel,2017,1021401,365,True,True,True,10
+8412,2008-09-05,3,False,BMW,Fuel,2016,1021401,365,True,True,True,9
+5957,2008-09-05,3,False,Land Rover,Fuel,2018,1021401,365,True,True,True,11
+6656,2008-09-05,3,False,Land Rover,Fuel,2017,1021401,365,True,True,True,10
+8412,2008-09-05,3,False,Land Rover,Fuel,2016,1021401,365,True,True,True,9
+9132,2008-08-08,8,False,Chrysler,Brakes,2019,645036,365,True,True,False,12
+11071,2008-08-08,8,False,Chrysler,Brakes,2018,645036,365,True,True,False,11
+11106,2008-08-08,8,False,Chrysler,Brakes,2017,645036,365,True,True,False,10
+6747,2008-08-08,8,False,Chrysler,Brakes,2016,645036,365,True,True,False,9
+9132,2008-08-08,8,False,Mercedes-Benz,Brakes,2019,645036,365,True,True,False,12
+11071,2008-08-08,8,False,Mercedes-Benz,Brakes,2018,645036,365,True,True,False,11
+11106,2008-08-08,8,False,Mercedes-Benz,Brakes,2017,645036,365,True,True,False,10
+6747,2008-08-08,8,False,Mercedes-Benz,Brakes,2016,645036,365,True,True,False,9
+7205,2008-01-21,1,False,BMW,Cooling,2020,923269,365,True,True,True,13
+8529,2008-01-21,1,False,BMW,Cooling,2019,923269,365,True,True,True,12
+11737,2008-01-21,1,False,BMW,Cooling,2018,923269,365,True,True,True,11
+12033,2008-01-21,1,False,BMW,Cooling,2017,923269,365,True,True,True,10
+13158,2008-01-21,1,False,BMW,Cooling,2016,923269,365,True,True,True,9
+5181,2008-01-16,1,False,Chrysler,Transmission,2018,1243626,365,True,True,True,11
+5311,2008-01-16,1,False,Chrysler,Transmission,2016,1243626,365,True,True,True,9
+5181,2008-01-16,1,False,Dodge,Transmission,2018,1243626,365,True,True,True,11
+5311,2008-01-16,1,False,Dodge,Transmission,2016,1243626,365,True,True,True,9
+5181,2008-01-16,1,False,Jeep,Transmission,2018,1243626,365,True,True,True,11
+5311,2008-01-16,1,False,Jeep,Transmission,2016,1243626,365,True,True,True,9
+5181,2008-01-16,1,False,Mercedes-Benz,Transmission,2018,1243626,365,True,True,True,11
+5311,2008-01-16,1,False,Mercedes-Benz,Transmission,2016,1243626,365,True,True,True,9
+7497,2007-11-12,3,True,Mercedes-Benz,Engine,2018,38935,365,True,True,True,12
+18426,2007-11-12,3,True,Mercedes-Benz,Engine,2016,38935,365,True,True,True,10
+14950,2007-11-12,3,True,Mercedes-Benz,Engine,2017,38935,365,True,True,True,11
+6905,2007-10-04,1,False,Mercedes-Benz,Cooling,2018,3316012,365,True,True,False,12
+5426,2007-08-08,1,False,BMW,Cooling,2018,1113946,365,False,True,False,12
+5580,2007-07-24,1,False,BMW,Electrical,2016,4319930,365,True,True,True,10
+5580,2007-07-24,1,False,Mini,Electrical,2016,4319930,365,True,True,True,10
+6673,2007-05-03,1,False,BMW,Cooling,2017,715942,365,False,True,True,11
+6026,2006-12-20,1,False,Volvo,Fuel,2016,738577,365,True,True,True,11
+8254,1999-07-09,4,False,Jaguar,Body,2016,2919,365,False,False,False,18
+5862,1999-01-04,2,True,Volvo,Engine,2016,91781,365,True,True,False,18
+5714,1999-01-04,2,True,Volvo,Engine,2017,91781,365,True,True,False,19

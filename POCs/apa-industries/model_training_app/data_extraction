@@ -1,0 +1,13 @@
+import pandas as pd
+
+from model_training_app.config import Constant
+
+df = pd.read_csv(Constant.PREPROCESSED_WITH_PART_ID_DATA_FILE)
+cols = ["make", "category", "year"
+    # , "TotalVIO", "isDevelopment",
+        #     "SaleYearRank", "HasPartsAuthorityPurchased",
+        #     "HasWorldPacPurchased",
+        #     "HasSSFPurchased"
+        ]
+df = df.sort_values(cols)
+df.to_csv('temp.csv', index=False)
