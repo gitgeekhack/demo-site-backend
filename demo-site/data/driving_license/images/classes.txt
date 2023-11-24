@@ -1,0 +1,11 @@
+license_number
+name
+address
+date_of_birth
+expiry_date
+issue_date
+gender
+height
+hair_color
+eye_color
+license_class

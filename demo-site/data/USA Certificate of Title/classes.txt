@@ -1,0 +1,16 @@
+title_no
+vin
+year
+make
+model
+body_style
+odometer_reading
+issue_date
+owner_name
+owner_address
+lienholder_name
+lienholder_address
+lien_date
+document_type
+title_type
+remark
