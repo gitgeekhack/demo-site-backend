@@ -49,13 +49,11 @@
                                 <div class="row">
                                     <div class="col">
                                         <label class="btn upload-btn btn-block" for="input_pdf">
-                                            <input id="input_pdf" type="file" name="input_pdf" style="display:none">
+                                            <input id="input_pdf" type="file" name="input_pdf" style="display:none" onchange="uploadAndRedirect(this)">
                                             Upload
                                         </label>
                                     </div>
-                                    <div class="col">
-                                        <button type="submit" class="btn upload-btn btn-block">Extract Data</button>
-                                    </div>
+
                                 </div>
                             </form>
                         </div>
@@ -65,29 +63,65 @@
         </div>
     </div>
 </div>
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+     aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered d-flex justify-content-center"
+         role="document">
+        <img src="{{ static( 'img/loader.gif') }}" height="50" alt="Image not found">
+    </div>
+</div>
+<div id="result-container"></div>
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"
+    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"
+        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
+        crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"
+        integrity="sha384-smHYKdLADwkXOn1EmN1qk/HfnUcbVRZyYmZ4qpPea6sjB/pTJ0euyQp0Mk8ck+5T"
+        crossorigin="anonymous"></script>
+
 <script>
-    document.getElementById("upload-form").addEventListener("submit", function (event) {
-        event.preventDefault(); // Prevent the default form submission
+    function uploadAndRedirect(input) {
+        // Show loader
+        $('#exampleModal').modal('show');
 
-        // Create a FormData object to capture the uploaded file
-        var formData = new FormData(document.getElementById("upload-form"));
+        // Get the selected file
+        var file = input.files[0];
 
-        // Use the fetch API to send the file to the server for processing
-        fetch("/med-doc/extract", {
-            method: "POST",
-            body: formData
-        })
-        .then(response => response.text()) // Assuming the server responds with processed data as text
-        .then(data => {
-           if (data === "success") {
-                // Redirect to a new URL after a successful form submission
-                window.location.href = "/new-url"; // Replace "/med-doc/extract" with the desired URL
-            } else {
-                // Handle the case where processing was not successful (e.g., display an error message)
-                var resultDiv = document.getElementById("result");
-                resultDiv.innerHTML = "Processing failed.";
+        // Create a new FormData object and append the file to it
+        var formData = new FormData();
+        formData.append('input_pdf', file);
+
+        // Use AJAX to submit the form
+        $.ajax({
+            url: '/med-doc/extract',
+            type: 'POST',
+            data: formData,
+            contentType: false,
+            processData: false,
+            success: function(response) {
+                $('#exampleModal').modal('hide');
+
+                // Render the HTML response in a container (assuming you have a container with the id 'result-container')
+                document.open();
+                document.write(response);
+                document.close();
+            },
+            error: function(xhr, textStatus, errorThrown) {
+                // Handle the error and display a message
+                console.error(xhr.responseText);
+
+                $('#exampleModal').modal('hide');
+
+                // Display an error message in the browser
+                document.open();
+                document.write('<h1>Error</h1>');
+                document.write('<p>An internal server error occurred. Please try again later.</p>');
+                document.close();
             }
-    });
+        });
+    }
 </script>
 <div id="result"></div>
 </body>
