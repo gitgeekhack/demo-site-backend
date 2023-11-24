@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ static('css/index.css') }}">
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="{{ static('js/index.js') }}"></script>
+
+    <title>wotnot.io</title>
+</head>
+
+<body>
+    <div class="container-fluid">
+        <div class="header">
+            <img src="{{ static('img/WOTNOT.png') }}" alt="wotnot_logo" width="4%" height="4%" onclick="window.location.href='{{ url('index') }}';">
+            <span style="font-weight:bold; opacity:0.8;">WOTNOT</span>
+            <div style="font-size:22px; margin:1%; float:right" >
+                <button type="button" onclick="window.location.href='{{ url('dashboard', time='15m') }}';"
+                    id="btn_dashboard" class="btn btn-outline-primary">Dashboard</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid shadow-sm p-3 mb-5 bg-white rounded">
+        <h1 class="d-flex justify-content-center" style="font-weight:bold;">
+            Predict emotion's based on the text.
+        </h1>
+        <form action="/" method="POST">
+            <div class="mb-3" style="margin:1% 10% 1% 10%;">
+                <textarea class="form-control" name="txt_area" id="txt_area" rows="3" placeholder="Enter your text..." required></textarea>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button type="submit" id="btn_predict" class="btn btn-primary">
+                    Predict Emotion
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <div style="margin:2%" id="predicted_emotion">
+        <table class="table table-hover">
+            <thead class="table-primary">
+                <tr>
+                    <th scope="col">Text</th>
+                    <th scope="col">Emotion</th>
+                </tr>
+            </thead>
+                <tbody>
+                    {% for idx in range(response['message']|length) %}
+                        <tr>
+                            {% if response['emotion'][idx] == "Positive" %}
+                                <td style="color: blue;">{{ response['message'][idx] }}</td>
+                                <td style="color: blue;">{{ response['emotion'][idx] }}</td>
+                            {% elif response['emotion'][idx] == "Negative" %}
+                                <td style="color: red;">{{ response['message'][idx] }}</td>
+                                <td style="color: red;">{{ response['emotion'][idx] }}</td>
+                            {% else %}
+                                <td style="color: #FF8C00;">{{ response['message'][idx] }}</td>
+                                <td style="color: #FF8C00;">{{ response['emotion'][idx] }}</td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+        </table>
+    </div>
+
+    <div class="overlay">
+        <div class="center">
+            <div class='loader' id='searching-loader' style="display:none;"></div>
+        </div>
+    </div>
+</body>
+</html>
