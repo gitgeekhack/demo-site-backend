@@ -49,7 +49,7 @@
                                 <div class="row">
                                     <div class="col">
                                         <label class="btn upload-btn btn-block" for="input_pdf">
-                                            <input id="input_pdf" type="file" name="input_pdf" style="display:none" onchange="uploadAndRedirect(this)">
+                                            <input id="input_pdf" type="file" name="input_pdf" style="display:none" onchange="uploadAndRedirect(this, false, 'fileInput')">
                                             Upload
                                         </label>
                                     </div>
@@ -58,6 +58,49 @@
                             </form>
                         </div>
                     </div>
+                </div>
+            </div>
+            <div class="card mt-4">
+                <div class="card-body">
+                    <p class="card-title">Sample pdfs to try:</p>
+                    <div class="container" style="padding:0px;margin:0px">
+                        <div class="row">
+                            <div class="col-md">
+                                <form id="myform1" action="/med-doc" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file" id="fileInput1"
+                                           value="{{ static('medical_insights/CMSample1.pdf') }}">
+                                    <img src="{{ static('medical_insights/CMSample1.png') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image1"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;" onclick="uploadAndRedirect(this, true, 'fileInput1')">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform2" action="/med-doc" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file" id="fileInput2"
+                                           value="{{ static('medical_insights/CMSample2.pdf') }}">
+                                    <img src="{{ static('medical_insights/CMSample2.png') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image2"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;" onclick="uploadAndRedirect(this, true , 'fileInput2')">
+                                </form>
+                            </div>
+                            <div class="col-md">
+                                <form id="myform3" action="/med-doc" method="post"
+                                      enctype="multipart/form-data">
+                                    <input type="hidden" name="file" id="fileInput3"
+                                           value="{{ static('medical_insights/CMSample3.pdf') }}">
+                                    <img src="{{ static('medical_insights/CMSample3.png') }}"
+                                         class="img-fluid img-thumbnail hover-shadow cursor my-2" alt="Click me"
+                                         id="image3"
+                                         style="cursor: pointer;height: 450px; width: 300px; object-fit: contain;" onclick="uploadAndRedirect(this, true, 'fileInput3')">
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -82,12 +125,17 @@
         crossorigin="anonymous"></script>
 
 <script>
-    function uploadAndRedirect(input) {
+    function uploadAndRedirect(input, downloadFileEnabled, fileInputId) {
+        // For Sample Files
+        if (downloadFileEnabled){
+            var file = document.getElementById(fileInputId).value;
+            downloadFile(file);
+        }
+        else {
+            var file = input.files[0];
+        }
         // Show loader
         $('#exampleModal').modal('show');
-
-        // Get the selected file
-        var file = input.files[0];
 
         // Create a new FormData object and append the file to it
         var formData = new FormData();
@@ -121,6 +169,29 @@
                 document.close();
             }
         });
+    }
+    function downloadFile(filePath) {
+        if (!hasFileBeenDownloaded(filePath)) {
+            var link = document.createElement('a');
+            link.href = filePath;
+            link.download = getFileName(filePath);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Sets a flag indicating that the file has been downloaded
+            var downloadedFiles = localStorage.getItem('downloadedFiles') || '';
+            downloadedFiles += filePath + ';';
+            localStorage.setItem('downloadedFiles', downloadedFiles);
+        }
+    }
+    function getFileName(path) {
+        var index = path.lastIndexOf('/');
+        return path.substring(index + 1);
+    }
+    function hasFileBeenDownloaded(filePath) {
+        var downloadedFiles = localStorage.getItem('downloadedFiles');
+        return downloadedFiles && downloadedFiles.includes(filePath);
     }
 </script>
 <div id="result"></div>

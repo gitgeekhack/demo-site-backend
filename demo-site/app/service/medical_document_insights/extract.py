@@ -21,7 +21,10 @@ class DocumentInsightExtractor:
         self.document = document
 
     def extract(self):
-        file_content_bytesio = io.BytesIO(self.document.file.read())
+        if not isinstance(self.document, io.BytesIO):
+            file_content_bytesio = io.BytesIO(self.document.file.read())
+        else:
+            file_content_bytesio = self.document
 
         input_ = os.path.join(os.path.dirname(os.path.abspath('app/static')),
                               'static/medical_insights_poc')
@@ -66,6 +69,5 @@ class DocumentInsightExtractor:
         encounter_dates = BedrockEncounterDatesExtractor()
         enc_result = encounter_dates.generate_response(docs)
         result['document_origanizer'] = enc_result
-        print(result)
 
         return result
