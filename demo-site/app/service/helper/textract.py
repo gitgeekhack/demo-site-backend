@@ -56,6 +56,21 @@ class TextractHelper:
 
         return word_blocks
 
+    def __get_line_blocks(self, response):
+        word_blocks = []
+        for block in response['Blocks']:
+            if block['BlockType'] == 'LINE':
+                word_block = copy.deepcopy(block)
+                y_1, y_2, x_1, x_2 = block['Geometry']['BoundingBox']['Top'], \
+                    block['Geometry']['BoundingBox']['Top'] + block['Geometry']['BoundingBox']['Height'], \
+                    block['Geometry']['BoundingBox']['Left'], \
+                    block['Geometry']['BoundingBox']['Left'] + block['Geometry']['BoundingBox']['Width']
+
+                word_block['bbox'] = [x_1, y_1, x_2, y_2]
+                word_blocks.append(word_block)
+
+        return word_blocks
+
     def get_text(self, image_path, detected_objects):
         detected_objects = {i: list(detected_objects[i]['bbox']) for i in detected_objects}
         image = Image.open(image_path)
@@ -64,17 +79,19 @@ class TextractHelper:
 
         response = self.get_textract_response(image_path)
         word_blocks = self.__get_word_blocks(response)
+        line_blocks = self.__get_line_blocks(response)
 
         extracted_texts = {}
         for obj in detected_objects:
             normalized_bbox = self.__normalize_bbox(detected_objects[obj], height, width)
             detected_objects[obj] = normalized_bbox
 
+            text_blocks = line_blocks if obj in ['owner_address', 'lienholder_address'] else word_blocks
             text = []
-            for block in word_blocks:
+            for block in text_blocks:
                 overlap_score = self.__coinciding_bboxes_iou(block['bbox'], normalized_bbox)
                 if overlap_score >= 0.6:
                     text.append(block['Text'])
-            extracted_texts[obj] = ' '.join(text)
+            extracted_texts[obj] = '\n'.join(text) if obj in ['owner_address', 'lienholder_address'] else ' '.join(text)
 
         return extracted_texts
