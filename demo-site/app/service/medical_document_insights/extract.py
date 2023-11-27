@@ -24,8 +24,10 @@ class DocumentInsightExtractor:
     def extract(self):
         if not isinstance(self.document, io.BytesIO):
             file_content_bytesio = io.BytesIO(self.document.file.read())
+            filename = self.document.filename
         else:
             file_content_bytesio = self.document
+            filename = self.document.filename.split('/')[-1]
 
         input_ = os.path.join(USER_DATA_PATH, 'medical_insights_poc')
         if not os.path.exists(input_):
@@ -40,7 +42,7 @@ class DocumentInsightExtractor:
         output_dir = "medical_insights_poc"
 
         result = dict()
-        result['document'] = self.document.filename
+        result['document'] = filename
         pdf_extractor = PDFTextExtractor(input_dir, output_dir)
         pdf_extractor.extract_and_save_text()
         json_dir = "medical_insights_poc/json_save"
