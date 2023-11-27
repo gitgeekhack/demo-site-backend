@@ -13,6 +13,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 
 from app.service.medical_document_insights.nlp_extractor.summarizer import LanguageModelWrapper
+from app.constant import USER_DATA_PATH
 
 
 class DocumentInsightExtractor:
@@ -26,8 +27,7 @@ class DocumentInsightExtractor:
         else:
             file_content_bytesio = self.document
 
-        input_ = os.path.join(os.path.dirname(os.path.abspath('app/static')),
-                              'static/medical_insights_poc')
+        input_ = os.path.join(USER_DATA_PATH, 'medical_insights_poc')
         if not os.path.exists(input_):
             os.mkdir(input_)
         pdf_files_directory = os.path.join(input_, 'pdf_files')
@@ -37,13 +37,13 @@ class DocumentInsightExtractor:
         with open(input_dir, "wb+") as pdf_file:
             pdf_file.write(file_content_bytesio.getvalue())
         pdf_name = input_dir.split("/")[-1].split(".")[0]
-        output_dir = "app/static/medical_insights_poc"
+        output_dir = "medical_insights_poc"
 
         result = dict()
 
         pdf_extractor = PDFTextExtractor(input_dir, output_dir)
         pdf_extractor.extract_and_save_text()
-        json_dir = "app/static/medical_insights_poc/json_save"
+        json_dir = "medical_insights_poc/json_save"
         with open(f'{json_dir}/{pdf_name}_text.json', 'r') as file:
             data = json.loads(file.read())
 
