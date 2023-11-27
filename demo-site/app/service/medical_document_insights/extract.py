@@ -40,7 +40,7 @@ class DocumentInsightExtractor:
         output_dir = "medical_insights_poc"
 
         result = dict()
-
+        result['document'] = self.document.filename
         pdf_extractor = PDFTextExtractor(input_dir, output_dir)
         pdf_extractor.extract_and_save_text()
         json_dir = "medical_insights_poc/json_save"
