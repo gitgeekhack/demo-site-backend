@@ -135,6 +135,11 @@
         color: #333333;
         font-size: 18px;
       }
+      .pdf-name {
+        text-align: justify;
+        color: #333333;
+        font-size: 18px;
+      }
     </style>
   </head>
   <body>
@@ -147,6 +152,7 @@
         <a class="sidebar-item" href="#encounters">Encounters</a>
       </div>
       <div class="content">
+        <p class="pdf-name"> <b>Document</b>: {{ data.document }} </p>
         <div id="dates">
           <h2 class="title">Dates</h2>
           <table class="dates-table">
