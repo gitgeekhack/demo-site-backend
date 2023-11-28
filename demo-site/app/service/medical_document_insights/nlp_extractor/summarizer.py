@@ -26,8 +26,16 @@ class LanguageModelWrapper:
     def generate_summary(self, docs):
         chain = load_summarize_chain(self.llm, chain_type='refine')
         summary = chain.run(docs)
-
+        final_summary = self.post_process_summary(summary)
         summary_dict = {
-            "summary": summary
+            "summary": final_summary
         }
         return summary_dict
+
+    def post_process_summary(self, summary):
+        text = summary.strip()
+        lines = text.split('\n')
+        if lines[-1].__contains__('?'):
+            lines = lines[:-1]
+        modified_text = '\n'.join(lines)
+        return modified_text
