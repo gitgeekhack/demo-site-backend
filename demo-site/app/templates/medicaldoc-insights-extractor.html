@@ -9,6 +9,7 @@
       href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <title>Medical Document POC</title>
     <style type="text/css">
       :root {
@@ -16,6 +17,7 @@
         --theme-color-light: #f5f5f5;
       }
       html {
+        scroll-behavior: smooth;
         scroll-behavior: smooth;
       }
       body {
@@ -40,8 +42,15 @@
         background: var(--theme-color);
         color: black;
         padding: 15px 70px;
-        position: relative;
+        position: fixed; /* Change to fixed */
+        top: 0; /* Stick to the top */
+        left: 0;
+        right: 0; /* Take full width */
         z-index: 2;
+      }
+
+      .btn-group {
+        margin-left: auto; /* Move buttons to the right */
       }
       .sidebar {
         display: flex;
@@ -79,7 +88,7 @@
         flex-direction: column;
         gap: 30px;
         margin-left: 350px;
-        padding: 30px 70px 70px 70px;
+        padding: 100px 70px 70px 70px;
       }
       .title {
         font-size: 30px;
@@ -140,11 +149,67 @@
         color: #333333;
         font-size: 18px;
       }
+      .qna-container {
+        background-color: #f8f9fa;
+        height: 100vh;
+        display: none; /* Hide by default */
+        flex-direction: column;
+        align-items: center; /* Center vertically */
+        justify-content: center; /* Center horizontally */
+        margin-top: 70px;
+      }
+
+      .container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        height: 100%;
+        margin-top: 10px;
+        margin-bottom: 10px;
+      }
+
+      .question-answer {
+        width: 100%; /* Set the width as needed */
+        display: none; /* Hide by default */
+        font-size: 18px;
+        font-weight: 100;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 20px;
+        margin-top: 10px;
+      }
+
+      .input-container {
+        position: fixed;
+        bottom: 0;
+        width: 100%;
+        padding: 15px;
+        box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+        background-color: #ffffff; /* Set your desired background color */
+      }
+
+      .btn-primary {
+        color: #f5f5f5;
+        background-color: #00796b !important;
+        border-color: #00796b !important;
+      }
+
+      .card-header {
+        font-weight: bold;
+      }
+
     </style>
   </head>
   <body>
-    <div class="medical-summary-box">Medical Summary POC</div>
-    <div>
+    <div class="medical-summary-box">
+      <div class="btn-group btn-group-toggle">
+        <button id="summaryToggle" class="btn btn-outline-light active" onclick="toggleView('summary')">Insights</button>
+        <button id="qnaToggle" class="btn btn-outline-light" onclick="toggleView('qna')">QnA</button>
+      </div>
+    </div>
+    <div class="insight-container">
       <div class="sidebar">
         <a class="sidebar-item active" href="#dates">Dates</a>
         <a class="sidebar-item" href="#summary">Summary</a>
@@ -152,7 +217,7 @@
         <a class="sidebar-item" href="#encounters">Encounters</a>
       </div>
       <div class="content">
-        <p class="pdf-name"> <b>Document</b>: {{ data.document }} </p>
+        <p class="pdf-name" id="pdf-name"><b>Document</b>: {{ data.document }} </p>
         <div id="dates">
           <h2 class="title">Dates</h2>
           <table class="dates-table">
@@ -221,6 +286,42 @@
         </div>
       </div>
     </div>
+    <div class="qna-container">
+      <div class="container">
+    <div id="default-text" class="text-center">
+      <h4>Ask a question...</h4>
+    </div>
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog"
+         aria-labelledby="exampleModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered d-flex justify-content-center"
+             role="document">
+            <img src="{{ static( 'img/loader.gif') }}" height="50" alt="Image not found">
+        </div>
+    </div>
+    <div id="qa-container" class="card question-answer bg-light mb-3">
+      <div class="card-header" id="question-text">
+      </div>
+      <div class="card-body"  id="answer-text">
+      </div>
+    </div>
+  </div>
+
+  <div class="input-container">
+    <div class="container d-flex justify-content-center">
+      <div class="input-group">
+        <input type="text" id="question-input" class="form-control" placeholder="Type your question...">
+        <div class="input-group-append">
+          <button class="btn btn-primary" type="button" onclick="askQuestion()">Send</button>
+        </div>
+      </div>
+    </div>
+  </div>
+    </div>
+    <div id="result-container"></div>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
     <script type="text/javascript">
       window.addEventListener("load", () => {
         window.scrollTo(0, 0);
@@ -234,6 +335,60 @@
           item.classList.add("active");
         });
       });
+
+      function toggleView(view) {
+        var summaryToggle = document.getElementById("summaryToggle");
+        var qnaToggle = document.getElementById("qnaToggle");
+        var insightContainer = document.querySelector(".insight-container");
+        var qnaContainer = document.querySelector(".qna-container");
+
+        if (view === "summary") {
+          summaryToggle.classList.add("active");
+          qnaToggle.classList.remove("active");
+          insightContainer.style.display = "flex";
+          qnaContainer.style.display = "none";
+        } else {
+          summaryToggle.classList.remove("active");
+          qnaToggle.classList.add("active");
+          insightContainer.style.display = "none";
+          qnaContainer.style.display = "flex";
+        }
+      }
+
+      function askQuestion() {
+        // Gets the user's question from the input
+        $('#exampleModal').modal('show');
+        var userQuestion = document.getElementById("question-input").value;
+        var doc = document.getElementById("pdf-name").innerText;
+        console.log(doc)
+        var docData = doc.replace("Document: ", "")
+        console.log(docData)
+        $.ajax({
+          url: '/med-doc/qna-extract',
+          method: 'POST',
+          data: JSON.stringify({'input_pdf': docData, 'input_query': userQuestion}),
+          success: function (apiResponse) {
+              $('#exampleModal').modal('hide');
+
+              document.getElementById("question-input").value = "";
+
+              // Update the displayed question and answer
+              document.getElementById("question-text").innerText = apiResponse.query;
+              document.getElementById("answer-text").innerText = apiResponse.result;
+
+              // Toggle the display of the default text and the question-answer container
+              document.getElementById("default-text").style.display = "none";
+              document.getElementById("qa-container").style.display = "block";
+          },
+          error: function (xhr, status, error) {
+              $('#exampleModal').modal('hide');
+              // Handle the case when the Ajax request fails
+              console.error('Ajax request failed:', error);
+          },
+      });
+
+
+     }
     </script>
   </body>
 </html>

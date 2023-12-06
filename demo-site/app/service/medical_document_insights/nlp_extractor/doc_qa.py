@@ -8,6 +8,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.llms.bedrock import Bedrock
 from langchain.docstore.document import Document
 from langchain.chains import RetrievalQA
+from app.constant import USER_DATA_PATH
 
 
 class MedicalAssistant:
@@ -75,7 +76,7 @@ class MedicalAssistant:
             retriever=vector_store.as_retriever(
                 search_type="similarity", search_kwargs={"k": 6}
             ),
-            return_source_documents=True,
+            # return_source_documents=True,
             chain_type_kwargs={"prompt": prompt_template},
             # verbose = True
         )
@@ -91,9 +92,8 @@ class MedicalAssistant:
         output['result'] = modified_text
         return output
 
-    def run_medical_assistant(self, query, vector_store):
+    def run_medical_assistant(self, query, vector_store, assistant):
         conversation_chain = assistant.create_conversation_chain(vector_store, self.prompt)
         answer = conversation_chain({'query': query})
-        print(answer)
         processed_answer = assistant.remove_question(answer)
         return processed_answer

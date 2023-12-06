@@ -1,4 +1,5 @@
 import io
+import json
 import os
 
 import aiohttp
@@ -49,3 +50,23 @@ class MedicalDocExtractorView(web.View):
         response = aiohttp_jinja2.render_template('medicaldoc-insights-extractor.html', self.request, context)
 
         return response
+
+
+class QnAExtractorView(web.View):
+
+    async def get(self):
+        return web.Response(text="This is the GET response for /med-doc/extract")
+
+    async def post(self):
+        data = await self.request.json()
+
+        if 'input_pdf' not in data and 'input_query' not in data:
+            return web.Response(text="No file uploaded.")
+
+        document_name = data['input_pdf']
+        input_query = data['input_query']
+        data = DocumentInsightExtractor(document_name)
+        processed_data = data.extract_qna(input_query)
+        response_json = json.dumps(processed_data, ensure_ascii=False)
+
+        return web.Response(body=response_json, content_type='application/json', status=200)
