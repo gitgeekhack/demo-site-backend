@@ -23,6 +23,7 @@ The Marut OCR repository contains proof-of-concepts for the Machine Learning Pro
 ---
 - `python == 3.9.x` (Any Patch version would work)
 - `tesseract == 5.1.0`
+- `sudo apt-get install tesseract-ocr-eng`
 - `poppler-utils == 0.86.1` (In Order to run **Documents Insights Extractor** POC, poppler-utils should be installed in development machine. To install and configure poppler-utils please refer following [[link]](https://pdf2image.readthedocs.io/en/latest/installation.html))
 - `CVAT == 2.1.0` (In Order to run **PDF Annotation & Extraction** POC, CVAT should be installed in development machine. To install and configure CVAT please refer following [[link]](https://openvinotoolkit.github.io/cvat/docs/administration/basics/installation/))
   - Once CVAT installed successfully in your development machine, please follow this steps.
