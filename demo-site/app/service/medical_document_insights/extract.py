@@ -8,7 +8,7 @@ from app import logger
 
 from app.service.helper.text_extractor import PDFTextExtractor
 from app.service.medical_document_insights.nlp_extractor.dates_extractor import BedrockDatesExtractor
-from app.service.medical_document_insights.nlp_extractor.encounter_dates_extractor import BedrockEncounterDatesExtractor
+from app.service.medical_document_insights.nlp_extractor.encounter_dates_extractor import BrEmbeddingsEncounterExtractor
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import ComprehendMedicalExtractor
 from app.service.medical_document_insights.nlp_extractor.doc_qa import MedicalAssistant
 
@@ -72,8 +72,8 @@ class DocumentInsightExtractor:
             date_result = dates_extractor.generate_response(docs)
             result['PHI_dates'] = date_result
 
-            encounter_dates = BedrockEncounterDatesExtractor()
-            enc_result = encounter_dates.generate_response(docs)
+            encounter_dates = BrEmbeddingsEncounterExtractor()
+            enc_result = encounter_dates.generate_response(data)
             result['document_origanizer'] = enc_result
 
             return result
