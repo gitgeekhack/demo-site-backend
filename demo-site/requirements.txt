@@ -5,6 +5,7 @@ aiohttp==3.8.3
 aiohttp-jinja2==1.5
 aiosignal==1.2.0
 annotated-types==0.6.0
+anthropic==0.7.7
 anyio==3.7.1
 astunparse==1.6.3
 async-timeout==4.0.2
@@ -47,8 +48,8 @@ grpcio==1.46.3
 grpcio-status==1.46.3
 h11==0.12.0
 h5py==3.10.0
-httpcore==0.13.7
-httpx==0.20.0
+httpcore==0.15.0
+httpx==0.23.0
 huggingface-hub==0.17.3
 humanfriendly==10.0
 idna==3.3
