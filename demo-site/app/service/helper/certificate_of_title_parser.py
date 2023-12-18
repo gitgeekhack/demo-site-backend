@@ -122,7 +122,7 @@ def parse_address(text, cities=None):
 @strip_text
 def split_address(address, cities=None):
     address_split = address.split('\n')
-    address = {'street': None, 'city': None, 'state': None, 'zipcode': None}
+    address = {'street': None, 'city': None, 'state': None, 'zip_code': None}
     city_state_zip = address_split[-1]
     if address_split:
         address['street'] = address_split[0].strip()
@@ -133,8 +133,8 @@ def split_address(address, cities=None):
         city_state_zip = city_state_zip.replace(city, '')
         zipcode = re.search(DL_REGEX.ZIPCODE, city_state_zip.replace(address['city'], ''))
         if zipcode:
-            address['zipcode'] = zipcode.group()
-            city_state_zip = city_state_zip.replace(address['zipcode'], '').strip()
+            address['zip_code'] = zipcode.group()
+            city_state_zip = city_state_zip.replace(address['zip_code'], '').strip()
         state_group = re.search(DL_REGEX.STATE, city_state_zip)
         if state_group:
             address['state'] = state_group.group()

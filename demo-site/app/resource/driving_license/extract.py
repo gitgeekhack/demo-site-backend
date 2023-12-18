@@ -10,19 +10,16 @@ from app.common.utils import is_image_file, get_file_from_path
 from app.service.driving_license.extract import DLDataPointExtractorV1
 
 
-class DLExtractor(web.View):
-    @aiohttp_jinja2.template('driving-license-ocr.html')
-    async def get(self):
-        return {}
-
-    @aiohttp_jinja2.template('driving-license-ocr.html')
+class DLExtractor():
     async def post(self):
         x_uuid = uuid.uuid1()
         filedata = []
         try:
-            data = await self.request.post()
+            data = await self.post()
             files = data.getall('file')
 
+            if '' in files:
+                raise KeyError
             for file in files:
                 if isinstance(file, str):
                     file = get_file_from_path(file)
@@ -33,9 +30,18 @@ class DLExtractor(web.View):
                 filedata.append(file)
             extractor = DLDataPointExtractorV1(x_uuid)
             data = await extractor.extract(image_data=filedata)
-            return {'results': data}
+            if isinstance(data, int):
+                raise Exception
+            else:
+                return web.json_response({'data': data}, status=200)
         except Exception as e:
             print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            if isinstance(e, KeyError):
+                response = {"message": "Parameter 'file' is required in the request."}
+                return web.json_response(response, status=400)
+            if isinstance(e, InvalidFile):
+                response = {"message": 'Unsupported Media Type'}
+                return web.json_response(response, status=415)
             response = {"message": 'Internal Server Error'}
             print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

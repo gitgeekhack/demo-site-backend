@@ -187,27 +187,68 @@ class COTDataPointExtractorV1(MonoState):
         return [label, list(chain(*_set))]
 
     async def __update_labels(self, results):
+        list_keys = ['owners', 'document_type', 'title_type', 'remark']
+        dict_keys = ['owner_address', 'lienholder_address']
         updated_results = {}
         for key in results:
-            prev_key = key
-            key = key.replace('_', ' ')
-            key = key.title()
-            if not results[prev_key]:
-                updated_results[key] = 'NA'
-            else:
-                if isinstance(results[prev_key], dict):
-                    updated_results[key] = await self.__update_labels(results[prev_key])
+            if not results[key]:
+                if key in list_keys:
+                    updated_results[key] = []
+                elif key in dict_keys:
+                    updated_results[key] = {
+                        "street": '',
+                        "city": '',
+                        "state": '',
+                        "zip_code": ''
+                    }
                 else:
-                    updated_results[key] = results[prev_key]
+                    updated_results[key] = ''
+            else:
+                if isinstance(results[key], dict):
+                    updated_results[key] = await self.__update_labels(results[key])
+                else:
+                    updated_results[key] = results[key]
         return updated_results
+
+    async def update_structure(self, results):
+        structured_result = results.copy()
+
+        structured_result.pop('odometer_reading')
+        structured_result.pop('lienholder_name')
+        structured_result.pop('lienholder_address')
+        structured_result.pop('lien_date')
+        structured_result.pop('remark')
+
+        license_plate = ''
+        odometer_reading = results['odometer_reading']
+        odometer_brand = ''
+        lien_holders = []
+
+        lien_holder = {
+            "name": results['lienholder_name'],
+            "lien_date": results['lien_date'],
+            "address": results['lienholder_address']
+        }
+
+        odometer = {
+            "reading": odometer_reading,
+            "brand": odometer_brand
+        }
+
+        lien_holders.append(lien_holder)
+
+        structured_result['license_plate'] = license_plate
+        structured_result['odometer'] = odometer
+        structured_result['lien_holders'] = lien_holders
+
+        return structured_result
 
     async def extract(self, image_data):
         final_results = []
-        image_count = 1
 
         try:
             for file in image_data:
-                data = {'certificate_of_title': None}
+                data = {'results': None}
                 np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(USER_DATA_PATH, filename)
@@ -221,18 +262,20 @@ class COTDataPointExtractorV1(MonoState):
 
                 if len(extracted_data_by_label) > 0:
                     title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
-                    document_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.DOCUMENT_TYPE)
+                    document_data = await self.__get_unique_values(extracted_data_by_label,
+                                                                   self.response_key.DOCUMENT_TYPE)
                     _extracted_data = [data for data in extracted_data_by_label if
-                                       not data[0].startswith((self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
+                                       not data[0].startswith(
+                                           (self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
                     extracted_data = list(chain([title_data], [document_data], _extracted_data))
                     results = {**results_dict, **dict(extracted_data)}
-                    data['filename'] = filename
+                    data['file_path'] = os.path.join(USER_DATA_PATH, filename)
                     updated_results = await self.__update_labels(results)
-                    data['certificate_of_title'] = updated_results
-
+                    structured_result = await self.update_structure(updated_results)
+                    data['results'] = structured_result
                 final_results.append(data)
-                image_count = image_count + 1
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
+            final_results = 500
         return final_results
