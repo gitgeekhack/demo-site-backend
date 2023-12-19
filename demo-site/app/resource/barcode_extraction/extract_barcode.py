@@ -1,5 +1,6 @@
 import traceback
 import uuid
+import json
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -14,13 +15,16 @@ class BarCodeExtraction:
         filedata = []
 
         try:
-            data = await self.post()
-            files = data.getall('file')
+            data_bytes = await self.content.read()
+            data = json.loads(data_bytes)
+            files = data['file_paths']
             if '' in files:
                 raise KeyError
             for file in files:
                 if isinstance(file, str):
                     file = get_file_from_path(file)
+                    if isinstance(file, FileNotFoundError):
+                        raise FileNotFoundError
                 filename = file.filename
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
@@ -44,6 +48,9 @@ class BarCodeExtraction:
             if isinstance(e, InvalidFile):
                 response = {"message": 'Unsupported Media Type'}
                 return web.json_response(response, status=415)
+            if isinstance(e, FileNotFoundError):
+                response = {"message": "File Not Found"}
+                return web.json_response(response, status=404)
             response = {"message": 'Internal Server Error'}
             print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=500)

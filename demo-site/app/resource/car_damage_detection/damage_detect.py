@@ -1,6 +1,7 @@
 import os.path
 import traceback
 import uuid
+import json
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -16,13 +17,16 @@ class DamageExtractor:
         x_uuid = uuid.uuid1()
         filedata = []
         try:
-            data = await self.post()
-            files = data.getall('file')
+            data_bytes = await self.content.read()
+            data = json.loads(data_bytes)
+            files = data['file_paths']
             if '' in files:
                 raise KeyError
             for file in files:
                 if isinstance(file, str):
                     file = get_file_from_path(file)
+                    if isinstance(file, FileNotFoundError):
+                        raise FileNotFoundError
                 filename = file.filename
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
@@ -39,6 +43,9 @@ class DamageExtractor:
             if isinstance(e, KeyError):
                 response = {"message": "Parameter 'file' is required in the request."}
                 return web.json_response(response, status=400)
+            if isinstance(e, FileNotFoundError):
+                response = {"message": "File Not Found"}
+                return web.json_response(response, status=404)
             if isinstance(e, InvalidFile):
                 response = {"message": 'Unsupported Media Type'}
                 return web.json_response(response, status=415)
