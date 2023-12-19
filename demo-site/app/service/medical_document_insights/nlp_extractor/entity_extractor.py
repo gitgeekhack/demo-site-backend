@@ -94,7 +94,9 @@ class EntityExtraction:
         end_index = text.rfind('}') + 1
         json_str = text[start_index:end_index]
         data = json.loads(json_str)
-        return data
+        data_keys = ['diagnosis', 'treatments', 'medications']
+        final_data = dict(zip(data_keys, list(data.values())))
+        return final_data
 
     def pagewise_entity_extractor(self, json_data):
         pagewise_entities = dict()

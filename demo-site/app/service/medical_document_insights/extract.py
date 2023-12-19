@@ -10,8 +10,6 @@ from app.service.medical_document_insights.nlp_extractor.encounter_dates_extract
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import EntityExtraction
 from app.service.medical_document_insights.nlp_extractor.doc_qa import MedicalAssistant
 
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from langchain.docstore.document import Document
 
 from app.service.medical_document_insights.nlp_extractor.summarizer import SummarizerWrapper
 from app.constant import USER_DATA_PATH
@@ -51,15 +49,8 @@ class DocumentInsightExtractor:
             with open(f'{json_dir}/{pdf_name}_text.json', 'r') as file:
                 data = json.loads(file.read())
 
-            raw_text = "".join(data.values())
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=10000, chunk_overlap=200
-            )
-            texts = text_splitter.split_text(raw_text)
-            docs = [Document(page_content=t) for t in texts]
-
             language_model = SummarizerWrapper()
-            summary = language_model.generate_summary(docs)
+            summary = language_model.generate_summary(data)
             result['summary'] = summary
 
             extractor = EntityExtraction()

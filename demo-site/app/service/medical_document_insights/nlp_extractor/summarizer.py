@@ -5,6 +5,8 @@ from langchain.embeddings import BedrockEmbeddings
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.prompts import PromptTemplate
+from langchain.docstore.document import Document
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 class SummarizerWrapper:
@@ -30,7 +32,8 @@ class SummarizerWrapper:
         # Load the bedrock embeddings
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.modelIdEmbeddings, client=self.bedrock)
 
-    def generate_summary(self, docs):
+    def generate_summary(self, json_data):
+        docs = self.data_formatter(json_data)
         vectorstore_faiss = FAISS.from_documents(
             documents=docs,
             embedding=self.bedrock_embeddings,
@@ -65,6 +68,15 @@ class SummarizerWrapper:
             "summary": final_summary
         }
         return summary_dict
+
+    def data_formatter(self, json_data):
+        raw_text = "".join(json_data.values())
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=10000, chunk_overlap=200
+        )
+        texts = text_splitter.split_text(raw_text)
+        docs = [Document(page_content=t) for t in texts]
+        return docs
 
     def pre_process_summary(self, summary):
         text = summary.replace('- ', '')
