@@ -13,7 +13,7 @@ from app.service.medical_document_insights.nlp_extractor.doc_qa import MedicalAs
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.docstore.document import Document
 
-from app.service.medical_document_insights.nlp_extractor.summarizer import LanguageModelWrapper
+from app.service.medical_document_insights.nlp_extractor.summarizer import SummarizerWrapper
 from app.constant import USER_DATA_PATH
 
 
@@ -58,7 +58,7 @@ class DocumentInsightExtractor:
             texts = text_splitter.split_text(raw_text)
             docs = [Document(page_content=t) for t in texts]
 
-            language_model = LanguageModelWrapper()
+            language_model = SummarizerWrapper()
             summary = language_model.generate_summary(docs)
             result['summary'] = summary
 
