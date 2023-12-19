@@ -1,13 +1,11 @@
 import io
 import json
 import os
-import shutil
-import time
 import traceback
 from app import logger
 
 from app.service.helper.text_extractor import PDFTextExtractor
-from app.service.medical_document_insights.nlp_extractor.dates_extractor import BedrockDatesExtractor
+from app.service.medical_document_insights.nlp_extractor.dates_extractor import PHIExtractor
 from app.service.medical_document_insights.nlp_extractor.encounter_dates_extractor import BrEmbeddingsEncounterExtractor
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import ComprehendMedicalExtractor
 from app.service.medical_document_insights.nlp_extractor.doc_qa import MedicalAssistant
@@ -68,8 +66,8 @@ class DocumentInsightExtractor:
             entities = extractor.pagewise_entity_extractor(data)
             result['entities'] = entities
 
-            dates_extractor = BedrockDatesExtractor()
-            date_result = dates_extractor.generate_response(docs)
+            dates_extractor = PHIExtractor()
+            date_result = dates_extractor.generate_response(data)
             result['PHI_dates'] = date_result
 
             encounter_dates = BrEmbeddingsEncounterExtractor()
