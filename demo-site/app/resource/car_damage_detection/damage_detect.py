@@ -41,7 +41,7 @@ class DamageExtractor:
         except Exception as e:
             print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             if isinstance(e, KeyError):
-                response = {"message": "Parameter 'file' is required in the request."}
+                response = {"message": "Parameter 'file_paths' is required in the request."}
                 return web.json_response(response, status=400)
             if isinstance(e, FileNotFoundError):
                 response = {"message": "File Not Found"}
