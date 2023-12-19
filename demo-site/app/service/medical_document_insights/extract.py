@@ -7,7 +7,7 @@ from app import logger
 from app.service.helper.text_extractor import PDFTextExtractor
 from app.service.medical_document_insights.nlp_extractor.dates_extractor import PHIExtractor
 from app.service.medical_document_insights.nlp_extractor.encounter_dates_extractor import BrEmbeddingsEncounterExtractor
-from app.service.medical_document_insights.nlp_extractor.entity_extractor import ComprehendMedicalExtractor
+from app.service.medical_document_insights.nlp_extractor.entity_extractor import EntityExtraction
 from app.service.medical_document_insights.nlp_extractor.doc_qa import MedicalAssistant
 
 from langchain.text_splitter import RecursiveCharacterTextSplitter
@@ -62,7 +62,7 @@ class DocumentInsightExtractor:
             summary = language_model.generate_summary(docs)
             result['summary'] = summary
 
-            extractor = ComprehendMedicalExtractor()
+            extractor = EntityExtraction()
             entities = extractor.pagewise_entity_extractor(data)
             result['entities'] = entities
 
