@@ -182,11 +182,11 @@ class CertificateOfTitle:
 
 class CarDamageDetection:
     class ColorLabels:
-        CAR_DAMAGE = {"Headlights": (153, 153, 255), "Hood": (153, 204, 255), "Front Bumper": (153, 255, 255),
-            "Rear Bumper": (153, 255, 204), "Front Windshield": (153, 255, 153), "Rear Windshield": (204, 255, 153),
-            "Flat Tyre": (255, 255, 153), "Missing Mirror": (255, 204, 153), "Missing Wheel": (255, 153, 153),
-            "Taillights": (255, 153, 204), "Trunk": (255, 153, 255), "Window": (204, 153, 255), "Door": (224, 2, 224),
-            "Fender": (102, 102, 0), "Interior Damage": (0, 255, 255)}
+        CAR_DAMAGE = {"headlights": (153, 153, 255), "hood": (153, 204, 255), "front_bumper": (153, 255, 255),
+            "rear_bumper": (153, 255, 204), "front_windshield": (153, 255, 153), "rear_windshield": (204, 255, 153),
+            "flat_tyre": (255, 255, 153), "missing_mirror": (255, 204, 153), "missing_wheel": (255, 153, 153),
+            "taillights": (255, 153, 204), "trunk": (255, 153, 255), "window": (204, 153, 255), "door": (224, 2, 224),
+            "fender": (102, 102, 0), "interior_damage": (0, 255, 255)}
 
     class Path:
         STATIC_PATH = "app/static/"

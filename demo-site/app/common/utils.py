@@ -81,9 +81,14 @@ async def save_file(file_object, folder_path):
 
 
 def get_file_from_path(filepath):
-    class FileData:
-        def __init__(self):
-            self.filename = os.path.basename(filepath)
-            self.file = open(os.path.join(os.getcwd(), 'app', filepath[1:]), 'rb')
 
-    return FileData()
+    try:
+        class FileData:
+            def __init__(self):
+                self.filename = os.path.basename(filepath)
+                self.file = open(filepath, 'rb')
+
+        return FileData()
+
+    except Exception as e:
+        return e

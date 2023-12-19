@@ -1,6 +1,7 @@
 import asyncio
 import json
 import os
+import traceback
 
 import cv2
 import numpy as np
@@ -128,44 +129,51 @@ class DLDataPointExtractorV1(MonoState):
     async def __update_labels(self, results):
         updated_results = {}
         for key in results:
-            prev_key = key
-            key = key.replace('_', ' ')
-            key = key.title()
-            if not results[prev_key]:
-                updated_results[key] = 'NA'
-            else:
-                if isinstance(results[prev_key], dict):
-                    updated_results[key] = await self.__update_labels(results[prev_key])
+            if not results[key]:
+                if key == 'address':
+                    updated_results[key] = {
+                        "street": '',
+                        "city": '',
+                        "state": '',
+                        "zip_code": ''
+                    }
                 else:
-                    updated_results[key] = results[prev_key]
+                    updated_results[key] = ''
+            else:
+                if isinstance(results[key], dict):
+                    updated_results[key] = await self.__update_labels(results[key])
+                else:
+                    updated_results[key] = results[key]
         return updated_results
 
     async def extract(self, image_data):
         final_results = []
-        image_count = 1
 
-        for file in image_data:
-            data = {"driving_license": None}
-            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(USER_DATA_PATH, filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(file_path, input_image)
-            data['filename'] = filename
-            results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
-            image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
+        try:
+            for file in image_data:
+                data = {"results": None}
+                np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
+                filename = secure_filename(file.filename)
+                file_path = os.path.join(USER_DATA_PATH, filename)
+                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+                cv2.imwrite(file_path, input_image)
+                data['filepath'] = os.path.join(USER_DATA_PATH, filename)
+                results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
+                image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 
-            extracted_data_by_label = await self.__extract_data_by_label(image)
+                extracted_data_by_label = await self.__extract_data_by_label(image)
 
-            if len(extracted_data_by_label) > 0:
-                extracted_data = await self.__dates_per_label(extracted_data_by_label)
-                results = {**results_dict, **dict(extracted_data)}
-                updated_results = await self.__update_labels(results)
-                data['driving_license'] = updated_results
-                data['image_count'] = image_count
+                if len(extracted_data_by_label) > 0:
+                    extracted_data = await self.__dates_per_label(extracted_data_by_label)
+                    results = {**results_dict, **dict(extracted_data)}
+                    updated_results = await self.__update_labels(results)
+                    data['results'] = updated_results
 
-            print(f'Request ID: [{self.uuid}] Response: {data}')
-            final_results.append(data)
-            image_count = image_count + 1
+                print(f'Request ID: [{self.uuid}] Response: {data}')
+                final_results.append(data)
+
+        except Exception as e:
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
+            final_results = 500
 
         return final_results
