@@ -13,7 +13,6 @@ from app.constant import USER_DATA_PATH
 
 class MedicalAssistant:
     def __init__(self):
-        os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.boto3_bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.cohere_llm = Bedrock(
@@ -31,7 +30,7 @@ class MedicalAssistant:
         self.br_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=self.boto3_bedrock)
         self.prompt = self.create_prompt_template()
 
-    def prepare_data(self, document_name):
+    async def prepare_data(self, document_name):
         user_dir = os.path.join(USER_DATA_PATH, 'medical_insights_poc')
         pdf_files_directory = os.path.join(user_dir, 'pdf_files')
         input_dir = os.path.join(pdf_files_directory, document_name)

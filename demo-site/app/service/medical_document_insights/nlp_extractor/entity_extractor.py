@@ -10,16 +10,14 @@ from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 
 
-class EntityExtraction:
+class EntityExtractor:
     def __init__(self):
-        # Initialize the bedrock client
-        os.environ['AWS_PROFILE'] = "default"
+
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-        # Initialize the model Id
         self.modelIdLlm = 'anthropic.claude-instant-v1'
         self.modelIdEmbeddings = 'amazon.titan-embed-text-v1'
-        # Load the llm model
+
         self.llm = Bedrock(
             model_id=self.modelIdLlm,
             model_kwargs={
@@ -30,15 +28,30 @@ class EntityExtraction:
             },
             client=self.bedrock,
         )
-        # Load the bedrock embeddings
+
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.modelIdEmbeddings, client=self.bedrock)
 
-    def detect_entities(self, data):
+    async def __convert_str_into_json(self, text):
+        """ This method is used to convert str into json object with consistent key-name """
+
+        start_index = text.find('{')
+        end_index = text.rfind('}') + 1
+        json_str = text[start_index:end_index]
+        data = json.loads(json_str)
+        data_keys = ['diagnosis', 'treatments', 'medications']
+        final_data = dict(zip(data_keys, list(data.values())))
+
+        return final_data
+
+    async def __get_medical_entities(self, data):
+        """ This method is used to provide medical entities """
+
         docs = [Document(page_content=data)]
         vectorstore_faiss = FAISS.from_documents(
             documents=docs,
             embedding=self.bedrock_embeddings,
         )
+
         query = """
             Your task is to identify valid diagnoses, valid treatments and valid medications from the user-provided text without including additional information, notes, and context. 
 
@@ -74,6 +87,7 @@ class EntityExtraction:
         prompt = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
         )
+
         qa = RetrievalQA.from_chain_type(
             llm=self.llm,
             chain_type="stuff",
@@ -86,21 +100,20 @@ class EntityExtraction:
 
         answer = qa({"query": query})
         response = answer['result']
-        entities = self.convert_str_into_json(response)
+        entities = await self.__convert_str_into_json(response)
         return entities
 
-    def convert_str_into_json(self, text):
-        start_index = text.find('{')
-        end_index = text.rfind('}') + 1
-        json_str = text[start_index:end_index]
-        data = json.loads(json_str)
-        data_keys = ['diagnosis', 'treatments', 'medications']
-        final_data = dict(zip(data_keys, list(data.values())))
-        return final_data
+    async def get_extracted_entities(self, json_data):
+        """ This method is used to provide medical entities from document"""
 
-    def pagewise_entity_extractor(self, json_data):
         pagewise_entities = dict()
-        for key, value in json_data.items():
-            entities = self.detect_entities(value)
-            pagewise_entities[key] = entities
-        return pagewise_entities
+
+        try:
+            for key, value in json_data.items():
+                entities = await self.__get_medical_entities(value)
+                pagewise_entities[key] = entities
+
+            return {'entities': pagewise_entities}
+
+        except Exception as e:
+            return {'response': f'Exception: {e}\n{pagewise_entities}'}
