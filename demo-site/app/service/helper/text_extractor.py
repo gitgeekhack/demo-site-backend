@@ -70,7 +70,7 @@ async def extract_pdf_text(file_path, output_dir):
     x = time.time()
     pdf_images = pdf2image.convert_from_path(file_path)
     pdf_folder_name = os.path.basename(file_path).replace(".pdf", "")
-    pdf_output_dir = os.path.join(output_dir, "pdf_images", pdf_folder_name)
+    pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
     if not os.path.exists(pdf_output_dir):
         os.makedirs(pdf_output_dir, exist_ok=True)
