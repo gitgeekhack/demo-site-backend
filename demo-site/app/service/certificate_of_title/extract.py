@@ -244,11 +244,9 @@ class COTDataPointExtractorV1(MonoState):
         return structured_result
 
     async def extract(self, image_data):
-        final_results = []
-
+        data = {}
         try:
             for file in image_data:
-                data = {'results': None}
                 np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(USER_DATA_PATH, filename)
@@ -272,10 +270,9 @@ class COTDataPointExtractorV1(MonoState):
                     data['file_path'] = os.path.join(USER_DATA_PATH, filename)
                     updated_results = await self.__update_labels(results)
                     structured_result = await self.update_structure(updated_results)
-                    data['results'] = structured_result
-                final_results.append(data)
+                    data = structured_result
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
-            final_results = 500
-        return final_results
+            data = 500
+        return data
