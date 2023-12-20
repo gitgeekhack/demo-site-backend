@@ -250,6 +250,7 @@
               <th>No</th>
               <th>Diagnosis</th>
               <th>Treatment</th>
+              <th>Medication</th>
             </tr>
              {% for page_data in data.entities %}
                 <tr>
@@ -260,8 +261,13 @@
                     {% endfor %}
                   </td>
                   <td>
-                    {% for treatment in data.entities[page_data].treatment %}
+                    {% for treatment in data.entities[page_data].treatments %}
                       {{ treatment }}<br>
+                    {% endfor %}
+                  </td>
+                  <td>
+                    {% for medication in data.entities[page_data].medications %}
+                      {{ medication }}<br>
                     {% endfor %}
                   </td>
                 </tr>
