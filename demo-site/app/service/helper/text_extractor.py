@@ -62,35 +62,60 @@ async def save_textract_response(output_dir, page_wise_text):
         json.dump(page_wise_text, json_file, indent=4)
 
 
+async def is_textract_response_exists(file_path):
+
+    dir_name = file_path.replace(".pdf", "")
+    pdf_name = os.path.basename(dir_name)
+    dir_name = os.path.join(dir_name, 'textract_response')
+
+    if os.path.exists(f'{dir_name}/{pdf_name}_text.json'):
+        return True
+    else:
+        return False
+
+
 async def extract_pdf_text(file_path, output_dir):
     """ This method is used to provide extracted get from pdf """
 
     global pdf_folder_name
 
     x = time.time()
-    pdf_images = pdf2image.convert_from_path(file_path)
-    pdf_folder_name = os.path.basename(file_path).replace(".pdf", "")
-    pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
-    if not os.path.exists(pdf_output_dir):
-        os.makedirs(pdf_output_dir, exist_ok=True)
+    if await is_textract_response_exists(file_path):
+        dir_name = file_path.replace(".pdf", "")
+        pdf_name = os.path.basename(dir_name)
+        dir_name = os.path.join(dir_name, 'textract_response')
 
-    task = []
-    with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
-        for i, image in enumerate(pdf_images):
-            new_future = executor.submit(convert_pdf_to_text_handler, pdf_output_dir=pdf_output_dir,
-                                         image=image, index=i)
-            task.append(new_future)
+        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+            json_data = json.loads(file.read())
 
-    results = futures.wait(task)
+        logger.info("Reading textract response from the cache...")
+        page_wise_text = json_data
 
-    texts = {}
-    for page_text in results.done:
-        texts.update(page_text.result())
+    else:
+        pdf_images = pdf2image.convert_from_path(file_path)
+        pdf_folder_name = os.path.basename(file_path).replace(".pdf", "")
+        pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
-    page_wise_text = dict(sorted(texts.items(), key=lambda item: item[0]))
+        if not os.path.exists(pdf_output_dir):
+            os.makedirs(pdf_output_dir, exist_ok=True)
 
-    await save_textract_response(output_dir, page_wise_text)
+        task = []
+        with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
+            for i, image in enumerate(pdf_images):
+                new_future = executor.submit(convert_pdf_to_text_handler, pdf_output_dir=pdf_output_dir,
+                                             image=image, index=i)
+                task.append(new_future)
+
+        results = futures.wait(task)
+
+        texts = {}
+        for page_text in results.done:
+            texts.update(page_text.result())
+
+        page_wise_text = dict(sorted(texts.items(), key=lambda item: item[0]))
+
+        await save_textract_response(output_dir, page_wise_text)
 
     logger.info(f"Text Extraction from document is completed in {time.time() - x} seconds.")
 
