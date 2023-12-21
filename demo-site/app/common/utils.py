@@ -38,6 +38,12 @@ def is_image_file(file):
     return file_type in AllowedFileType.IMAGE
 
 
+def is_pdf_file(file):
+    file_type = os.path.basename(file)
+    ext = file_type.split('.')[-1]
+    return ext in AllowedFileType.PDF
+
+
 class PackagePathFilter(logging.Filter):
     def filter(self, record):
         pathname = record.pathname
