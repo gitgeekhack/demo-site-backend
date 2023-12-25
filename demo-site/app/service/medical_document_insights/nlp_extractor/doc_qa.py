@@ -16,15 +16,14 @@ class MedicalAssistant:
         os.environ['AWS_PROFILE'] = "default"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.boto3_bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-        self.cohere_llm = Bedrock(
-            model_id="cohere.command-text-v14",
+        self.claude_llm = Bedrock(
+            model_id="anthropic.claude-v2:1",
             model_kwargs={
-                "max_tokens": 4000,
+                "max_tokens_to_sample": 4000,
                 "temperature": 0.75,
-                "p": 0.01,
-                "k": 0,
+                "top_p": 0.01,
+                "top_k": 0,
                 "stop_sequences": [],
-                "return_likelihoods": "NONE",
             },
             client=self.boto3_bedrock,
         )
@@ -42,10 +41,7 @@ class MedicalAssistant:
             json_data = json.loads(file.read())
 
         raw_text = "".join(json_data.values())
-        texts = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=200).split_text(raw_text)
-        threshold = self.cohere_llm.get_num_tokens(texts[0])
-        if threshold >= 3650:
-            texts = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200).split_text(raw_text)
+        texts = RecursiveCharacterTextSplitter(chunk_size=15000, chunk_overlap=200).split_text(raw_text)
         docs = [Document(page_content=t) for t in texts]
         vector_store = FAISS.from_documents(
             documents=docs,
@@ -71,7 +67,7 @@ class MedicalAssistant:
 
     def create_conversation_chain(self, vector_store, prompt_template):
         qa = RetrievalQA.from_chain_type(
-            llm=self.cohere_llm,
+            llm=self.claude_llm,
             chain_type="stuff",
             retriever=vector_store.as_retriever(
                 search_type="similarity", search_kwargs={"k": 6}
@@ -83,17 +79,8 @@ class MedicalAssistant:
 
         return qa
 
-    def remove_question(self, output):
-        text = output['result'].strip()
-        lines = text.split('\n')
-        if lines[-1].__contains__('?'):
-            lines = lines[:-1]
-        modified_text = '\n'.join(lines)
-        output['result'] = modified_text
-        return output
 
     def run_medical_assistant(self, query, vector_store, assistant):
         conversation_chain = assistant.create_conversation_chain(vector_store, self.prompt)
         answer = conversation_chain({'query': query})
-        processed_answer = assistant.remove_question(answer)
-        return processed_answer
+        return answer
