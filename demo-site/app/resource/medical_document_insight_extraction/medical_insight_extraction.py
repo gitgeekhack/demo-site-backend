@@ -1,7 +1,5 @@
 import os
 import json
-import uuid
-import traceback
 from aiohttp import web
 
 from app.common.utils import is_pdf_file
@@ -12,7 +10,6 @@ from app.service.medical_document_insights.medical_insights_qna import get_query
 
 class MedicalInsightsExtractor:
     async def post(self):
-        x_uuid = uuid.uuid1()
         try:
             data_bytes = await self.content.read()
             data = json.loads(data_bytes)
@@ -34,25 +31,25 @@ class MedicalInsightsExtractor:
             extracted_information = await get_medical_insights(file_path)
             return web.json_response({'document': extracted_information}, status=200)
 
+        except KeyError:
+            response = {"message": "Either multiple PDF files have been uploaded or the file has not been uploaded at all!"}
+            return web.json_response(response, status=400)
+
+        except FileNotFoundError:
+            response = {"message": "File Not Found"}
+            return web.json_response(response, status=404)
+
+        except InvalidFile:
+            response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
+            return web.json_response(response, status=415)
+
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
-
-            if isinstance(e, KeyError):
-                response = {"message": "Either multiple PDF files have been uploaded or the file has not been uploaded at all."}
-                return web.json_response(response, status=400)
-
-            if isinstance(e, FileNotFoundError):
-                response = {"message": "File Not Found"}
-                return web.json_response(response, status=404)
-
-            if isinstance(e, InvalidFile):
-                response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
-                return web.json_response(response, status=415)
+            response = {"message": f"Internal Server Error with error {e}"}
+            return web.json_response(response, status=500)
 
 
 class QnAExtractor:
     async def post(self):
-        x_uuid = uuid.uuid1()
         try:
             data_bytes = await self.content.read()
             data = json.loads(data_bytes)
@@ -79,17 +76,18 @@ class QnAExtractor:
             result = json.dumps(result).encode('utf-8')
             return web.Response(body=result, content_type='application/json', status=200)
 
+        except KeyError:
+            response = {"message": "Either multiple PDF files have been uploaded, the file has not been uploaded at all, or an empty input query is sent!"}
+            return web.json_response(response, status=400)
+
+        except FileNotFoundError:
+            response = {"message": "File Not Found"}
+            return web.json_response(response, status=404)
+
+        except InvalidFile:
+            response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
+            return web.json_response(response, status=415)
+
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
-
-            if isinstance(e, KeyError):
-                response = {"message": "Either multiple PDF files have been uploaded, the file has not been uploaded at all, or an empty input query is sent."}
-                return web.json_response(response, status=400)
-
-            if isinstance(e, FileNotFoundError):
-                response = {"message": "File Not Found"}
-                return web.json_response(response, status=404)
-
-            if isinstance(e, InvalidFile):
-                response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
-                return web.json_response(response, status=415)
+            response = {"message": f"Internal Server Error with error {e}"}
+            return web.json_response(response, status=500)

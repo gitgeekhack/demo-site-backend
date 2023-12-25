@@ -87,17 +87,13 @@ class DocumentQnA:
 
     async def get_query_response(self, query, document):
 
-        try:
-            x = time.time()
-            vectored_data = await self.__prepare_data(document)
-            logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
+        x = time.time()
+        vectored_data = await self.__prepare_data(document)
+        logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
-            x = time.time()
-            conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
-            answer = conversation_chain({'query': query})
-            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+        x = time.time()
+        conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
+        answer = conversation_chain({'query': query})
+        logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
 
-            return answer
-
-        except Exception as e:
-            return {'response': f'Exception: {e}\n{query}'}
+        return answer

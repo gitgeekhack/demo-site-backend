@@ -117,23 +117,19 @@ async def get_extracted_entities(json_data):
     entity = {}
     page_wise_entities = {}
 
-    try:
-        task = []
-        with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
-            for key, value in json_data.items():
-                new_future = executor.submit(extract_entity_handler, key=key,
-                                             value=value, page_wise_entities=entity)
-                task.append(new_future)
+    task = []
+    with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
+        for key, value in json_data.items():
+            new_future = executor.submit(extract_entity_handler, key=key,
+                                         value=value, page_wise_entities=entity)
+            task.append(new_future)
 
-        results = futures.wait(task)
+    results = futures.wait(task)
 
-        page_wise_entities = {}
-        for entity in results.done:
-            page_wise_entities.update(entity.result())
+    page_wise_entities = {}
+    for entity in results.done:
+        page_wise_entities.update(entity.result())
 
-        page_wise_entities = dict(sorted(page_wise_entities.items(), key=lambda item: int(item[0].split('_')[1])))
+    page_wise_entities = dict(sorted(page_wise_entities.items(), key=lambda item: int(item[0].split('_')[1])))
 
-        return {'entities': page_wise_entities}
-
-    except Exception as e:
-        return {'response': f'Exception: {e}\n{page_wise_entities}'}
+    return {'entities': page_wise_entities}

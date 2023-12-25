@@ -132,8 +132,4 @@ class EncountersExtractor:
         answer = qa({"query": query})
         response = answer['result']
 
-        try:
-            return await self.__post_processing(response)
-
-        except Exception as e:
-            return {'response': f'Exception: {e}\n{response}'}
+        return await self.__post_processing(response)

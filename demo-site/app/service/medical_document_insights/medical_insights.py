@@ -1,7 +1,6 @@
 import os
 import time
 import asyncio
-import traceback
 from concurrent import futures
 
 from app import logger
@@ -78,27 +77,23 @@ def get_encounters_handler(data):
 async def get_medical_insights(document):
     """ This method is used to get the medical insights from the document """
 
-    try:
-        result = dict()
+    result = dict()
 
-        pdf_name = os.path.basename(document)
-        result['name'] = pdf_name
+    pdf_name = os.path.basename(document)
+    result['name'] = pdf_name
 
-        page_wise_text = await extract_pdf_text(document)
+    page_wise_text = await extract_pdf_text(document)
 
-        task = []
-        with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
-            task.append(executor.submit(get_summary_handler, data=page_wise_text))
-            task.append(executor.submit(get_entities_handler, data=page_wise_text))
-            task.append(executor.submit(get_phi_handler, data=page_wise_text))
-            task.append(executor.submit(get_encounters_handler, data=page_wise_text))
+    task = []
+    with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
+        task.append(executor.submit(get_summary_handler, data=page_wise_text))
+        task.append(executor.submit(get_entities_handler, data=page_wise_text))
+        task.append(executor.submit(get_phi_handler, data=page_wise_text))
+        task.append(executor.submit(get_encounters_handler, data=page_wise_text))
 
-        results = futures.wait(task)
+    results = futures.wait(task)
 
-        for x in results.done:
-            result.update(x.result())
+    for x in results.done:
+        result.update(x.result())
 
-        return result
-
-    except Exception as e:
-        logger.error('%s -> %s' % (e, traceback.format_exc()))
+    return result
