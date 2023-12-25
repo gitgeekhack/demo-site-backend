@@ -121,16 +121,12 @@ class PHIDatesExtractor:
         answer = qa({"query": query})
         response = answer['result']
 
-        try:
-            matches = await self.__extract_values_between_curly_braces(response)
-            json_result = json.loads(matches[0])
-            dates = {}
+        matches = await self.__extract_values_between_curly_braces(response)
+        json_result = json.loads(matches[0])
+        dates = {}
 
-            for key, value in json_result.items():
-                result_key = await self.__get_key(key)
-                dates[result_key] = value if isinstance(value, list) else [value]
+        for key, value in json_result.items():
+            result_key = await self.__get_key(key)
+            dates[result_key] = value if isinstance(value, list) else [value]
 
-            return {'phi_dates': dates}
-
-        except Exception as e:
-            return {'response': f'Exception: {e}\n{response}'}
+        return {'phi_dates': dates}

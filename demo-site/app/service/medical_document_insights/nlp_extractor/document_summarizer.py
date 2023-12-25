@@ -93,9 +93,5 @@ class DocumentSummarizer:
         answer = qa({"query": query})
         response = answer['result']
 
-        try:
-            summary = await self.__post_processing(response)
-            return {"summary": summary}
-
-        except Exception as e:
-            return {'response': f'Exception: {e}\n{response}'}
+        summary = await self.__post_processing(response)
+        return {"summary": summary}
