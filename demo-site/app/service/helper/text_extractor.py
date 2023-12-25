@@ -7,6 +7,7 @@ import pdf2image
 from concurrent import futures
 
 from app import logger
+from app.common.utils import update_file_path
 
 os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
 pdf_folder_name = None
@@ -47,16 +48,15 @@ def convert_pdf_to_text_handler(pdf_output_dir, image, index):
     return x
 
 
-async def save_textract_response(output_dir, page_wise_text):
+async def save_textract_response(pdf_name, output_dir, page_wise_text):
     """ This method is used to save the textract response in the storage """
-
-    global pdf_folder_name
 
     json_output_dir = os.path.join(output_dir, "textract_response")
 
     if not os.path.exists(json_output_dir):
         os.makedirs(json_output_dir, exist_ok=True)
-    json_file_path = os.path.join(json_output_dir, f"{pdf_folder_name}_text.json")
+
+    json_file_path = os.path.join(json_output_dir, f"{pdf_name}_text.json")
 
     with open(json_file_path, 'w') as json_file:
         json.dump(page_wise_text, json_file, indent=4)
@@ -64,9 +64,9 @@ async def save_textract_response(output_dir, page_wise_text):
 
 async def is_textract_response_exists(file_path):
 
-    dir_name = file_path.replace(".pdf", "")
-    pdf_name = os.path.basename(dir_name)
-    dir_name = os.path.join(dir_name, 'textract_response')
+    pdf_name, output_dir = await update_file_path(file_path)
+    dir_name = os.path.join(output_dir, 'textract_response')
+    os.makedirs(dir_name, exist_ok=True)
 
     if os.path.exists(f'{dir_name}/{pdf_name}_text.json'):
         return True
@@ -74,27 +74,25 @@ async def is_textract_response_exists(file_path):
         return False
 
 
-async def extract_pdf_text(file_path, output_dir):
+async def extract_pdf_text(file_path):
     """ This method is used to provide extracted get from pdf """
-
-    global pdf_folder_name
 
     x = time.time()
 
     if await is_textract_response_exists(file_path):
-        dir_name = file_path.replace(".pdf", "")
-        pdf_name = os.path.basename(dir_name)
-        dir_name = os.path.join(dir_name, 'textract_response')
+        pdf_name, output_dir = await update_file_path(file_path)
+        dir_name = os.path.join(output_dir, 'textract_response')
 
         with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
             json_data = json.loads(file.read())
 
-        logger.info("Reading textract response from the cache...")
+        logger.info("[Medical-Insights] Reading textract response from the cache...")
         page_wise_text = json_data
 
     else:
         pdf_images = pdf2image.convert_from_path(file_path)
-        pdf_folder_name = os.path.basename(file_path).replace(".pdf", "")
+
+        pdf_name, output_dir = await update_file_path(file_path)
         pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
         if not os.path.exists(pdf_output_dir):
@@ -113,10 +111,10 @@ async def extract_pdf_text(file_path, output_dir):
         for page_text in results.done:
             texts.update(page_text.result())
 
-        page_wise_text = dict(sorted(texts.items(), key=lambda item: item[0]))
+        page_wise_text = dict(sorted(texts.items(), key=lambda item: int(item[0].split('_')[1])))
 
-        await save_textract_response(output_dir, page_wise_text)
+        await save_textract_response(pdf_name, output_dir, page_wise_text)
 
-    logger.info(f"Text Extraction from document is completed in {time.time() - x} seconds.")
+    logger.info(f"[Medical-Insights] Text Extraction from document is completed in {time.time() - x} seconds.")
 
     return page_wise_text

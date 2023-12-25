@@ -11,7 +11,7 @@ async def get_query_response(query, document):
         x = time.time()
         document_qna = DocumentQnA()
         response = await document_qna.get_query_response(query, document)
-        logger.info(f"Query response generated in {time.time() - x} seconds.")
+        logger.info(f"[Medical-Insights-QnA] Query response generated in {time.time() - x} seconds.")
         return response
 
     except Exception as e:
