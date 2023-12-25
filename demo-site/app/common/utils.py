@@ -5,6 +5,11 @@ import aiofiles
 
 from app.constant import AllowedFileType, PDFAnnotationAndExtraction
 
+USER_DATA_PATH = os.getenv('USER_DATA_PATH')
+ds_path = os.path.join(USER_DATA_PATH, 'data-science')
+sw_path = os.path.join(USER_DATA_PATH, 'software')
+os.makedirs(ds_path, exist_ok=True)
+
 
 def load_config(import_name):
     import_name = str(import_name).replace(":", ".")
@@ -63,7 +68,7 @@ async def make_dir(target_path):
 
 
 def get_logger():
-    logger = logging.getLogger('gunicorn.error')
+    logger = logging.getLogger('demo-site')
     logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                    '[Logger: %(name)s] - '
                                                    '[Level: %(levelname)s] - '
@@ -84,6 +89,15 @@ async def save_file(file_object, folder_path):
 
     async with aiofiles.open(output_path, mode='wb+') as f:
         await f.write(file_object.file.read())
+
+
+async def update_file_path(file_path):
+
+    pdf_name = os.path.basename(file_path)
+    output_dir = file_path.replace(".pdf", "")
+    output_dir = output_dir.replace(sw_path, ds_path)
+
+    return pdf_name, output_dir
 
 
 def get_file_from_path(filepath):

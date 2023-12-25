@@ -6,7 +6,7 @@ from concurrent import futures
 
 from app import logger
 from app.service.helper.text_extractor import extract_pdf_text
-from app.service.medical_document_insights.nlp_extractor.entity_extractor import EntityExtractor
+from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.phi_dates_extractor import PHIDatesExtractor
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
 from app.service.medical_document_insights.nlp_extractor.encounters_extractor import EncountersExtractor
@@ -18,7 +18,7 @@ async def get_summary(data):
     x = time.time()
     document_summarizer = DocumentSummarizer()
     summary = await document_summarizer.get_summary(data)
-    logger.info(f"Summary is generated in {time.time() - x} seconds.")
+    logger.info(f"[Medical-Insights] Summary is generated in {time.time() - x} seconds.")
     return summary
 
 
@@ -32,9 +32,8 @@ async def get_entities(data):
     """ This method is used to get entities from document """
 
     x = time.time()
-    entity_extractor = EntityExtractor()
-    entities = await entity_extractor.get_extracted_entities(data)
-    logger.info(f"Entity Extraction is completed in {time.time() - x} seconds.")
+    entities = await get_extracted_entities(data)
+    logger.info(f"[Medical-Insights] Entity Extraction is completed in {time.time() - x} seconds.")
     return entities
 
 
@@ -50,7 +49,7 @@ async def get_phi_dates(data):
     x = time.time()
     phi_dates_extractor = PHIDatesExtractor()
     phi_dates = await phi_dates_extractor.get_phi_dates(data)
-    logger.info(f"PHI Dates Extraction is completed in {time.time() - x} seconds.")
+    logger.info(f"[Medical-Insights] PHI Dates Extraction is completed in {time.time() - x} seconds.")
     return phi_dates
 
 
@@ -66,7 +65,7 @@ async def get_encounters(data):
     x = time.time()
     encounters_extractor = EncountersExtractor()
     encounter_events = await encounters_extractor.get_encounters(data)
-    logger.info(f"Encounters Extraction is completed in {time.time() - x} seconds.")
+    logger.info(f"[Medical-Insights] Encounters Extraction is completed in {time.time() - x} seconds.")
     return encounter_events
 
 
@@ -83,10 +82,9 @@ async def get_medical_insights(document):
         result = dict()
 
         pdf_name = os.path.basename(document)
-        output_dir = document.replace(".pdf", "")
-        os.makedirs(output_dir, exist_ok=True)
         result['name'] = pdf_name
-        page_wise_text = await extract_pdf_text(document, output_dir)
+
+        page_wise_text = await extract_pdf_text(document)
 
         task = []
         with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:

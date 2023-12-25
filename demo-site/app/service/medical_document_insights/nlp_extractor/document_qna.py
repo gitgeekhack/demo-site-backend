@@ -1,6 +1,10 @@
 import os
 import json
+import time
 import boto3
+
+from app import logger
+from app.common.utils import update_file_path
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -16,15 +20,14 @@ class DocumentQnA:
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.boto3_bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
 
-        self.cohere_llm = Bedrock(
-            model_id="cohere.command-text-v14",
+        self.claude_llm = Bedrock(
+            model_id="anthropic.claude-v2:1",
             model_kwargs={
-                "max_tokens": 4000,
+                "max_tokens_to_sample": 4000,
                 "temperature": 0.75,
-                "p": 0.01,
-                "k": 0,
+                "top_p": 0.01,
+                "top_k": 0,
                 "stop_sequences": [],
-                "return_likelihoods": "NONE",
             },
             client=self.boto3_bedrock,
         )
@@ -44,31 +47,22 @@ class DocumentQnA:
         Question: {question}
 
         Medical Assistant:"""
-
         prompt = PromptTemplate(
             input_variables=["context", "question"], template=prompt_template
         )
-
         return prompt
 
     async def __prepare_data(self, document_name):
 
-        dir_name = document_name.replace(".pdf", "")
-        pdf_name = os.path.basename(dir_name)
-        dir_name = os.path.join(dir_name, 'textract_response')
+        pdf_name, output_dir = await update_file_path(document_name)
+        dir_name = os.path.join(output_dir, 'textract_response')
 
         with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
             json_data = json.loads(file.read())
 
         raw_text = "".join(json_data.values())
 
-        texts = RecursiveCharacterTextSplitter(chunk_size=20000, chunk_overlap=200).split_text(raw_text)
-
-        threshold = self.cohere_llm.get_num_tokens(texts[0])
-
-        if threshold >= 3650:
-            texts = RecursiveCharacterTextSplitter(chunk_size=2000, chunk_overlap=200).split_text(raw_text)
-
+        texts = RecursiveCharacterTextSplitter(chunk_size=15000, chunk_overlap=200).split_text(raw_text)
         docs = [Document(page_content=t) for t in texts]
 
         vectored_data = FAISS.from_documents(
@@ -81,7 +75,7 @@ class DocumentQnA:
     async def __create_conversation_chain(self, vectored_data, prompt_template):
 
         qa = RetrievalQA.from_chain_type(
-            llm=self.cohere_llm,
+            llm=self.claude_llm,
             chain_type="stuff",
             retriever=vectored_data.as_retriever(
                 search_type="similarity", search_kwargs={"k": 6}
@@ -91,28 +85,19 @@ class DocumentQnA:
 
         return qa
 
-    async def __remove_question(self, output):
-
-        text = output["result"].strip()
-        lines = text.split('\n')
-
-        if lines[-1].__contains__('?'):
-            lines = lines[:-1]
-
-        modified_text = '\n'.join(lines)
-        output["result"] = modified_text
-
-        return output
-
     async def get_query_response(self, query, document):
 
         try:
+            x = time.time()
             vectored_data = await self.__prepare_data(document)
+            logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
+
+            x = time.time()
             conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
             answer = conversation_chain({'query': query})
-            processed_answer = await self.__remove_question(answer)
+            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
 
-            return processed_answer
+            return answer
 
         except Exception as e:
             return {'response': f'Exception: {e}\n{query}'}
