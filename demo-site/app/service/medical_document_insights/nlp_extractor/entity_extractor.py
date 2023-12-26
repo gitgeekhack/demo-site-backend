@@ -98,6 +98,10 @@ class EntityExtraction:
             return final_data
         data = json.loads(json_str)
         data_keys = ['diagnosis', 'treatments', 'medications']
+        for ent_list in data.values():
+            for i, ent in enumerate(ent_list):
+                ent_list[i] = ent.capitalize()
+
         final_data = dict(zip(data_keys, list(data.values())))
         return final_data
 
