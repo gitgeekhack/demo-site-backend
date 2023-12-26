@@ -93,6 +93,9 @@ class EntityExtraction:
         start_index = text.find('{')
         end_index = text.rfind('}') + 1
         json_str = text[start_index:end_index]
+        if len(json_str) == 0:
+            final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
+            return final_data
         data = json.loads(json_str)
         data_keys = ['diagnosis', 'treatments', 'medications']
         final_data = dict(zip(data_keys, list(data.values())))
