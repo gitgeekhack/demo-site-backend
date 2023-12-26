@@ -36,6 +36,11 @@ async def convert_str_into_json(text):
     start_index = text.find('{')
     end_index = text.rfind('}') + 1
     json_str = text[start_index:end_index]
+
+    if len(json_str) == 0:
+        final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
+        return final_data
+
     data = json.loads(json_str)
     data_keys = ['diagnosis', 'treatments', 'medications']
     final_data = dict(zip(data_keys, list(data.values())))
@@ -115,7 +120,6 @@ async def get_extracted_entities(json_data):
     """ This method is used to provide medical entities from document"""
 
     entity = {}
-    page_wise_entities = {}
 
     task = []
     with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
