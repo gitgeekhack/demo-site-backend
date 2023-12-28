@@ -53,6 +53,16 @@ class MultipleFileUploaded(Exception):
         return f'{self.message}'
 
 
+class MissingRequestBody(Exception):
+
+    def __init__(self, message=ExceptionMessage.MISSING_REQUEST_BODY_EXCEPTION_MESSAGE):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+
 class MissingRequiredParameter(Exception):
     def __init__(self, message):
         self.message = message
