@@ -5,13 +5,17 @@ from aiohttp import web
 from app.common.utils import is_pdf_file, get_file_size
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
-from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, InputQueryNull, MultipleFileUploaded
+from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, InputQueryNull, MultipleFileUploaded, MissingRequestBody
 
 
 class MedicalInsightsExtractor:
     async def post(self):
         try:
             data_bytes = await self.content.read()
+
+            if not data_bytes:
+                raise MissingRequestBody()
+
             data = json.loads(data_bytes)
 
             file_path = data['file_path']
@@ -48,6 +52,10 @@ class MedicalInsightsExtractor:
             response = {"message": f"{e}"}
             return web.json_response(response, status=400)
 
+        except MissingRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, status=400)
+
         except InvalidFile:
             response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
             return web.json_response(response, status=415)
@@ -65,6 +73,10 @@ class QnAExtractor:
     async def post(self):
         try:
             data_bytes = await self.content.read()
+
+            if not data_bytes:
+                raise MissingRequestBody()
+
             data = json.loads(data_bytes)
 
             file_path = data['file_path']
@@ -107,6 +119,10 @@ class QnAExtractor:
             return web.json_response(response, status=400)
 
         except FileLimitExceeded as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, status=400)
+
+        except MissingRequestBody as e:
             response = {"message": f"{e}"}
             return web.json_response(response, status=400)
 

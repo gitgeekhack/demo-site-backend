@@ -112,6 +112,7 @@ class ExceptionMessage:
     FILE_PATH_NULL_EXCEPTION_MESSAGE = "File is not uploaded"
     INPUT_QUERY_NULL_EXCEPTION_MESSAGE = "Input query is empty or null"
     MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple file is uploaded, only upload single file"
+    MISSING_REQUEST_BODY_EXCEPTION_MESSAGE = "Missing request body in the request"
 
 
 class APIEndPointURL:
