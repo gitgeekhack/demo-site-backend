@@ -1,6 +1,6 @@
-import logging
 import os
 import sys
+import logging
 import aiofiles
 
 from app.constant import AllowedFileType, PDFAnnotationAndExtraction
@@ -47,6 +47,22 @@ def is_pdf_file(file):
     file_type = os.path.basename(file)
     ext = file_type.split('.')[-1]
     return ext in AllowedFileType.PDF
+
+
+def get_file_size(file_path):
+    try:
+        size_in_bytes = os.path.getsize(file_path)
+
+        size_in_kb = size_in_bytes / 1024.0
+        size_in_mb = size_in_kb / 1024.0
+
+        return size_in_mb
+
+    except FileNotFoundError:
+        return f"File not found: {file_path}"
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 
 class PackagePathFilter(logging.Filter):

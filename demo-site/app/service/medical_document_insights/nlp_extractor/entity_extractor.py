@@ -134,6 +134,7 @@ async def get_extracted_entities(json_data):
     for entity in results.done:
         page_wise_entities.update(entity.result())
 
-    page_wise_entities = dict(sorted(page_wise_entities.items(), key=lambda item: int(item[0].split('_')[1])))
+    filter_empty_pages = {key: value for key, value in page_wise_entities.items() if any(value[key] for key in ['diagnosis', 'treatments', 'medications'])}
+    page_wise_entities = dict(sorted(filter_empty_pages.items(), key=lambda item: int(item[0].split('_')[1])))
 
     return {'entities': page_wise_entities}

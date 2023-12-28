@@ -93,18 +93,25 @@ class DrivingLicense:
     class Section:
         INPUT_PATH = 'driving_license/input_images'
 
+
 class BarcodeDetection:
     class Section:
         INPUT_PATH = 'barcode_detection/input_images'
+
+
 class AllowedFileType:
     IMAGE = ['jpg', 'png', 'jpeg']
     PDF = ['pdf']
 
 
 class ExceptionMessage:
-    INVALID_FILE_EXCEPTION_MESSAGE = 'Inputted file is invalid'
+    INVALID_FILE_EXCEPTION_MESSAGE = 'Input file is invalid'
     FAILED_TO_DOWNLOAD_FILE_FROM_URL_EXCEPTION_MESSAGE = 'Unable to download file from url'
     NO_IMAGE_FOUND_EXCEPTION_MESSAGE = "Unable to find image in PDF"
+    FILE_LIMIT_EXCEEDED_EXCEPTION_MESSAGE = "File limit exceeded, only upload file upto 25 MB"
+    FILE_PATH_NULL_EXCEPTION_MESSAGE = "File is not uploaded"
+    INPUT_QUERY_NULL_EXCEPTION_MESSAGE = "Input query is empty or null"
+    MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple file is uploaded, only upload single file"
 
 
 class APIEndPointURL:
@@ -114,7 +121,7 @@ class APIEndPointURL:
 
 class APIErrorMessage:
     BAD_REQUEST_PARAMS_MISSING_MESSAGE = "one or more parameter is missing"
-    NO_IAMGE_IN_PDF_MESSAGE = "Unable to find image in PDF"
+    NO_IMAGE_IN_PDF_MESSAGE = "Unable to find image in PDF"
     UNABLE_TO_DOWNLOAD_FILE_MESSAGE = "Unable to get input file"
     INVALID_FILE_MESSAGE = "Invalid input file"
 
@@ -183,10 +190,12 @@ class CertificateOfTitle:
 class CarDamageDetection:
     class ColorLabels:
         CAR_DAMAGE = {"headlights": (153, 153, 255), "hood": (153, 204, 255), "front_bumper": (153, 255, 255),
-            "rear_bumper": (153, 255, 204), "front_windshield": (153, 255, 153), "rear_windshield": (204, 255, 153),
-            "flat_tyre": (255, 255, 153), "missing_mirror": (255, 204, 153), "missing_wheel": (255, 153, 153),
-            "taillights": (255, 153, 204), "trunk": (255, 153, 255), "window": (204, 153, 255), "door": (224, 2, 224),
-            "fender": (102, 102, 0), "interior_damage": (0, 255, 255)}
+                      "rear_bumper": (153, 255, 204), "front_windshield": (153, 255, 153),
+                      "rear_windshield": (204, 255, 153),
+                      "flat_tyre": (255, 255, 153), "missing_mirror": (255, 204, 153), "missing_wheel": (255, 153, 153),
+                      "taillights": (255, 153, 204), "trunk": (255, 153, 255), "window": (204, 153, 255),
+                      "door": (224, 2, 224),
+                      "fender": (102, 102, 0), "interior_damage": (0, 255, 255)}
 
     class Path:
         STATIC_PATH = "app/static/"
