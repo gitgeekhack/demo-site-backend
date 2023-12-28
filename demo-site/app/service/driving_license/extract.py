@@ -147,11 +147,10 @@ class DLDataPointExtractorV1(MonoState):
         return updated_results
 
     async def extract(self, image_data):
-        final_results = []
+        data = {}
 
         try:
             for file in image_data:
-                data = {"results": None}
                 np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(USER_DATA_PATH, filename)
@@ -167,13 +166,12 @@ class DLDataPointExtractorV1(MonoState):
                     extracted_data = await self.__dates_per_label(extracted_data_by_label)
                     results = {**results_dict, **dict(extracted_data)}
                     updated_results = await self.__update_labels(results)
-                    data['results'] = updated_results
+                    data = updated_results
 
                 print(f'Request ID: [{self.uuid}] Response: {data}')
-                final_results.append(data)
 
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
-            final_results = 500
+            data = 500
 
-        return final_results
+        return data

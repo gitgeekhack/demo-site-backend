@@ -35,24 +35,21 @@ class BarcodeExtraction:
         return lr_number
 
     def extract(self, image_data):
-        results = []
+        data = []
 
         for file in image_data:
-            data = {"results": ''}
             np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
             filename = secure_filename(file.filename)
             file_path = os.path.join(USER_DATA_PATH, filename)
             input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
             cv2.imwrite(file_path, input_image)
-            data['file_path'] = os.path.join(USER_DATA_PATH, filename)
             try:
                 image = cv2.imread(file_path)
                 lr_number = self.detect_lr(image)
                 if len(lr_number) == 0:
                     return 'No Code'
-                data['results'] = lr_number
-                results.append(data)
+                data = lr_number
             except Exception as e:
                 logger.error('%s -> %s' % (e, traceback.format_exc()))
-                results = 500
-        return results
+                data = 500
+        return data
