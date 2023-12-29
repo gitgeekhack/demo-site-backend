@@ -6,7 +6,7 @@ import json
 
 class PDFTextExtractor:
     def __init__(self, input_dir, output_dir):
-        os.environ['AWS_PROFILE'] = "default"
+        os.environ['AWS_PROFILE'] = "maruti-root"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.input_dir = input_dir
         self.output_dir = output_dir
