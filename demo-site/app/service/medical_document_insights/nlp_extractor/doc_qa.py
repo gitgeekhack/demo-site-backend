@@ -13,7 +13,7 @@ from app.constant import USER_DATA_PATH
 
 class MedicalAssistant:
     def __init__(self):
-        os.environ['AWS_PROFILE'] = "default"
+        os.environ['AWS_PROFILE'] = "maruti-root"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.boto3_bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.claude_llm = Bedrock(

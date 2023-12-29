@@ -12,7 +12,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 class SummarizerWrapper:
     def __init__(self):
         # Initialize the bedrock client
-        os.environ['AWS_PROFILE'] = "default"
+        os.environ['AWS_PROFILE'] = "maruti-root"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         # Initialize the model Id

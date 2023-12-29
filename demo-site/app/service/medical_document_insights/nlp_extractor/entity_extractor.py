@@ -8,12 +8,13 @@ from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 
 class EntityExtraction:
     def __init__(self):
         # Initialize the bedrock client
-        os.environ['AWS_PROFILE'] = "default"
+        os.environ['AWS_PROFILE'] = "maruti-root"
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         # Initialize the model Id
@@ -33,8 +34,19 @@ class EntityExtraction:
         # Load the bedrock embeddings
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.modelIdEmbeddings, client=self.bedrock)
 
-    def detect_entities(self, data):
-        docs = [Document(page_content=data)]
+    def data_formatter(self, json_data):
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=1100, chunk_overlap=200
+        )
+        texts = text_splitter.split_text(json_data)
+        docs = [Document(page_content=t) for t in texts]
+        return docs
+
+    def detect_entities(self, docs):
+
+        if not docs:
+            return {'diagnosis': [], 'treatments': [], 'medications': []}
+
         vectorstore_faiss = FAISS.from_documents(
             documents=docs,
             embedding=self.bedrock_embeddings,
@@ -90,14 +102,18 @@ class EntityExtraction:
         return entities
 
     def convert_str_into_json(self, text):
+
         start_index = text.find('{')
         end_index = text.rfind('}') + 1
         json_str = text[start_index:end_index]
+
         if len(json_str) == 0:
             final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
             return final_data
+
         data = json.loads(json_str)
         data_keys = ['diagnosis', 'treatments', 'medications']
+
         for ent_list in data.values():
             for i, ent in enumerate(ent_list):
                 ent_list[i] = ent.capitalize()
@@ -106,8 +122,11 @@ class EntityExtraction:
         return final_data
 
     def pagewise_entity_extractor(self, json_data):
+
         pagewise_entities = dict()
         for key, value in json_data.items():
-            entities = self.detect_entities(value)
+            docs = self.data_formatter(value)
+            entities = self.detect_entities(docs)
             pagewise_entities[key] = entities
+
         return pagewise_entities
