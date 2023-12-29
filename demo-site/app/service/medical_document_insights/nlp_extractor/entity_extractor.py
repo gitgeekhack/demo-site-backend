@@ -10,6 +10,7 @@ from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
 bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
@@ -48,10 +49,24 @@ async def convert_str_into_json(text):
     return final_data
 
 
+async def data_formatter(json_data):
+    text_splitter = RecursiveCharacterTextSplitter(
+        chunk_size=1100, chunk_overlap=200
+    )
+    texts = text_splitter.split_text(json_data)
+    docs = [Document(page_content=t) for t in texts]
+    return docs
+
+
 async def get_medical_entities(key, value, page_wise_entities):
     """ This method is used to provide medical entities """
 
-    docs = [Document(page_content=value)]
+    docs = await data_formatter(value)
+
+    if not docs:
+        page_wise_entities[key] = {'diagnosis': [], 'treatments': [], 'medications': []}
+        return page_wise_entities
+
     vectorstore_faiss = FAISS.from_documents(
         documents=docs,
         embedding=bedrock_embeddings,
