@@ -63,6 +63,16 @@ class MissingRequestBody(Exception):
         return f'{self.message}'
 
 
+class InvalidRequestBody(Exception):
+
+    def __init__(self, message=ExceptionMessage.INVALID_REQUEST_BODY_EXCEPTION_MESSAGE):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+
 class MissingRequiredParameter(Exception):
     def __init__(self, message):
         self.message = message
@@ -80,6 +90,18 @@ class InvalidFileException(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
+
+class FileUploadLimitReached(Exception):
+
+    def __init__(self, number_of_files, message=ExceptionMessage.FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE):
+        self.message = message
+        self.number_of_files = number_of_files
+        super().__init__(self.message)
+
+    def __str__(self):
+        exception_message = self.message.format(x=self.number_of_files)
+        return exception_message
 
 
 class FailedToDownloadFileFromURLException(Exception):

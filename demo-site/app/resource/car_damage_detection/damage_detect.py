@@ -1,15 +1,13 @@
-import os.path
-import traceback
-import uuid
 import json
-
-import aiohttp_jinja2
+import uuid
+import traceback
 from aiohttp import web
 
 from app import logger
 from app.common.utils import is_image_file, get_file_from_path, get_file_size
 from app.service.car_damage_detection.damage_detect import DamageDetector
-from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, MissingRequestBody
+from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, FileUploadLimitReached,
+                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody)
 
 
 class DamageExtractor:
@@ -18,38 +16,61 @@ class DamageExtractor:
         filedata = []
         try:
             data_bytes = await self.content.read()
-            data = json.loads(data_bytes)
-            file_path = data['file_path']
-            if file_path == '':
-                raise FilePathNull()
-            if isinstance(file_path, str):
-                file = get_file_from_path(file_path)
-                if isinstance(file, FileNotFoundError):
-                    raise FileNotFoundError
-                filename = file.filename
-                if not is_image_file(filename):
-                    raise InvalidFile(filename)
-                file_size = get_file_size(file_path)
-                if file_size > 25:
-                    raise FileLimitExceeded(file_path)
 
-                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-                filedata.append(file)
-            else:
-                raise MultipleFileUploaded()
+            if not data_bytes:
+                raise MissingRequestBody()
+
+            data = json.loads(data_bytes)
+            file_paths = data['file_paths']
+            if not file_paths:
+                raise FilePathNull()
+
+            if isinstance(file_paths, list) and len(file_paths) >= 10:
+                raise FileUploadLimitReached(10)
+
+            if isinstance(file_paths, str) or isinstance(file_paths, int):
+                raise InvalidRequestBody()
+
+            for file in file_paths:
+                if isinstance(file, str):
+                    file_path = get_file_from_path(file)
+
+                    if isinstance(file_path, FileNotFoundError):
+                        raise FileNotFoundError
+
+                    filename = file_path.filename
+                    if not is_image_file(filename):
+                        raise InvalidFile(filename)
+
+                    file_size = get_file_size(file)
+                    if file_size > 25:
+                        raise FileLimitExceeded(file_path)
+
+                    print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                    filedata.append(file_path)
 
             detector = DamageDetector(x_uuid)
             results = await detector.detect(image_data=filedata)
-            if isinstance(data, int):
-                raise Exception
-            else:
-                return web.json_response({'data': results}, status=200)
+
+            return web.json_response({'data': results}, status=200)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
             return web.json_response(response, status=400)
 
         except MultipleFileUploaded as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, status=400)
+
+        except MissingRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, status=400)
+
+        except InvalidRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, status=400)
+
+        except FileUploadLimitReached as e:
             response = {"message": f"{e}"}
             return web.json_response(response, status=400)
 
@@ -66,7 +87,6 @@ class DamageExtractor:
             return web.json_response(response, status=415)
 
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
-            response = {"message": "Internal Server Error"}
-            print(f'Request ID: [{x_uuid}] Response: {response}')
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"message": f"Internal Server Error with error {e}"}
             return web.json_response(response, status=500)

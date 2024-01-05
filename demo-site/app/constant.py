@@ -113,6 +113,8 @@ class ExceptionMessage:
     INPUT_QUERY_NULL_EXCEPTION_MESSAGE = "Input query is empty or null"
     MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple file is uploaded, only upload single file"
     MISSING_REQUEST_BODY_EXCEPTION_MESSAGE = "Missing request body in the request"
+    INVALID_REQUEST_BODY_EXCEPTION_MESSAGE = "Invalid request body received"
+    FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
 
 
 class APIEndPointURL:
