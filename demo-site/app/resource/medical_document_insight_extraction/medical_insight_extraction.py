@@ -90,7 +90,7 @@ class QnAExtractor:
             file_path = data['file_path']
             input_query = data['input_query']
 
-            if file_path == '':
+            if not file_path:
                 raise FilePathNull()
 
             if isinstance(file_path, int) or isinstance(file_path, dict):
@@ -99,7 +99,7 @@ class QnAExtractor:
             if isinstance(file_path, list) or isinstance(file_path, dict):
                 raise MultipleFileUploaded()
 
-            if input_query == '':
+            if not input_query:
                 raise InputQueryNull()
 
             if isinstance(input_query, int) or isinstance(input_query, dict) or isinstance(input_query, list):
