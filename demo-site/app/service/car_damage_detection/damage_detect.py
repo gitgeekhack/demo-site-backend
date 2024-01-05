@@ -29,11 +29,11 @@ class DamageDetector(MonoState):
     async def __annotate(self, image, co_ordinates, save_path):
         annotator = Annotator(image, co_ordinates)
         annotator.annotate_and_save_image(save_path)
-        print(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
+        logger.info(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
 
     async def __label_colour(self, key):
         color = CarDamageDetection.ColorLabels.CAR_DAMAGE[key]
-        print(f'Request ID: [{self.uuid}] damaged part:[{key}]found colour: [{color}]')
+        logger.info(f'Request ID: [{self.uuid}] damaged part:[{key}]found colour: [{color}]')
         return color
 
     async def __predict_labels(self, image_path, save_path):
@@ -55,25 +55,23 @@ class DamageDetector(MonoState):
                 conf_labels[label[0]] = max(label[1])
             img = cv2.imread(image_path)
             await self.__annotate(img, co_ordinates, save_path)
-            print(f'Request ID: [{self.uuid}] co-ordinates obtained: [{co_ordinates}]')
+            logger.info(f'Request ID: [{self.uuid}] co-ordinates obtained: [{co_ordinates}]')
         return conf_labels
 
     async def detect(self, image_data):
         results = []
-        try:
-            for file_data in image_data:
-                np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
-                filename = secure_filename(file_data.filename)
-                input_file_path = os.path.join(USER_DATA_PATH, filename)
-                output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-                cv2.imwrite(input_file_path, input_image)
-                print(f"Request ID: [{self.uuid}]Input image/s received...")
-                detection = await self.__predict_labels(input_file_path, output_file_path)
-                out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-                results.append({'results': detection, 'file_path': out_path})
-            print(f'Request ID: [{self.uuid}] results obtained: [{results}]')
-        except Exception as e:
-            logger.error('%s -> %s' % (e, traceback.format_exc()))
-            results = 500
+
+        for file_data in image_data:
+            np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
+            filename = secure_filename(file_data.filename)
+            input_file_path = os.path.join(USER_DATA_PATH, filename)
+            output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
+            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
+            cv2.imwrite(input_file_path, input_image)
+            logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
+            detection = await self.__predict_labels(input_file_path, output_file_path)
+            out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
+            results.append({'results': detection, 'file_path': out_path})
+
+        logger.info(f'Request ID: [{self.uuid}] results obtained: [{results}]')
         return results
