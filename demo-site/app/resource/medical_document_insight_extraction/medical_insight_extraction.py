@@ -2,7 +2,7 @@ import os
 import json
 from aiohttp import web
 
-from app.common.utils import is_pdf_file, get_file_size
+from app.common.utils import is_pdf_file, get_file_size, get_response_headers
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
 from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, InputQueryNull,
@@ -11,6 +11,7 @@ from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePat
 
 class MedicalInsightsExtractor:
     async def post(self):
+        headers = await get_response_headers()
         try:
             data_bytes = await self.content.read()
 
@@ -42,43 +43,44 @@ class MedicalInsightsExtractor:
                     raise FileLimitExceeded(file_path)
 
             extracted_information = await get_medical_insights(file_path)
-            return web.json_response({'document': extracted_information}, status=200)
+            return web.json_response({'document': extracted_information}, headers=headers, status=200)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except MultipleFileUploaded as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except FileLimitExceeded as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response,headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidFile:
             response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
-            return web.json_response(response, status=415)
+            return web.json_response(response, headers=headers, status=415)
 
         except FileNotFoundError:
             response = {"message": "File Not Found"}
-            return web.json_response(response, status=404)
+            return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
             response = {"message": f"Internal Server Error with error {e}"}
-            return web.json_response(response, status=500)
+            return web.json_response(response, headers=headers, status=500)
 
 
 class QnAExtractor:
     async def post(self):
+        headers = await get_response_headers()
         try:
             data_bytes = await self.content.read()
 
@@ -118,40 +120,40 @@ class QnAExtractor:
 
             result = await get_query_response(input_query, file_path)
             result = json.dumps(result).encode('utf-8')
-            return web.Response(body=result, content_type='application/json', status=200)
+            return web.Response(body=result, headers=headers, content_type='application/json', status=200)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InputQueryNull as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except MultipleFileUploaded as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except FileLimitExceeded as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidFile:
             response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
-            return web.json_response(response, status=415)
+            return web.json_response(response, headers=headers, status=415)
 
         except FileNotFoundError:
             response = {"message": "File Not Found"}
-            return web.json_response(response, status=404)
+            return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
             response = {"message": f"Internal Server Error with error {e}"}
-            return web.json_response(response, status=500)
+            return web.json_response(response, headers=headers, status=500)

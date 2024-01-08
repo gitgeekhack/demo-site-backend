@@ -4,15 +4,16 @@ import traceback
 from aiohttp import web
 
 from app import logger
-from app.common.utils import is_image_file, get_file_from_path, get_file_size
 from app.service.car_damage_detection.damage_detect import DamageDetector
+from app.common.utils import is_image_file, get_file_from_path, get_file_size, get_response_headers
 from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, FileUploadLimitReached,
-                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody)
+                                         MissingRequestBody, InvalidRequestBody)
 
 
 class DamageExtractor:
     async def post(self):
         x_uuid = uuid.uuid1()
+        headers = await get_response_headers()
         filedata = []
         try:
             data_bytes = await self.content.read()
@@ -52,41 +53,37 @@ class DamageExtractor:
             detector = DamageDetector(x_uuid)
             results = await detector.detect(image_data=filedata)
 
-            return web.json_response({'data': results}, status=200)
+            return web.json_response({'data': results}, headers=headers, status=200)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
-
-        except MultipleFileUploaded as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except FileUploadLimitReached as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except FileNotFoundError:
             response = {"message": "File Not Found"}
-            return web.json_response(response, status=404)
+            return web.json_response(response, headers=headers, status=404)
 
         except FileLimitExceeded as e:
             response = {"message": f"{e}"}
-            return web.json_response(response, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except InvalidFile:
             response = {"message": "Unsupported Media Type, Only JPG, JPEG, and PNG formats are Supported!"}
-            return web.json_response(response, status=415)
+            return web.json_response(response, headers=headers, status=415)
 
         except Exception as e:
             logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": f"Internal Server Error with error {e}"}
-            return web.json_response(response, status=500)
+            return web.json_response(response, headers=headers, status=500)

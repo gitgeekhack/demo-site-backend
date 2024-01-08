@@ -116,6 +116,16 @@ async def update_file_path(file_path):
     return pdf_name, output_dir
 
 
+async def get_response_headers():
+
+    headers = {
+        'Access-Control-Allow-Origin': "*",
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
+    return headers
+
+
 def get_file_from_path(filepath):
 
     try:
