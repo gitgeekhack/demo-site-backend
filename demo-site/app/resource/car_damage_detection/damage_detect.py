@@ -7,7 +7,7 @@ from app import logger
 from app.service.car_damage_detection.damage_detect import DamageDetector
 from app.common.utils import is_image_file, get_file_from_path, get_file_size, get_response_headers
 from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, FileUploadLimitReached,
-                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody)
+                                         MissingRequestBody, InvalidRequestBody)
 
 
 class DamageExtractor:
@@ -56,10 +56,6 @@ class DamageExtractor:
             return web.json_response({'data': results}, headers=headers, status=200)
 
         except FilePathNull as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, headers=headers, status=400)
-
-        except MultipleFileUploaded as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
