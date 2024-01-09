@@ -62,25 +62,30 @@ class EncountersExtractor:
     async def __post_processing(self, response):
         """ This method is used to post-process the LLM response """
 
-        # Use a regular expression to find the list in the string
-        string_of_tuples = re.search(r'\[.*?\]', response, re.DOTALL).group()
-
         try:
-            # Convert the string of tuples into a list of tuples
-            list_of_tuples = ast.literal_eval(string_of_tuples.replace('“', '"').replace('”', '"'))
-        except:
-            # Use a regular expression to match the dates and events
-            matches = re.findall(r'\(([^,]*), ([^\)]*)\)', string_of_tuples)
+            # Use a regular expression to find the list in the string
+            string_of_tuples = re.search(r'\[.*?\]', response, re.DOTALL).group()
 
-            # Convert the matches to a list of tuples
-            list_of_tuples = [(date.strip(), event.strip()) for date, event in matches]
+            try:
+                # Convert the string of tuples into a list of tuples
+                list_of_tuples = ast.literal_eval(string_of_tuples.replace('“', '"').replace('”', '"'))
 
-        encounters = []
-        for date, event in list_of_tuples:
-            encounters.append({'date': date, 'event': event})
+            except Exception:
+                # Use a regular expression to match the dates and events
+                matches = re.findall(r'\(([^,]*), ([^\)]*)\)', string_of_tuples)
 
-        # Convert the list of tuples to a dictionary
-        return {'encounters': encounters}
+                # Convert the matches to a list of tuples
+                list_of_tuples = [(date.strip(), event.strip()) for date, event in matches]
+
+            encounters = []
+            for date, event in list_of_tuples:
+                encounters.append({'date': date, 'event': event})
+
+            # Convert the list of tuples to a dictionary
+            return {'encounters': encounters}
+
+        except Exception:
+            return {'encounters': []}
 
     async def get_encounters(self, data):
         """ This method is used to generate the encounters """
