@@ -1,7 +1,5 @@
-import copy
+import time
 import boto3
-from PIL import Image
-import numpy as np
 
 
 class TextractHelper:
@@ -11,87 +9,119 @@ class TextractHelper:
     def get_textract_response(self, image_path):
         img = open(image_path, 'rb')
         image_bytes = bytearray(img.read())
-        response = self.client.detect_document_text(Document={'Bytes': image_bytes})
+        response = self.client.analyze_document(Document={'Bytes': image_bytes}, FeatureTypes=['FORMS'])
         return response
 
-    def __normalize_bbox(self, bbox, height, width):
-        bbox[0] = np.float64(bbox[0] / width)
-        bbox[1] = np.float64(bbox[1] / height)
-        bbox[2] = np.float64(bbox[2] / width)
-        bbox[3] = np.float64(bbox[3] / height)
-        return bbox
-
-    def __coinciding_bboxes_iou(self, box_a, box_b):
+    def __get_kv_map(self, response):
         """
-        The method is used to find IOU of the bounding boxes
-        :param box_a: Co-ordinates of the smaller bounding box
-        :param box_b: Co-ordinates of the bigger bounding box
-        :return: IOU for the given bounding boxes
+        The method finds keys, values, blocks, words from textract response
         """
-        box_a = tuple(np.array(box_a) * 1000)
-        box_b = tuple(np.array(box_b) * 1000)
+        blocks = response['Blocks']
+        key_map = {}
+        value_map = {}
+        block_map = {}
+        for block in blocks:
+            block_id = block['Id']
+            block_map[block_id] = block
+            if block['BlockType'] == "KEY_VALUE_SET":
+                if 'KEY' in block['EntityTypes']:
+                    key_map[block_id] = block
+                else:
+                    value_map[block_id] = block
 
-        x_a = max(box_a[0], box_b[0])
-        y_a = max(box_a[1], box_b[1])
-        x_b = min(box_a[2], box_b[2])
-        y_b = min(box_a[3], box_b[3])
+        return key_map, value_map, block_map
 
-        intersect_area = max(0, x_b - x_a + 1) * max(0, y_b - y_a + 1)
-        box_a_area = (box_a[2] - box_a[0] + 1) * (box_a[3] - box_a[1] + 1)
-        iou = intersect_area / float(box_a_area)
-        return iou
+    def __find_value_block(self, key_block, value_map):
+        """
+        The method finds Value block for given Key block using Key-Value Relationships
+        """
+        for relationship in key_block['Relationships']:
+            if relationship['Type'] == 'VALUE':
+                for value_id in relationship['Ids']:
+                    value_block = value_map[value_id]
+        return value_block
 
-    def __get_word_blocks(self, response):
-        word_blocks = []
-        for block in response['Blocks']:
-            if block['BlockType'] == 'WORD':
-                word_block = copy.deepcopy(block)
-                y_1, y_2, x_1, x_2 = block['Geometry']['BoundingBox']['Top'], \
-                    block['Geometry']['BoundingBox']['Top'] + block['Geometry']['BoundingBox']['Height'], \
-                    block['Geometry']['BoundingBox']['Left'], \
-                    block['Geometry']['BoundingBox']['Left'] + block['Geometry']['BoundingBox']['Width']
+    def __get_text(self, result, blocks_map):
+        """
+        The method finds text words with its area and coordinates using WORD blocks from textract response
+        """
+        items = []
+        if 'Relationships' in result:
+            for relationship in result['Relationships']:
+                if relationship['Type'] == 'CHILD':
+                    for child_id in relationship['Ids']:
+                        word = blocks_map[child_id]
+                        if word['BlockType'] == 'WORD':
+                            area = word['Geometry']['BoundingBox']['Width'] * word['Geometry']['BoundingBox']['Height']
+                            y_1, y_2, x_1, x_2 = word['Geometry']['BoundingBox']['Top'], \
+                                word['Geometry']['BoundingBox']['Top'] + word['Geometry']['BoundingBox']['Height'], \
+                                word['Geometry']['BoundingBox']['Left'], \
+                                word['Geometry']['BoundingBox']['Left'] + word['Geometry']['BoundingBox']['Width']
+                            items.append(
+                                {'text': word['Text'], 'area': area, 'x_1': x_1, 'y_1': y_1, 'x_2': x_2, 'y_2': y_2})
+        return items
 
-                word_block['bbox'] = [x_1, y_1, x_2, y_2]
-                word_blocks.append(word_block)
+    def __key_val_merge(self, item):
+        """
+        The method combines various attributes of keys and values
+        """
+        item_text = ' '.join([i['text'] for i in item])
+        item_area = sum([i['area'] for i in item])
+        item_x_1 = min([i['x_1'] for i in item])
+        item_y_1 = min([i['y_1'] for i in item])
+        item_x_2 = max([i['x_2'] for i in item])
+        item_y_2 = max([i['y_2'] for i in item])
+        return {'text': item_text, 'area': item_area, 'x_1': item_x_1, 'y_1': item_y_1, 'x_2': item_x_2,
+                'y_2': item_y_2}
 
-        return word_blocks
+    def __get_kv_relationship(self, key_map, value_map, block_map):
+        """
+        The method finds keys and values from textract response
+        """
+        kvs = []
+        for block_id, key_block in key_map.items():
+            value_block = self.__find_value_block(key_block, value_map)
+            key = self.__get_text(key_block, block_map)
+            val = self.__get_text(value_block, block_map)
+            if key and val:
+                kvs.append({'key': self.__key_val_merge(key), 'val': self.__key_val_merge(val)})
+        return kvs
 
-    def __get_line_blocks(self, response):
-        word_blocks = []
-        for block in response['Blocks']:
-            if block['BlockType'] == 'LINE':
-                word_block = copy.deepcopy(block)
-                y_1, y_2, x_1, x_2 = block['Geometry']['BoundingBox']['Top'], \
-                    block['Geometry']['BoundingBox']['Top'] + block['Geometry']['BoundingBox']['Height'], \
-                    block['Geometry']['BoundingBox']['Left'], \
-                    block['Geometry']['BoundingBox']['Left'] + block['Geometry']['BoundingBox']['Width']
+    def parse_textract_forms(self, response):
+        """
+        The method finds Key-Value pairs from Textract response json
+        """
+        key_map, value_map, block_map = self.__get_kv_map(response)
+        kvs = self.__get_kv_relationship(key_map, value_map, block_map)
 
-                word_block['bbox'] = [x_1, y_1, x_2, y_2]
-                word_blocks.append(word_block)
+        key_values = []
+        for form in kvs:
+            key = form['key']['text']
+            val = form['val']['text']
+            if key in val:
+                val = val.replace(key, '')
+                val = val.strip()
+            x_1 = min(form['key']['x_1'], form['val']['x_1'])
+            y_1 = min(form['key']['y_1'], form['val']['y_1'])
+            x_2 = max(form['key']['x_2'], form['val']['x_2'])
+            y_2 = max(form['key']['y_2'], form['val']['y_2'])
+            key_values.append({'key': key, 'value': val, 'x_1': x_1, 'y_1': y_1, 'x_2': x_2, 'y_2': y_2})
 
-        return word_blocks
+        return key_values
 
-    def get_text(self, image_path, detected_objects):
-        detected_objects = {i: list(detected_objects[i]['bbox']) for i in detected_objects}
-        image = Image.open(image_path)
-        width = image.size[0]
-        height = image.size[1]
-
+    def get_text(self, logger, image_path):
+        start_time = time.time()
         response = self.get_textract_response(image_path)
-        word_blocks = self.__get_word_blocks(response)
-        line_blocks = self.__get_line_blocks(response)
+        page_text = ''
+        for i in response['Blocks']:
+            if i['BlockType'] == 'LINE':
+                page_text = page_text + i['Text'] + ' '
 
-        extracted_texts = {}
-        for obj in detected_objects:
-            normalized_bbox = self.__normalize_bbox(detected_objects[obj], height, width)
-            detected_objects[obj] = normalized_bbox
+        key_values = self.parse_textract_forms(response)
+        key_value_text = ''
+        for i in key_values:
+            key_value_text += f"{i['key']}: {i['value']}, "
 
-            text_blocks = line_blocks if obj in ['owner_address', 'lienholder_address'] else word_blocks
-            text = []
-            for block in text_blocks:
-                overlap_score = self.__coinciding_bboxes_iou(block['bbox'], normalized_bbox)
-                if overlap_score >= 0.6:
-                    text.append(block['Text'])
-            extracted_texts[obj] = '\n'.join(text) if obj in ['owner_address', 'lienholder_address'] else ' '.join(text)
-
-        return extracted_texts
+        page_text = key_value_text + page_text
+        logger.info(f"Text extraction using Textract completed in {time.time() - start_time} seconds.")
+        return page_text
