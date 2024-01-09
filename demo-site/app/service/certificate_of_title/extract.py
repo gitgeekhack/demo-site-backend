@@ -1,276 +1,167 @@
-import asyncio
 import json
 import os
-from itertools import chain
+import time
 import traceback
-import cv2
-import numpy as np
-import pandas as pd
-import torch
+import re
+import boto3
+from dateutil import parser
 from werkzeug.utils import secure_filename
 
-from app import app, logger
-from app.common.utils import MonoState
-from app.constant import CertificateOfTitle, USER_DATA_PATH
-from app.service.helper.certificate_of_title_helper import COTHelper
+from app import logger
+from app.constant import USER_DATA_PATH
 from app.service.helper.textract import TextractHelper
-from app.service.helper.cv_helper import CVHelper
-from app.service.ocr.certificate_of_title.ocr import CertificateOfTitleOCR as OCR
-from app.service.helper.certificate_of_title_parser import parse_title_number, parse_vin, parse_year, parse_make, \
-    parse_model, parse_body_style, parse_owner_name, parse_lien_name, parse_odometer_reading, \
-    parse_doc_type, parse_title_type, parse_remarks, parse_issue_date
-
-pd.options.mode.chained_assignment = None
 
 
-def model_loader():
-    torch.hub._validate_not_a_forked_repo = lambda a, b, c: True
-    model = torch.hub.load(CertificateOfTitle.ObjectDetection.YOLOV5, 'custom',
-                           path=CertificateOfTitle.ObjectDetection.COT_OBJECT_DETECTION_MODEL_PATH)
-    model.conf = CertificateOfTitle.ObjectDetection.MODEL_CONFIDENCE
-    return model
-
-
-class COTDataPointExtractorV1(MonoState):
-    _internal_state = {'model': model_loader()}
-
+class COTDataPointExtractorV1:
     def __init__(self, uuid):
         self.uuid = uuid
-        self.label = CertificateOfTitle.ObjectDetection.OBJECT_LABELS
-        self.section = CertificateOfTitle.Sections
-        self.response_key = CertificateOfTitle.ResponseKeys
-        self.cv_helper = CVHelper()
-        self.cot_helper = COTHelper()
-        self.ocr = OCR()
         self.textract_helper = TextractHelper()
-        self.ocr_method = {self.response_key.TITLE_NO: parse_title_number,
-                           self.response_key.VIN: parse_vin,
-                           self.response_key.YEAR: parse_year,
-                           self.response_key.MAKE: parse_make,
-                           self.response_key.MODEL: parse_model,
-                           self.response_key.BODY_STYLE: parse_body_style,
-                           self.response_key.ODOMETER_READING: parse_odometer_reading,
-                           self.response_key.ISSUE_DATE: parse_issue_date,
-                           self.response_key.OWNER_NAME: parse_owner_name,
-                           self.response_key.OWNER_ADDRESS: self.ocr.get_address,
-                           self.response_key.LIENHOLDER_NAME: parse_lien_name,
-                           self.response_key.LIENHOLDER_ADDRESS: self.ocr.get_address,
-                           self.response_key.LIEN_DATE: parse_issue_date,
-                           self.response_key.DOCUMENT_TYPE: parse_doc_type,
-                           self.response_key.TITLE_TYPE: parse_title_type,
-                           self.response_key.REMARK: parse_remarks
-                           }
+        self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
+        self.llm_model_id = 'anthropic.claude-instant-v1'
 
-    async def __get_owner_lien_address(self, owner_addresses):
-        lien = None
-        iou = await self.cv_helper.calculate_iou(x=owner_addresses[0]['bbox'], y=owner_addresses[1]['bbox'])
-        if iou == 0:
-            owner, lien = (owner_addresses[0], owner_addresses[1]) if owner_addresses[0]['bbox'][1] < \
-                                                                      owner_addresses[1]['bbox'][1] else (
-                owner_addresses[1], owner_addresses[0])
-        else:
-            owner = owner_addresses[0] if owner_addresses[0]['score'] > owner_addresses[1]['score'] else \
-                owner_addresses[1]
-        return owner, lien
+    async def get_llm_response(self, logger, page_text):
+        start_time = time.time()
+        prompt = f'''{page_text}
 
-    async def __filter_title_type(self, title_types):
-        for title_type in title_types:
-            temp = title_types.copy()
-            temp.remove(title_type)
-            for i in temp:
-                iou = await self.cv_helper.calculate_iou(x=i['bbox'], y=title_type['bbox'])
-                if iou >= 0.5:
-                    min_conf = i if i['score'] < title_type['score'] else title_type
-                    title_types.remove(min_conf)
-        return title_types
+            Instructions for Model:
+            1. Extract all lienholder details. For example: Extract data for keywords such as FIRST LIENHOLDER, SECOND LIENHOLDER, etc and contextually similar variations as multiple lienholders and add them to lienholders key seperately. If not present return empty list. Don't consider MAIL TO or PREVIOUS OWNERS to this list.
+            2. Document type and Title Type should be extracted only if explicitly provided.
+            3. Strictly follow output format for all Dates: "yyyy-mm-dd". If value is not present, return empty string "".
+            4. Ensure flexibility in recognizing different terms that convey the same or similar meanings. Contextually adapt to variations that may be present in the OCR text.
+            5. Extract Title No. only when explicitly mentioned. Examples values can be similar to - TITLE/DOCUMENT NUMBER, Title Number, TITLE NUMBER, etc. Do not confuse title number with any other number. Also, recognize negations and extract accordingly. Don't tream any leading Zeros.
+            6. Identify variations of Issue Dates as IssueDate. Examples values can be similar to - "Date issued", "Date of issue", "ISSUE DATE", "DATE" etc. Consider date format as United States's format. Don't confuse it with any other date. 
+            6. Any keyword close to or beneath OdometerReading Number should be considered as OdometerBrand. Examples values could be similar to Actual, Exempt, etc. Don't confuse Vehicle Brands as Odometer Brands.
+            7. Understand variations such as "Body style", "STYLE", "BODY", etc and similar to extract it as the BodyStyle.Do not consider BodyStyle as Model. Consider single word or two words together as BodyStyle.Example values of BodyStyle can be IN THE REGEX FORMAT "/d[A-z]*" or "/d/s[A-z]*" or "[A-z]*.
+            8. Recognize variations like "Odometer" as the Odometer Reading and the value will be an integer value.
+            9. Model can be found with key "MODEL" or "MODEL NAME". Don't confuse it with "MODEL YEAR" it shows Year not Model.
+            10. Year should be an integer value and if year is not present in text, dont create value on your own.
+            11. Recognize variations like "Plate Number", "LicenseNumber" and similar keywords as the LicenseNumber.
+            12. If date is written near Lien holder then consider it as LienDate. If File date and Maturity date both are present then File date should be considered as LienDate. Don't consider Lien release date as LienDate. 
+            13. Don't include address in Owner and Lienholder names.
+            14. Identify conjuctions("AND", "OR") and seperators("&", "/", ",")  between owner names to not merge them into one. Keep space characters.
+            15. If any value is not extracted or is null, it should be returned as empty string ("").
+            16. If values are not present in the text, do not create values on your own.
 
-    async def __get_multiple_objects(self, detected_object):
-        title_types = []
-        document_types = []
-        owner_addresses = []
-        for x in detected_object.pred[0]:
-            score = float(x[-2])
-            bbox = x[:-2].numpy()
-            if self.label[int(x[-1])] == self.response_key.OWNER_ADDRESS:
-                owner_addresses.append({'score': score, 'bbox': bbox})
-            elif self.label[int(x[-1])] == self.response_key.TITLE_TYPE and score > CertificateOfTitle.VAL_SCORE:
-                title_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
-            elif self.label[int(x[-1])] == self.response_key.DOCUMENT_TYPE and score > CertificateOfTitle.VAL_SCORE:
-                document_types.append({'score': float(x[-2]), 'bbox': x[:-2].numpy()})
-        return title_types, document_types, owner_addresses
+            {{
+              "lienholders": [{{
+              "lienholderName": "[Extracted lienholder Name]",
+              "lienholderAddress": {{
+                "Street": "[Extracted lienholder Street]",
+                "City": "[Extracted lienholder City]",
+                "State": "[Extracted lienholder State]",
+                "Zipcode": "[Extracted lienholder Zipcode]"
+              }},
+              "LienDate": "[Extracted Lien Date]"     
+              }}],
+              "TitleNo": "[Extracted Title No]",
+              "Vin": "[Extracted Vin]",
+              "Year": "[Extracted Year]",
+              "Make": "[Extracted Make]",
+              "Model": "[Extracted Model]",
+              "BodyStyle": "[Extracted Body Style]",
+              "OdometerReading": "[Extracted Odometer Reading]",
+              "IssueDate": "[Extracted Issue Date]",
+              "Owners":[
+                "[Owner1]",
+                "[Owner2]"
+              ],
+              "OwnerAddress": {{
+                "Street": "[Extracted Owner Street]",
+                "City": "[Extracted Owner City]",
+                "State": "[Extracted Owner State]",
+                "Zipcode": "[Extracted Owner Zipcode]"
+              }},
+              "DocumentType": "[Extracted Document Type]",
+              "TitleType": "[Extracted Title Type]",
+              "OdometerBrand": "[Extracted Odometer Brand]",
+              "LicensePlate": "[Extracted License Plate]"
+            }}
+            '''
+        prompt_template = f"\n\nHuman:{prompt}\n\nAssistant:"
 
-    async def __detect_objects(self, image):
-        _detected_objects = {}
-        results = self.model(image)
-        lien_addresses = None
-        for x in results.pred[0]:
-            """
-            x[-1]  = predicted label 
-            x[-2]  = predicted score
-            x[:-2] = predicted bbox
-            """
-            if self.label[int(x[-1])] not in _detected_objects.keys() and self.label[
-                int(x[-1])] not in self.section.MULTIPLE_LABELS_OBJECT:
-                _detected_objects[self.label[int(x[-1])]] = {'score': float(x[-2]),
-                                                             'bbox': x[:-2].numpy()}
-            elif self.label[int(x[-1])] in _detected_objects.keys() and self.label[
-                int(x[-1])] not in self.section.MULTIPLE_LABELS_OBJECT:
-                max_score = _detected_objects[self.label[int(x[-1])]]['score']
-                temp = {'score': float(x[-2]), 'bbox': x[:-2].numpy()}
-                if temp['score'] > max_score:
-                    _detected_objects[self.label[int(x[-1])]] = temp
-        title_types, document_types, owner_addresses = await self.__get_multiple_objects(results)
-        title_types = await self.__filter_title_type(title_types)
-        if owner_addresses:
-            if len(owner_addresses) > 1:
-                owner_addresses, lien_addresses = await self.__get_owner_lien_address(owner_addresses)
-            else:
-                _detected_objects[self.response_key.OWNER_ADDRESS] = owner_addresses[0]
-        if lien_addresses:
-            _detected_objects[self.response_key.LIENHOLDER_ADDRESS] = lien_addresses
-        title_types = await self.__put_sequence_number(title_types, self.response_key.TITLE_TYPE)
-        document_types = await self.__put_sequence_number(document_types, self.response_key.DOCUMENT_TYPE)
-        detected_objects = {**title_types, **document_types, **_detected_objects}
-        return detected_objects
-
-    async def __put_sequence_number(self, objects, label):
-        i = 0
-        _objects = {}
-        for i_object in objects:
-            i += 1
-            _objects[label + str(i)] = i_object
-        return _objects
-
-    async def __extract_data_by_label(self, image, image_path):
-        detected_objects = await self.__detect_objects(image)
-        object_extraction_coroutines = [
-            self.cv_helper.get_object(image, coordinates=detected_object['bbox'], label=label) for
-            label, detected_object in detected_objects.items()]
-        extracted_objects = await asyncio.gather(*object_extraction_coroutines)
-
-        if len(extracted_objects) > 0:
-            skew_angle = await self.cot_helper.get_skew_angel(extracted_objects)
-            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
-            if skew_angle >= 5 or skew_angle <= -5:
-                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
-                image = await self.cv_helper.fix_skew(image, skew_angle)
-                detected_objects = await self.__detect_objects(image)
-
-        extracted_texts = {}
-        if detected_objects:
-            extracted_texts = self.textract_helper.get_text(image_path, detected_objects)
-
-        post_process_text_extracted_coroutines = [self.__post_process_text(label, text) for label, text
-                                                  in extracted_texts.items()]
-        extracted_data_by_label = await asyncio.gather(*post_process_text_extracted_coroutines)
-
-        if not extracted_data_by_label:
-            extracted_data_by_label = [[self.label[i], None] for i in self.label]
-
-        return extracted_data_by_label
-
-    async def __post_process_text(self, label, text):
-        if label.startswith(self.response_key.TITLE_TYPE):
-            text = self.ocr_method[self.response_key.TITLE_TYPE](text)
-        elif label.startswith(self.response_key.DOCUMENT_TYPE):
-            text = self.ocr_method[self.response_key.DOCUMENT_TYPE](text)
-        else:
-            text = self.ocr_method[label](text)
-        return [label, text]
-
-    async def __get_unique_values(self, extracted_data, label):
-        _set = set()
-        for data in extracted_data:
-            if data[0].startswith(label):
-                if data[1]:
-                    _set.add(tuple(data[1]))
-        return [label, list(chain(*_set))]
-
-    async def __update_labels(self, results):
-        list_keys = ['owners', 'document_type', 'title_type', 'remark']
-        dict_keys = ['owner_address', 'lienholder_address']
-        updated_results = {}
-        for key in results:
-            if not results[key]:
-                if key in list_keys:
-                    updated_results[key] = []
-                elif key in dict_keys:
-                    updated_results[key] = {
-                        "street": '',
-                        "city": '',
-                        "state": '',
-                        "zip_code": ''
-                    }
-                else:
-                    updated_results[key] = ''
-            else:
-                if isinstance(results[key], dict):
-                    updated_results[key] = await self.__update_labels(results[key])
-                else:
-                    updated_results[key] = results[key]
-        return updated_results
-
-    async def update_structure(self, results):
-        structured_result = results.copy()
-
-        structured_result.pop('odometer_reading')
-        structured_result.pop('lienholder_name')
-        structured_result.pop('lienholder_address')
-        structured_result.pop('lien_date')
-        structured_result.pop('remark')
-
-        license_plate = ''
-        odometer_reading = results['odometer_reading']
-        odometer_brand = ''
-        lien_holders = []
-
-        lien_holder = {
-            "name": results['lienholder_name'],
-            "lien_date": results['lien_date'],
-            "address": results['lienholder_address']
+        body = {
+            "prompt": prompt_template,
+            "temperature": 0,
+            "top_p": 1,
+            "top_k": 250,
+            "max_tokens_to_sample": 2048
         }
+        body_ = json.dumps(body).encode("ascii")
+        response = self.bedrock.invoke_model(
+            body=body_,
+            contentType='application/json',
+            accept='application/json',
+            modelId=self.llm_model_id
+        )
+        logger.info(f"LLM response received in {time.time() - start_time} seconds.")
+        return response['body']
 
-        odometer = {
-            "reading": odometer_reading,
-            "brand": odometer_brand
+    async def __convert_str_to_json(self, text):
+        start_index = text.find('{')
+        end_index = text.rfind('}') + 1
+        json_str = text[start_index:end_index]
+        json_str = re.sub(r',\s*\n\s*]', '\n  ]', json_str)
+        data = json.loads(json_str)
+        return data
+
+    async def __parse_date(self, input_date):
+        if input_date:
+            try:
+                date_object = parser.parse(input_date)
+                formatted_date = date_object.strftime("%d-%m-%Y")
+                return formatted_date
+            except ValueError:
+                print("Error: Unable to parse the date.")
+        return ''
+
+    async def __post_process(self, record):
+        record["IssueDate"] = await self.__parse_date(record["IssueDate"])
+        return {
+            "title_no": record["TitleNo"],
+            "vin": record["Vin"],
+            "year": record["Year"],
+            "make": record["Make"],
+            "model": record["Model"],
+            "body_style": record["BodyStyle"],
+            "issue_date": record["IssueDate"],
+            "owners": [owner.upper() for owner in record["Owners"]],
+            "document_type": record["DocumentType"],
+            "title_type": record["TitleType"],
+            "license_plate": record["LicensePlate"],
+            "odometer": {
+                "reading": record["OdometerReading"],
+                "brand": record["OdometerBrand"]
+            },
+            "owner_address": {
+                "street": record["OwnerAddress"]["Street"],
+                "city": record["OwnerAddress"]["City"],
+                "state": record["OwnerAddress"]["State"],
+                "zip_code": record["OwnerAddress"]["Zipcode"]
+            },
+            "lien_holder": [{
+                "name": lien_holder["lienholderName"],
+                "lien_date": await self.__parse_date(lien_holder["LienDate"]) or "",
+                "address": {
+                    "street": lien_holder["lienholderAddress"]["Street"],
+                    "city": lien_holder["lienholderAddress"]["City"],
+                    "state": lien_holder["lienholderAddress"]["State"],
+                    "zip_code": lien_holder["lienholderAddress"]["Zipcode"]
+                }
+            } for lien_holder in record["lienholders"]]
         }
-
-        lien_holders.append(lien_holder)
-
-        structured_result['license_plate'] = license_plate
-        structured_result['odometer'] = odometer
-        structured_result['lien_holders'] = lien_holders
-
-        return structured_result
 
     async def extract(self, image_data):
         data = {}
         try:
             for file in image_data:
-                np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
                 filename = secure_filename(file.filename)
                 file_path = os.path.join(USER_DATA_PATH, filename)
-                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-                cv2.imwrite(file_path, input_image)
+                page_text = self.textract_helper.get_text(logger, file_path)
+                llm_response = await self.get_llm_response(logger, page_text)
+                llm_data_json = json.loads(llm_response.read().decode('utf-8'))
+                result = await self.__convert_str_to_json(llm_data_json['completion'])
+                data = await self.__post_process(result)
 
-                results_dict = dict(zip(self.label.values(), [None] * len(self.label.values())))
-                image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
-                image_path = os.path.join(os.getcwd(), file_path)
-                extracted_data_by_label = await self.__extract_data_by_label(image, image_path)
-
-                if len(extracted_data_by_label) > 0:
-                    title_data = await self.__get_unique_values(extracted_data_by_label, self.response_key.TITLE_TYPE)
-                    document_data = await self.__get_unique_values(extracted_data_by_label,
-                                                                   self.response_key.DOCUMENT_TYPE)
-                    _extracted_data = [data for data in extracted_data_by_label if
-                                       not data[0].startswith(
-                                           (self.response_key.TITLE_TYPE, self.response_key.DOCUMENT_TYPE))]
-                    extracted_data = list(chain([title_data], [document_data], _extracted_data))
-                    results = {**results_dict, **dict(extracted_data)}
-                    data['file_path'] = os.path.join(USER_DATA_PATH, filename)
-                    updated_results = await self.__update_labels(results)
-                    structured_result = await self.update_structure(updated_results)
-                    data = structured_result
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
