@@ -5,7 +5,7 @@ import traceback
 import re
 import boto3
 from dateutil import parser
-from werkzeug.utils import secure_filename
+from json.decoder import JSONDecodeError
 
 from app import logger
 from app.constant import USER_DATA_PATH
@@ -154,7 +154,7 @@ class COTDataPointExtractorV1:
         data = {}
         try:
             for file in image_data:
-                filename = secure_filename(file.filename)
+                filename = file.filename
                 file_path = os.path.join(USER_DATA_PATH, filename)
                 page_text = self.textract_helper.get_text(logger, file_path)
                 llm_response = await self.get_llm_response(logger, page_text)
@@ -163,6 +163,12 @@ class COTDataPointExtractorV1:
                 data = await self.__post_process(result)
 
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+        except JSONDecodeError as e:
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
+            return {"title_no": None, "vin": None, "year": None, "make": None, "model": None, "body_style": None,
+                    "issue_date": None, "owners": [], "document_type": None, "title_type": None, "license_plate": None,
+                    "odometer": {"reading": None, "brand": None},
+                    "owner_address": {"street": None, "city": None, "state": None, "zip_code": None}, "lien_holder": []}
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
             data = 500

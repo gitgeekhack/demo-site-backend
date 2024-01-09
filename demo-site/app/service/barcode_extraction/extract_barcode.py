@@ -1,4 +1,3 @@
-from werkzeug.utils import secure_filename
 import os
 import traceback
 from pyzbar import pyzbar
@@ -38,11 +37,8 @@ class BarcodeExtraction:
         data = []
 
         for file in image_data:
-            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-            filename = secure_filename(file.filename)
+            filename = file.filename
             file_path = os.path.join(USER_DATA_PATH, filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(file_path, input_image)
             try:
                 image = cv2.imread(file_path)
                 lr_number = self.detect_lr(image)

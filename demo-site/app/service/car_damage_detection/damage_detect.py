@@ -4,7 +4,6 @@ import traceback
 import cv2
 import numpy as np
 import torch
-from werkzeug.utils import secure_filename
 
 from app import logger
 from app.common.utils import MonoState
@@ -62,12 +61,9 @@ class DamageDetector(MonoState):
         results = []
 
         for file_data in image_data:
-            np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
-            filename = secure_filename(file_data.filename)
+            filename = file_data.filename
             input_file_path = os.path.join(USER_DATA_PATH, filename)
             output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(input_file_path, input_image)
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
             detection = await self.__predict_labels(input_file_path, output_file_path)
             out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
