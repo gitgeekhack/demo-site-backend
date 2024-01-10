@@ -7,7 +7,7 @@ import torch
 
 from app import logger
 from app.common.utils import MonoState
-from app.common.utils import make_dir
+from app.common.utils import damage_detection_output_path
 from app.constant import CarDamageDetection, USER_DATA_PATH
 from app.service.helper.cv_helper import Annotator
 
@@ -60,14 +60,12 @@ class DamageDetector(MonoState):
     async def detect(self, image_data):
         results = []
 
-        for file_data in image_data:
-            filename = file_data.filename
-            input_file_path = os.path.join(USER_DATA_PATH, filename)
-            output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
+        for file_path in image_data:
+            filename = os.path.basename(file_path)
+            output_file_path = os.path.join(damage_detection_output_path, 'out_' + filename)
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
-            detection = await self.__predict_labels(input_file_path, output_file_path)
-            out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-            results.append({'results': detection, 'file_path': out_path})
+            detection = await self.__predict_labels(file_path, output_file_path)
+            results.append({'results': detection, 'file_path': output_file_path})
 
         logger.info(f'Request ID: [{self.uuid}] results obtained: [{results}]')
         return results

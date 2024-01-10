@@ -9,6 +9,8 @@ USER_DATA_PATH = os.getenv('USER_DATA_PATH')
 ds_path = os.path.join(USER_DATA_PATH, 'data-science')
 sw_path = os.path.join(USER_DATA_PATH, 'software')
 os.makedirs(ds_path, exist_ok=True)
+damage_detection_output_path = os.path.join(ds_path, 'damage-detection-output-images')
+os.makedirs(damage_detection_output_path, exist_ok=True)
 
 
 def load_config(import_name):
@@ -39,7 +41,8 @@ class MonoState(object):
 
 
 def is_image_file(file):
-    file_type = file.split('/')[-1].split('.')[-1].lower()
+    file_name = os.path.basename(file)
+    file_type = file_name.split('.')[-1].lower()
     return file_type in AllowedFileType.IMAGE
 
 

@@ -1,6 +1,7 @@
 import traceback
 import uuid
 import json
+import os
 
 import aiohttp_jinja2
 from aiohttp import web
@@ -15,7 +16,7 @@ class DLExtractor:
     async def post(self):
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
-        filedata = []
+        files = []
         try:
             data_bytes = await self.content.read()
             data = json.loads(data_bytes)
@@ -23,10 +24,9 @@ class DLExtractor:
             if file_path == '':
                 raise FilePathNull()
             if isinstance(file_path, str):
-                file = get_file_from_path(file_path)
-                if isinstance(file, FileNotFoundError):
+                if not os.path.exists(file_path):
                     raise FileNotFoundError
-                filename = file.filename
+                filename = os.path.basename(file_path)
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
                 file_size = get_file_size(file_path)
@@ -34,12 +34,12 @@ class DLExtractor:
                     raise FileLimitExceeded(file_path)
 
                 print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-                filedata.append(file)
+                files.append(file_path)
             else:
                 raise MultipleFileUploaded()
 
             extractor = DLDataPointExtractorV1(x_uuid)
-            data = await extractor.extract(image_data=filedata)
+            data = await extractor.extract(image_data=files)
             if isinstance(data, int):
                 raise Exception
             else:

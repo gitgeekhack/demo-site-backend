@@ -36,9 +36,7 @@ class BarcodeExtraction:
     def extract(self, image_data):
         data = []
 
-        for file in image_data:
-            filename = file.filename
-            file_path = os.path.join(USER_DATA_PATH, filename)
+        for file_path in image_data:
             try:
                 image = cv2.imread(file_path)
                 lr_number = self.detect_lr(image)

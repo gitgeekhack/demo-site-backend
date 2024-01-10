@@ -2,6 +2,7 @@ import json
 import uuid
 import traceback
 from aiohttp import web
+import os
 
 from app import logger
 from app.service.car_damage_detection.damage_detect import DamageDetector
@@ -14,7 +15,7 @@ class DamageExtractor:
     async def post(self):
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
-        filedata = []
+        files = []
         try:
             data_bytes = await self.content.read()
 
@@ -32,26 +33,23 @@ class DamageExtractor:
             if isinstance(file_paths, str) or isinstance(file_paths, int):
                 raise InvalidRequestBody()
 
-            for file in file_paths:
-                if isinstance(file, str):
-                    file_path = get_file_from_path(file)
-
-                    if isinstance(file_path, FileNotFoundError):
+            for file_path in file_paths:
+                if isinstance(file_path, str):
+                    if not os.path.exists(file_path):
                         raise FileNotFoundError
-
-                    filename = file_path.filename
+                    filename = os.path.basename(file_path)
                     if not is_image_file(filename):
                         raise InvalidFile(filename)
 
-                    file_size = get_file_size(file)
+                    file_size = get_file_size(file_path)
                     if file_size > 25:
                         raise FileLimitExceeded(file_path)
 
                     print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-                    filedata.append(file_path)
+                    files.append(file_path)
 
             detector = DamageDetector(x_uuid)
-            results = await detector.detect(image_data=filedata)
+            results = await detector.detect(image_data=files)
 
             return web.json_response({'data': results}, headers=headers, status=200)
 
