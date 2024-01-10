@@ -150,12 +150,8 @@ class DLDataPointExtractorV1(MonoState):
         data = {}
 
         try:
-            for file in image_data:
-                np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-                filename = file.filename
-                file_path = os.path.join(USER_DATA_PATH, filename)
-                input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-                data['filepath'] = os.path.join(USER_DATA_PATH, filename)
+            for file_path in image_data:
+                input_image = cv2.imread(file_path)
                 results_dict = dict(zip(DrivingLicense.ResponseKeys.KEYS, [None] * len(DrivingLicense.ResponseKeys.KEYS)))
                 image = await self.cv_helper.automatic_enhancement(image=input_image, clip_hist_percent=2)
 

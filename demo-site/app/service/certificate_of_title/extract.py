@@ -153,9 +153,7 @@ class COTDataPointExtractorV1:
     async def extract(self, image_data):
         data = {}
         try:
-            for file in image_data:
-                filename = file.filename
-                file_path = os.path.join(USER_DATA_PATH, filename)
+            for file_path in image_data:
                 page_text = self.textract_helper.get_text(logger, file_path)
                 llm_response = await self.get_llm_response(logger, page_text)
                 llm_data_json = json.loads(llm_response.read().decode('utf-8'))
@@ -165,10 +163,10 @@ class COTDataPointExtractorV1:
                 logger.info(f'Request ID: [{self.uuid}] Response: {data}')
         except JSONDecodeError as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
-            return {"title_no": None, "vin": None, "year": None, "make": None, "model": None, "body_style": None,
-                    "issue_date": None, "owners": [], "document_type": None, "title_type": None, "license_plate": None,
-                    "odometer": {"reading": None, "brand": None},
-                    "owner_address": {"street": None, "city": None, "state": None, "zip_code": None}, "lien_holder": []}
+            return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
+                    "issue_date": "", "owners": [], "document_type": "", "title_type": "", "license_plate": "",
+                    "odometer": {"reading": "", "brand": ""},
+                    "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
             data = 500
