@@ -150,23 +150,30 @@ class COTDataPointExtractorV1:
             } for lien_holder in record["lienholders"]]
         }
 
+    def empty_response(self):
+        return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
+                "issue_date": "", "owners": [], "document_type": "", "title_type": "", "license_plate": "",
+                "odometer": {"reading": "", "brand": ""},
+                "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
+
     async def extract(self, image_data):
         data = {}
         try:
             for file_path in image_data:
                 page_text = self.textract_helper.get_text(logger, file_path)
-                llm_response = await self.get_llm_response(logger, page_text)
-                llm_data_json = json.loads(llm_response.read().decode('utf-8'))
-                result = await self.__convert_str_to_json(llm_data_json['completion'])
-                data = await self.__post_process(result)
+                if page_text:
+                    llm_response = await self.get_llm_response(logger, page_text)
+                    llm_data_json = json.loads(llm_response.read().decode('utf-8'))
+                    result = await self.__convert_str_to_json(llm_data_json['completion'])
+                    data = await self.__post_process(result)
 
-                logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+                    logger.info(f'Request ID: [{self.uuid}] Response: {data}')
+                else:
+                    logger.info('Empty text given by Textract')
+                    return self.empty_response()
         except JSONDecodeError as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
-            return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
-                    "issue_date": "", "owners": [], "document_type": "", "title_type": "", "license_plate": "",
-                    "odometer": {"reading": "", "brand": ""},
-                    "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
+            return self.empty_response()
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
             data = 500
