@@ -18,9 +18,9 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 class DocumentQnA:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
-        self.boto3_bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
+        self.bedrock_client = boto3.client('bedrock-runtime', region_name="us-east-1")
 
-        self.claude_llm = Bedrock(
+        self.llm = Bedrock(
             model_id="anthropic.claude-v2:1",
             model_kwargs={
                 "max_tokens_to_sample": 4000,
@@ -29,10 +29,10 @@ class DocumentQnA:
                 "top_k": 0,
                 "stop_sequences": [],
             },
-            client=self.boto3_bedrock,
+            client=self.bedrock_client,
         )
 
-        self.embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=self.boto3_bedrock)
+        self.bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=self.bedrock_client)
         self.prompt = self.__create_prompt_template()
 
     def __create_prompt_template(self):
@@ -67,7 +67,7 @@ class DocumentQnA:
 
         vectored_data = FAISS.from_documents(
             documents=docs,
-            embedding=self.embeddings,
+            embedding=self.bedrock_embeddings,
         )
 
         return vectored_data
@@ -75,7 +75,7 @@ class DocumentQnA:
     async def __create_conversation_chain(self, vectored_data, prompt_template):
 
         qa = RetrievalQA.from_chain_type(
-            llm=self.claude_llm,
+            llm=self.llm,
             chain_type="stuff",
             retriever=vectored_data.as_retriever(
                 search_type="similarity", search_kwargs={"k": 6}

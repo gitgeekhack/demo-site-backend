@@ -16,12 +16,12 @@ class EncountersExtractor:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
 
-        self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-        self.modelIdLlm = 'anthropic.claude-v2:1'
-        self.modelIdEmbeddings = 'amazon.titan-embed-text-v1'
+        self.bedrock_client = boto3.client('bedrock-runtime', region_name="us-east-1")
+        self.model_id_llm = 'anthropic.claude-v2:1'
+        self.model_embeddings = 'amazon.titan-embed-text-v1'
 
         self.llm = Bedrock(
-            model_id=self.modelIdLlm,
+            model_id=self.model_id_llm,
             model_kwargs={
                 "max_tokens_to_sample": 4000,
                 "temperature": 0.00,
@@ -29,10 +29,10 @@ class EncountersExtractor:
                 "top_k": 0,
                 "stop_sequences": [],
             },
-            client=self.bedrock,
+            client=self.bedrock_client,
         )
 
-        self.bedrock_embeddings = BedrockEmbeddings(model_id=self.modelIdEmbeddings, client=self.bedrock)
+        self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
     async def __data_formatter(self, json_data):
         """ This method is used to format the data and prepare chunks """
