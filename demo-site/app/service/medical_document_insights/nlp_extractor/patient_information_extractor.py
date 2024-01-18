@@ -2,6 +2,8 @@ import os
 import re
 import json
 import boto3
+import dateparser
+from datetime import datetime, timedelta
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -166,6 +168,17 @@ class PatientInfoExtractor:
         docs = [Document(page_content=t) for t in texts]
         return docs
 
+    async def __parse_date(self, date):
+        """ This method is used to parse the date into MM-DD-YYYY format """
+
+        date = dateparser.parse(date, settings={'RELATIVE_BASE': datetime(1800, 1, 1)})
+        if date and date.year != 1800:
+            if date.year > datetime.now().year:
+                date = date - timedelta(days=36525)
+            date = date.strftime("%d-%m-%Y")
+            return date
+        return ""
+
     async def __convert_str_into_json(self, text):
         """ This method is used to convert the string response of LLM into the JSON """
 
@@ -181,6 +194,11 @@ class PatientInfoExtractor:
         data_keys = ['patient_name', 'date_of_birth']
 
         final_data = dict(zip(data_keys, list(data.values())))
+
+        if final_data['date_of_birth'] and isinstance(final_data['date_of_birth'], str):
+            x = await self.__parse_date(final_data['date_of_birth'])
+            final_data['date_of_birth'] = x
+
         return final_data
 
     async def get_patient_info(self, data):
@@ -193,7 +211,7 @@ class PatientInfoExtractor:
 
         Please follow the below guidelines:
         1) Consider Date of Birth, Birth Date, and DOB as date_of_birth.
-        2) Do not consider age as date_of_birth.
+        2) Do not consider age as value in date_of_birth.
         3) Consider Patient Name, only Patient, only Name and RE as patient_name.
 
         Please strictly only provide a JSON result containing the keys 'patient_name' and 'date_of_birth' containing a string as a value.
