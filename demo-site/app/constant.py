@@ -111,7 +111,7 @@ class ExceptionMessage:
     FILE_LIMIT_EXCEEDED_EXCEPTION_MESSAGE = "File limit exceeded, only upload file upto 25 MB"
     FILE_PATH_NULL_EXCEPTION_MESSAGE = "File is not uploaded"
     INPUT_QUERY_NULL_EXCEPTION_MESSAGE = "Input query is empty or null"
-    MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple file is uploaded, only upload single file"
+    MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple file are uploaded, only upload single file"
     MISSING_REQUEST_BODY_EXCEPTION_MESSAGE = "Missing request body in the request"
     INVALID_REQUEST_BODY_EXCEPTION_MESSAGE = "Invalid request body received"
     FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
