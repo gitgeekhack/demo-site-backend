@@ -175,7 +175,7 @@ class PatientInfoExtractor:
         if date and date.year != 1800:
             if date.year > datetime.now().year:
                 date = date - timedelta(days=36525)
-            date = date.strftime("%d-%m-%Y")
+            date = date.strftime("%d/%m/%Y")
             return date
         return ""
 
