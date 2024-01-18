@@ -13,22 +13,22 @@ from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
-bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
-modelIdLlm = 'anthropic.claude-instant-v1'
-modelIdEmbeddings = 'amazon.titan-embed-text-v1'
+bedrock_client = boto3.client('bedrock-runtime', region_name="us-east-1")
+model_id_llm = 'anthropic.claude-instant-v1'
+model_embeddings = 'amazon.titan-embed-text-v1'
 
 llm = Bedrock(
-    model_id=modelIdLlm,
+    model_id=model_id_llm,
     model_kwargs={
         "max_tokens_to_sample": 10000,
         "temperature": 0.0,
         "top_p": 1,
         "top_k": 250
     },
-    client=bedrock,
+    client=bedrock_client,
 )
 
-bedrock_embeddings = BedrockEmbeddings(model_id=modelIdEmbeddings, client=bedrock)
+bedrock_embeddings = BedrockEmbeddings(model_id=model_embeddings, client=bedrock_client)
 
 
 async def convert_str_into_json(text):
