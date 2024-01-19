@@ -120,4 +120,5 @@ class Annotator:
             xmax = int(co_ord[0][2])
             ymax = int(co_ord[0][3])
             cv2.rectangle(self.image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
+            cv2.putText(self.image, f"{co_ord[2]}", (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, co_ord[1], 2)
         cv2.imwrite(save_path, self.image)

@@ -45,7 +45,7 @@ class DamageDetector(MonoState):
         for p in pred:
             img_res = tuple(map(tuple, p.numpy()))
             multi_conf_labels = [[x, [0]] for x in all_labels]
-            co_ordinates = [[res[:4], await self.__label_colour(all_labels[int(res[-1])])] for res in img_res]
+            co_ordinates = [[res[:4], await self.__label_colour(all_labels[int(res[-1])]), all_labels[int(res[-1])]] for res in img_res]
             for label in multi_conf_labels:
                 for res in img_res:
                     if all_labels[int(res[-1])] == label[0]:
