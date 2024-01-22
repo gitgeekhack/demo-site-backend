@@ -772,3 +772,8 @@ class NonOwnersLetter:
         PADDING = (-0.01, -0.05, 0.01, 0.005)
         PAGE_NO = 0
         SORT_SIMILARITY_RATIO = 100
+
+
+class Keys:
+    IMAGE_KEYS = ['driving_license', 'registration']
+    REQUIRED_KEYS = ['driving_license', 'itc', 'crm_receipt', 'application', 'motor_vehicle_record', 'broker_package']

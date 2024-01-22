@@ -8,9 +8,9 @@ class DataPointVerifierV1():
     def __init__(self, uuid):
         self.uuid = uuid
 
-    async def verify(self, zip_file, company_name):
-        extractor = BulkExtractV1(self.uuid, company_name)
-        data = await extractor.extract_by_zip(zip_file)
+    async def verify(self, file_paths, company_name):
+        extractor = BulkExtractV1(self.uuid, file_paths, company_name)
+        data = await extractor.extract()
         deserialized_data = await deserialize(data)
         verification_data = None
         if company_name == InsuranceCompany.ALLIANCE_UNITED.value:
