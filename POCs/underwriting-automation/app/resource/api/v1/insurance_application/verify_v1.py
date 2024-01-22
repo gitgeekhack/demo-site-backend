@@ -25,9 +25,9 @@ class VerifyV1(web.View):
             data_bytes = await self.request.content.read()
             data = json.loads(data_bytes)
             company_name = "alliance-united"
-
-            for key in data.keys():
-                if not data[key]:
+            file_paths = Keys.KEYS_DIC
+            for key in file_paths:
+                if key not in data.keys() or not data[key]:
                     if key in Keys.REQUIRED_KEYS:
                         raise MissingRequiredDocumentException(key)
                 else:
@@ -39,10 +39,11 @@ class VerifyV1(web.View):
                     else:
                         if not is_pdf_url(data[key]):
                             raise InvalidFileException(data[key])
+                    file_paths[key] = data[key]
 
             print(f'Request ID: [{x_uuid}]')
             verifier = DataPointVerifierV1(x_uuid)
-            res = await verifier.verify(file_paths=data, company_name=company_name)
+            res = await verifier.verify(file_paths=file_paths, company_name=company_name)
             return web.json_response(data=res, status=200)
 
         except MissingRequiredDocumentException as e:

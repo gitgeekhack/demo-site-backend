@@ -775,5 +775,9 @@ class NonOwnersLetter:
 
 
 class Keys:
+    KEYS_DIC = {"driving_license": None, "itc": None, "crm_receipt": None, "application": None,
+                "motor_vehicle_record": None, "broker_package": None, "pleasure_use_letter": None,
+                "artisan_use_letter": None, "eft": None, "non_owners_letter": None, "stripe_receipt": None,
+                "registration": None, "vehicle_record": None, "promise_to_provide": None}
     IMAGE_KEYS = ['driving_license', 'registration']
     REQUIRED_KEYS = ['driving_license', 'itc', 'crm_receipt', 'application', 'motor_vehicle_record', 'broker_package']
