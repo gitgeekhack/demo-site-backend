@@ -60,9 +60,11 @@ class PackagePathFilter(logging.Filter):
                 break
         return True
 
+
 def make_dir(target_path):
     if not os.path.exists(target_path):
         os.mkdir(target_path)
+
 
 def get_logger():
     logger = logging.getLogger('gunicorn.error')
@@ -75,3 +77,19 @@ def get_logger():
                                                    '%(message)s')
     logger.addFilter(PackagePathFilter())
     return logger
+
+
+def get_file_size(file_path):
+    try:
+        size_in_bytes = os.path.getsize(file_path)
+
+        size_in_kb = size_in_bytes / 1024.0
+        size_in_mb = size_in_kb / 1024.0
+
+        return size_in_mb
+
+    except FileNotFoundError:
+        return f"File not found: {file_path}"
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"

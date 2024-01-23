@@ -5,12 +5,12 @@ import json
 from aiohttp import web
 
 from app import logger
-from app.common.utils import is_image_url, is_pdf_url
+from app.common.utils import is_image_url, is_pdf_url, get_file_size
 from app.constant import ErrorCode, ErrorMessage, InsuranceCompany, Keys
 from app.resource.authentication import required_authentication
 from app.service.api.v1 import DataPointVerifierV1
 from app.business_rule_exception import InvalidInsuranceCompanyException, MissingRequiredDocumentException, \
-    InvalidFileException, InvalidPDFStructureTypeException
+    InvalidFileException, InvalidPDFStructureTypeException, FileSizeLimitExceed, MultipleFileUploaded
 
 
 class VerifyV1(web.View):
@@ -31,15 +31,20 @@ class VerifyV1(web.View):
                     if key in Keys.REQUIRED_KEYS:
                         raise MissingRequiredDocumentException(key)
                 else:
-                    if not os.path.exists(data[key]):
-                        raise FileNotFoundError
-                    if key in Keys.IMAGE_KEYS:
-                        if not is_image_url(data[key]):
-                            raise InvalidFileException(data[key])
+                    if isinstance(data[key], str):
+                        if not os.path.exists(data[key]):
+                            raise FileNotFoundError
+                        if key in Keys.IMAGE_KEYS:
+                            if not is_image_url(data[key]):
+                                raise InvalidFileException(data[key])
+                        else:
+                            if not is_pdf_url(data[key]):
+                                raise InvalidFileException(data[key])
+                        if get_file_size(data[key]) > 25:
+                            raise FileSizeLimitExceed(data[key])
+                        file_paths[key] = data[key]
                     else:
-                        if not is_pdf_url(data[key]):
-                            raise InvalidFileException(data[key])
-                    file_paths[key] = data[key]
+                        raise MultipleFileUploaded
 
             print(f'Request ID: [{x_uuid}]')
             verifier = DataPointVerifierV1(x_uuid)
@@ -66,6 +71,16 @@ class VerifyV1(web.View):
         except InvalidPDFStructureTypeException as e:
             logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"code": ErrorCode.INVALID_PDF_STRUCTURE, "message": ErrorMessage.INVALID_PDF_STRUCTURE}
+            print(f'Request ID: [{x_uuid}] Response: {response}')
+            return web.json_response(response, status=400)
+        except FileSizeLimitExceed as e:
+            logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"code": ErrorCode.SIZE_LIMIT_EXCEEDED, "message": ErrorMessage.SIZE_LIMIT_EXCEEDED}
+            print(f'Request ID: [{x_uuid}] Response: {response}')
+            return web.json_response(response, status=400)
+        except MultipleFileUploaded as e:
+            logger.warning(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"code": ErrorCode.MULTIPLE_FILE_UPLOADED, "message": ErrorMessage.MULTIPLE_FILE_UPLOADED}
             print(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, status=400)
         except FileNotFoundError as e:
