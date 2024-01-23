@@ -72,3 +72,23 @@ class MissingRequiredParameterException(Exception):
 
     def __str__(self):
         return f'{self.message}'
+
+
+class FileSizeLimitExceed(Exception):
+    def __init__(self, variable, message=ExceptionMessage.SIZE_LIMIT_EXCEEDED):
+        self.message = message
+        self.variable = variable
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
+
+
+class MultipleFileUploaded(Exception):
+
+    def __init__(self, message=ExceptionMessage.MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'
