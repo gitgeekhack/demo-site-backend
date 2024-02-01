@@ -21,7 +21,7 @@ class DocumentQnA:
         self.bedrock_client = boto3.client('bedrock-runtime', region_name="us-east-1")
 
         self.llm = Bedrock(
-            model_id="anthropic.claude-v2:1",
+            model_id="anthropic.claude-instant-v1",
             model_kwargs={
                 "max_tokens_to_sample": 4000,
                 "temperature": 0.75,
