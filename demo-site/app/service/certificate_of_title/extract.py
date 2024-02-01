@@ -108,46 +108,45 @@ class COTDataPointExtractorV1:
         if input_date:
             try:
                 date_object = parser.parse(input_date)
-                formatted_date = date_object.strftime("%d-%m-%Y")
+                formatted_date = date_object.strftime("%m-%d-%Y")
                 return formatted_date
             except ValueError:
                 print("Error: Unable to parse the date.")
         return ''
 
     async def __post_process(self, record):
-        record["IssueDate"] = await self.__parse_date(record["IssueDate"])
         return {
-            "title_no": record["TitleNo"],
-            "vin": record["Vin"],
-            "year": record["Year"],
-            "make": record["Make"],
-            "model": record["Model"],
-            "body_style": record["BodyStyle"],
-            "issue_date": record["IssueDate"],
-            "owners": [owner.upper() for owner in record["Owners"]],
-            "document_type": record["DocumentType"],
-            "title_type": record["TitleType"],
-            "license_plate": record["LicensePlate"],
+            "title_no": record.get("TitleNo", ''),
+            "vin": record.get("Vin", ''),
+            "year": record.get("Year", ''),
+            "make": record.get("Make", ''),
+            "model": record.get("Model", ''),
+            "body_style": record.get("BodyStyle", ''),
+            "issue_date": await self.__parse_date(record.get("IssueDate", '')),
+            "owners": [owner.upper() for owner in record.get("Owners", [])],
+            "document_type": record.get("DocumentType", ''),
+            "title_type": record.get("TitleType", ''),
+            "license_plate": record.get("LicensePlate", ''),
             "odometer": {
-                "reading": record["OdometerReading"],
-                "brand": record["OdometerBrand"]
+                "reading": record.get("OdometerReading", ''),
+                "brand": record.get("OdometerBrand", '')
             },
             "owner_address": {
-                "street": record["OwnerAddress"]["Street"],
-                "city": record["OwnerAddress"]["City"],
-                "state": record["OwnerAddress"]["State"],
-                "zip_code": record["OwnerAddress"]["Zipcode"]
+                "street": record.get("OwnerAddress", {}).get("Street", ''),
+                "city": record.get("OwnerAddress", {}).get("City", ''),
+                "state": record.get("OwnerAddress", {}).get("State", ''),
+                "zip_code": record.get("OwnerAddress", {}).get("Zipcode", '')
             },
             "lien_holder": [{
-                "name": lien_holder["lienholderName"],
-                "lien_date": await self.__parse_date(lien_holder["LienDate"]) or "",
+                "name": lien_holder.get("lienholderName", ''),
+                "lien_date": await self.__parse_date(lien_holder.get("LienDate", '')) or "",
                 "address": {
-                    "street": lien_holder["lienholderAddress"]["Street"],
-                    "city": lien_holder["lienholderAddress"]["City"],
-                    "state": lien_holder["lienholderAddress"]["State"],
-                    "zip_code": lien_holder["lienholderAddress"]["Zipcode"]
+                    "street": lien_holder.get("lienholderAddress", {}).get("Street", ''),
+                    "city": lien_holder.get("lienholderAddress", {}).get("City", ''),
+                    "state": lien_holder.get("lienholderAddress", {}).get("State", ''),
+                    "zip_code": lien_holder.get("lienholderAddress", {}).get("Zipcode", '')
                 }
-            } for lien_holder in record["lienholders"]]
+            } for lien_holder in record.get("lienholders", [])]
         }
 
     def empty_response(self):
