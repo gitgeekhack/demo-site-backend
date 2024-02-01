@@ -25,8 +25,8 @@ class DrivingLicenseParser:
 
 
 class Gender(Enum):
-    FEMALE = 'female'
-    MALE = 'male'
+    FEMALE = 'Female'
+    MALE = 'Male'
 
     @classmethod
     def items(cls):
