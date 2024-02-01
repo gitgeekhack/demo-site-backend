@@ -139,7 +139,7 @@ class COTDataPointExtractorV1:
             },
             "lien_holder": [{
                 "name": lien_holder.get("lienholderName", ''),
-                "lien_date": await self.__parse_date(lien_holder.get("LienDate", '')) or "",
+                "lien_date": await self.__parse_date(lien_holder.get("LienDate", '')),
                 "address": {
                     "street": lien_holder.get("lienholderAddress", {}).get("Street", ''),
                     "city": lien_holder.get("lienholderAddress", {}).get("City", ''),
