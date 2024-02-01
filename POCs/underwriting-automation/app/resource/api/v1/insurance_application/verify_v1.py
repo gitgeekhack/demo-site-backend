@@ -18,6 +18,10 @@ class VerifyV1(web.View):
         if not company_name in InsuranceCompany.items():
             raise InvalidInsuranceCompanyException(company_name)
 
+    async def options(self):
+        headers = await get_response_headers()
+        return web.json_response(headers=headers, status=200)
+
     @required_authentication
     async def post(self):
         x_uuid = uuid.uuid1()
