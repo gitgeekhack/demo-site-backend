@@ -93,3 +93,13 @@ def get_file_size(file_path):
 
     except Exception as e:
         return f"An error occurred: {str(e)}"
+
+
+async def get_response_headers():
+
+    headers = {
+        'Access-Control-Allow-Origin': "*",
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
+    return headers
