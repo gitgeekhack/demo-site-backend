@@ -38,9 +38,10 @@ class COTDataPointExtractorV1:
             11. Recognize variations like "Plate Number", "LicenseNumber" and similar keywords as the LicenseNumber.
             12. If date is written near Lien holder then consider it as LienDate. If File date and Maturity date both are present then File date should be considered as LienDate. Don't consider Lien release date as LienDate. 
             13. Don't include address in Owner and Lienholder names.
-            14. Identify conjuctions("AND", "OR") and seperators("&", "/", ",")  between owner names to not merge them into one. Keep space characters.
+            14. Identify conjuctions("AND", "OR") and seperators("&", "/", ",")  between owner names to merge them into one line. Keep the conjuctions("AND", "OR") and seperators("&", "/", ",") as it is.
             15. If any value is not extracted or is null, it should be returned as empty string ("").
             16. If values are not present in the text, do not create values on your own.
+            17. Fill the JSON provided below:
 
             {{
               "lienholders": [{{
@@ -61,10 +62,7 @@ class COTDataPointExtractorV1:
               "BodyStyle": "[Extracted Body Style]",
               "OdometerReading": "[Extracted Odometer Reading]",
               "IssueDate": "[Extracted Issue Date]",
-              "Owners":[
-                "[Owner1]",
-                "[Owner2]"
-              ],
+              "Owners":"[Extracted Owner Name]",
               "OwnerAddress": {{
                 "Street": "[Extracted Owner Street]",
                 "City": "[Extracted Owner City]",
@@ -123,7 +121,8 @@ class COTDataPointExtractorV1:
             "model": record.get("Model", ''),
             "body_style": record.get("BodyStyle", ''),
             "issue_date": await self.__parse_date(record.get("IssueDate", '')),
-            "owners": [owner.upper() for owner in record.get("Owners", [])],
+            # "owners": [owner.upper() for owner in record.get("Owners", [])],
+            "owners": record.get("Owners", ''),
             "document_type": record.get("DocumentType", ''),
             "title_type": record.get("TitleType", ''),
             "license_plate": record.get("LicensePlate", ''),
@@ -151,7 +150,7 @@ class COTDataPointExtractorV1:
 
     def empty_response(self):
         return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
-                "issue_date": "", "owners": [], "document_type": "", "title_type": "", "license_plate": "",
+                "issue_date": "", "owners": "", "document_type": "", "title_type": "", "license_plate": "",
                 "odometer": {"reading": "", "brand": ""},
                 "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
 
