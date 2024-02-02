@@ -113,12 +113,24 @@ class Annotator:
         self.image = image
         self.coordinates = coordinates
 
+    def resize_image(self, image, target_height):
+        aspect_ratio = image.shape[1] / image.shape[0]
+        target_width = int(target_height * aspect_ratio)
+        resized_image = cv2.resize(image, (target_width, target_height))
+        return resized_image
+
+    def scale_bbox(self, bbox, original_size, new_size):
+        x, y, width, height = bbox
+        x_scale = new_size[1] / original_size[1]
+        y_scale = new_size[0] / original_size[0]
+        scaled_bbox = (int(x * x_scale), int(y * y_scale), int(width * x_scale), int(height * y_scale))
+        return scaled_bbox
+
     def annotate_and_save_image(self, save_path):
+        resized_image = self.resize_image(self.image, 450)
         for co_ord in self.coordinates:
-            xmin = int(co_ord[0][0])
-            ymin = int(co_ord[0][1])
-            xmax = int(co_ord[0][2])
-            ymax = int(co_ord[0][3])
-            cv2.rectangle(self.image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
-            cv2.putText(self.image, f"{co_ord[2]}", (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, co_ord[1], 2)
-        cv2.imwrite(save_path, self.image)
+            scaled_bbox = self.scale_bbox(co_ord[0], self.image.shape[:2], resized_image.shape[:2])
+            xmin, ymin, xmax, ymax = scaled_bbox
+            cv2.rectangle(resized_image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
+            cv2.putText(resized_image, f"{co_ord[2]}", (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, co_ord[1], 2)
+        cv2.imwrite(save_path, resized_image)
