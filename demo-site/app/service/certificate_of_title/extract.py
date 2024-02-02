@@ -121,7 +121,6 @@ class COTDataPointExtractorV1:
             "model": record.get("Model", ''),
             "body_style": record.get("BodyStyle", ''),
             "issue_date": await self.__parse_date(record.get("IssueDate", '')),
-            # "owners": [owner.upper() for owner in record.get("Owners", [])],
             "owners": record.get("Owners", ''),
             "document_type": record.get("DocumentType", ''),
             "title_type": record.get("TitleType", ''),
