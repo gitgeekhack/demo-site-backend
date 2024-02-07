@@ -126,11 +126,27 @@ class Annotator:
         scaled_bbox = (int(x * x_scale), int(y * y_scale), int(width * x_scale), int(height * y_scale))
         return scaled_bbox
 
+    def draw_text(self, img, text,
+                  font=cv2.FONT_HERSHEY_SIMPLEX,
+                  pos=(0, 0),
+                  font_scale=0.7,
+                  font_thickness=2,
+                  text_color=(0, 0, 0),
+                  text_color_bg=(255, 255, 255)
+                  ):
+        x, y = pos
+        text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
+        text_w, text_h = text_size
+        cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
+        cv2.putText(img, text, (x, y + text_h), font, font_scale, text_color, font_thickness)
+
+        return text_size
+
     def annotate_and_save_image(self, save_path):
         resized_image = self.resize_image(self.image, 450)
         for co_ord in self.coordinates:
             scaled_bbox = self.scale_bbox(co_ord[0], self.image.shape[:2], resized_image.shape[:2])
             xmin, ymin, xmax, ymax = scaled_bbox
+            self.draw_text(resized_image, f"{co_ord[2]}", pos=(xmin, ymin - 19), text_color_bg=co_ord[1])
             cv2.rectangle(resized_image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
-            cv2.putText(resized_image, f"{co_ord[2]}", (xmin, ymin - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, co_ord[1], 2)
         cv2.imwrite(save_path, resized_image)
