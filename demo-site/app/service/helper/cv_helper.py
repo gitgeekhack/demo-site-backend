@@ -1,6 +1,7 @@
 import asyncio
 
 import cv2
+from PIL import ImageFont, ImageDraw, Image
 import numpy as np
 from scipy.ndimage import interpolation as inter
 
@@ -127,26 +128,28 @@ class Annotator:
         return scaled_bbox
 
     def draw_text(self, img, text,
-                  font=cv2.FONT_HERSHEY_SIMPLEX,
+                  font_path,
                   pos=(0, 0),
-                  font_scale=0.7,
-                  font_thickness=2,
+                  font_size=24,
                   text_color=(0, 0, 0),
                   text_color_bg=(255, 255, 255)
                   ):
-        x, y = pos
-        text_size, _ = cv2.getTextSize(text, font, font_scale, font_thickness)
-        text_w, text_h = text_size
-        cv2.rectangle(img, pos, (x + text_w, y + text_h), text_color_bg, -1)
-        cv2.putText(img, text, (x, y + text_h), font, font_scale, text_color, font_thickness)
+        pil_img = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB))
+        draw = ImageDraw.Draw(pil_img)
+        font = ImageFont.truetype(font_path, font_size)
+        text_size = draw.textsize(text, font=font)
+        draw.rectangle((pos[0], pos[1], pos[0] + text_size[0], pos[1] + text_size[1]), fill=text_color_bg)
+        draw.text(pos, text, font=font, fill=text_color, align="left")
+        return cv2.cvtColor(np.array(pil_img), cv2.COLOR_RGB2BGR)
 
-        return text_size
-
-    def annotate_and_save_image(self, save_path):
+    def annotate_and_save_image(self, save_path, font_path):
         resized_image = self.resize_image(self.image, 450)
         for co_ord in self.coordinates:
             scaled_bbox = self.scale_bbox(co_ord[0], self.image.shape[:2], resized_image.shape[:2])
             xmin, ymin, xmax, ymax = scaled_bbox
-            self.draw_text(resized_image, f"{co_ord[2]}", pos=(xmin, ymin - 19), text_color_bg=co_ord[1])
+            b, g, r = co_ord[1]
+            rgb_tuple = (r, g, b)
+            resized_image = self.draw_text(resized_image, f"{co_ord[2]}", font_path, pos=(xmin, ymin - 26),
+                                           text_color_bg=rgb_tuple)
             cv2.rectangle(resized_image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
         cv2.imwrite(save_path, resized_image)
