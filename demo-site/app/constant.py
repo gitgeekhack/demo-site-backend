@@ -207,6 +207,7 @@ class CarDamageDetection:
         INSTANCE_LOG_FOLDER_PATH = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'logs'))
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_PATH = "./app/model/car_damage_detection/DamagePartDetection.pt"
+        FONT_PATH = "./app/static/damage_detection/font_file/arial.ttf"
 
 
 class PDFAnnotationAndExtraction:

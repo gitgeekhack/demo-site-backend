@@ -27,7 +27,7 @@ class DamageDetector(MonoState):
 
     async def __annotate(self, image, co_ordinates, save_path):
         annotator = Annotator(image, co_ordinates)
-        annotator.annotate_and_save_image(save_path)
+        annotator.annotate_and_save_image(save_path, CarDamageDetection.Path.FONT_PATH)
         logger.info(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
 
     async def __label_colour(self, key):
