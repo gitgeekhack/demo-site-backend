@@ -4,7 +4,7 @@ import time
 import boto3
 
 from app import logger
-from app.common.utils import update_file_path
+from app.common.utils import update_file_path, vector_data_path
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -54,21 +54,25 @@ class DocumentQnA:
 
     async def __prepare_data(self, document_name):
 
-        pdf_name, output_dir = await update_file_path(document_name)
-        dir_name = os.path.join(output_dir, 'textract_response')
+        doc_basename = os.path.basename(document_name).split(".")[0]
+        vector_file = os.path.join(vector_data_path, f'{doc_basename}.pkl')
 
-        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
-            json_data = json.loads(file.read())
+        if os.path.exists(vector_file):
+            vectored_data = FAISS.load_local(vector_data_path, self.bedrock_embeddings, index_name=doc_basename)
+        else:
+            pdf_name, output_dir = await update_file_path(document_name)
+            dir_name = os.path.join(output_dir, 'textract_response')
+            with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+                json_data = json.loads(file.read())
 
-        raw_text = "".join(json_data.values())
-
-        texts = RecursiveCharacterTextSplitter(chunk_size=15000, chunk_overlap=200).split_text(raw_text)
-        docs = [Document(page_content=t) for t in texts]
-
-        vectored_data = FAISS.from_documents(
-            documents=docs,
-            embedding=self.bedrock_embeddings,
-        )
+            raw_text = "".join(json_data.values())
+            texts = RecursiveCharacterTextSplitter(chunk_size=15000, chunk_overlap=200).split_text(raw_text)
+            docs = [Document(page_content=t) for t in texts]
+            vectored_data = FAISS.from_documents(
+                documents=docs,
+                embedding=self.bedrock_embeddings,
+            )
+            vectored_data.save_local(vector_data_path, index_name=doc_basename)
 
         return vectored_data
 

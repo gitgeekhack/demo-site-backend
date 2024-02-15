@@ -11,6 +11,8 @@ sw_path = os.path.join(USER_DATA_PATH, 'software')
 os.makedirs(ds_path, exist_ok=True)
 damage_detection_output_path = os.path.join(ds_path, 'damage-detection-output-images')
 os.makedirs(damage_detection_output_path, exist_ok=True)
+vector_data_path = os.path.join(ds_path, 'vector_database')
+os.makedirs(vector_data_path, exist_ok=True)
 
 
 def load_config(import_name):
