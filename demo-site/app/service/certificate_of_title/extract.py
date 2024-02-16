@@ -4,8 +4,10 @@ import time
 import traceback
 import re
 import boto3
+from PIL import Image
 from dateutil import parser
 from json.decoder import JSONDecodeError
+from transformers import CLIPProcessor, CLIPModel
 
 from app import logger
 from app.constant import USER_DATA_PATH
@@ -14,10 +16,22 @@ from app.service.helper.textract import TextractHelper
 
 class COTDataPointExtractorV1:
     def __init__(self, uuid):
+        self.visual_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+        self.visual_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
         self.uuid = uuid
         self.textract_helper = TextractHelper()
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.llm_model_id = 'anthropic.claude-instant-v1'
+
+    async def is_black_and_white(self, image_path):
+        image = Image.open(image_path)
+        inputs = self.visual_processor(text=["Black and White Document", "A Regular Document"],
+                                       images=image, return_tensors="pt", padding=True)
+        outputs = self.visual_model(**inputs)
+        logits_per_image = outputs.logits_per_image
+        probs = logits_per_image.softmax(dim=1).tolist()[0]
+
+        return True if probs[0] >= probs[1] else False
 
     async def get_llm_response(self, logger, page_text):
         start_time = time.time()
@@ -112,7 +126,7 @@ class COTDataPointExtractorV1:
                 print("Error: Unable to parse the date.")
         return ''
 
-    async def __post_process(self, record):
+    async def __post_process(self, record, black_and_white_flag):
         return {
             "title_no": record.get("TitleNo", ''),
             "vin": record.get("Vin", ''),
@@ -144,13 +158,14 @@ class COTDataPointExtractorV1:
                     "state": lien_holder.get("lienholderAddress", {}).get("State", ''),
                     "zip_code": lien_holder.get("lienholderAddress", {}).get("Zipcode", '')
                 }
-            } for lien_holder in record.get("lienholders", [])]
+            } for lien_holder in record.get("lienholders", [])],
+            "black_and_white_flag": black_and_white_flag
         }
 
     def empty_response(self):
         return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
                 "issue_date": "", "owners": "", "document_type": "", "title_type": "", "license_plate": "",
-                "odometer": {"reading": "", "brand": ""},
+                "odometer": {"reading": "", "brand": ""}, "black_and_white_flag": None,
                 "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
 
     async def extract(self, image_data):
@@ -159,10 +174,11 @@ class COTDataPointExtractorV1:
             for file_path in image_data:
                 page_text = self.textract_helper.get_text(logger, file_path)
                 if page_text:
+                    black_and_white_flag = await self.is_black_and_white(file_path)
                     llm_response = await self.get_llm_response(logger, page_text)
                     llm_data_json = json.loads(llm_response.read().decode('utf-8'))
                     result = await self.__convert_str_to_json(llm_data_json['completion'])
-                    data = await self.__post_process(result)
+                    data = await self.__post_process(result, black_and_white_flag)
 
                     logger.info(f'Request ID: [{self.uuid}] Response: {data}')
                 else:
