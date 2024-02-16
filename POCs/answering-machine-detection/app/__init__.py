@@ -36,6 +36,10 @@ binary_predictor = BinaryPredictor()
 logger = logging.getLogger('AMD')
 
 
+async def options_request(request):
+    return web.json_response(headers=headers, status=200)
+
+
 async def amd(request):
     x_uuid = uuid.uuid1()
     try:
@@ -71,9 +75,9 @@ async def amd(request):
                 is_human_answer = False
             res = {"is_human_answer": is_human_answer, 'input_audio_length': f'{audio_length} seconds'}
             logger.info(f'[{filename}] => is_human_answer: {is_human_answer}]')
-            return web.json_response(res)
+            return web.json_response(res, headers=headers, status=200)
         else:
-            return web.json_response({"message": 'Unauthorized'}, status=401)
+            return web.json_response({"message": 'Unauthorized'}, headers=headers, status=401)
 
     except FilePathNull as e:
         response = {"message": f"{e}"}
@@ -120,4 +124,4 @@ logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                'Function: %(funcName)s - '
                                                '%(message)s')
 app = web.Application(client_max_size=1024*1024*25)
-app.add_routes([web.post('/api/v1/amd', amd)])
+app.add_routes([web.options('/api/v1/amd', options_request), web.post('/api/v1/amd', amd)])
