@@ -10,20 +10,32 @@ from json.decoder import JSONDecodeError
 from transformers import CLIPProcessor, CLIPModel
 
 from app import logger
+from app.common.utils import MonoState
 from app.constant import USER_DATA_PATH
 from app.service.helper.textract import TextractHelper
 
 
-class COTDataPointExtractorV1:
+def model_loader():
+    model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
+    return model
+
+
+def processor_loader():
+    model = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
+    return model
+
+
+class COTDataPointExtractorV1(MonoState):
+    _internal_state = {'visual_model': model_loader(), 'visual_processor': processor_loader()}
+
     def __init__(self, uuid):
-        self.visual_model = CLIPModel.from_pretrained("openai/clip-vit-large-patch14")
-        self.visual_processor = CLIPProcessor.from_pretrained("openai/clip-vit-large-patch14")
         self.uuid = uuid
         self.textract_helper = TextractHelper()
         self.bedrock = boto3.client('bedrock-runtime', region_name="us-east-1")
         self.llm_model_id = 'anthropic.claude-instant-v1'
 
-    async def is_black_and_white(self, image_path):
+    async def is_black_and_white(self, logger, image_path):
+        start_time = time.time()
         image = Image.open(image_path)
         inputs = self.visual_processor(text=["Black and White Document", "A Regular Document"],
                                        images=image, return_tensors="pt", padding=True)
@@ -31,6 +43,7 @@ class COTDataPointExtractorV1:
         logits_per_image = outputs.logits_per_image
         probs = logits_per_image.softmax(dim=1).tolist()[0]
 
+        logger.info(f"Colour Scheme Detected in {time.time() - start_time} seconds.")
         return True if probs[0] >= probs[1] else False
 
     async def get_llm_response(self, logger, page_text):
@@ -174,7 +187,7 @@ class COTDataPointExtractorV1:
             for file_path in image_data:
                 page_text = self.textract_helper.get_text(logger, file_path)
                 if page_text:
-                    black_and_white_flag = await self.is_black_and_white(file_path)
+                    black_and_white_flag = await self.is_black_and_white(logger, file_path)
                     llm_response = await self.get_llm_response(logger, page_text)
                     llm_data_json = json.loads(llm_response.read().decode('utf-8'))
                     result = await self.__convert_str_to_json(llm_data_json['completion'])
