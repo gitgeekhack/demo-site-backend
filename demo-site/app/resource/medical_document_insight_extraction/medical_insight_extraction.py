@@ -39,7 +39,7 @@ class MedicalInsightsExtractor:
                     raise InvalidFile(file_path)
 
                 file_size = get_file_size(file_path)
-                if file_size > 1:
+                if file_size > 1024:
                     raise HandleFileLimitExceeded(file_path)
 
             extracted_information = await get_medical_insights(file_path)

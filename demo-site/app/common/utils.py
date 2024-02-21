@@ -60,9 +60,8 @@ def get_file_size(file_path):
 
         size_in_kb = size_in_bytes / 1024.0
         size_in_mb = size_in_kb / 1024.0
-        size_in_gb = size_in_mb / 1024.0
 
-        return size_in_gb
+        return size_in_mb
 
     except FileNotFoundError:
         return f"File not found: {file_path}"
