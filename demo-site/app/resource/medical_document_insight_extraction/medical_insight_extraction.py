@@ -115,8 +115,8 @@ class QnAExtractor:
                     raise InvalidFile(file_path)
 
                 file_size = get_file_size(file_path)
-                if file_size > 25:
-                    raise FileLimitExceeded(file_path)
+                if file_size > 1024:
+                    raise HandleFileLimitExceeded(file_path)
 
             result = await get_query_response(input_query, file_path)
             result = json.dumps(result).encode('utf-8')
