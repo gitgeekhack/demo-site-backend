@@ -5,7 +5,7 @@ from aiohttp import web
 from app.common.utils import is_pdf_file, get_file_size, get_response_headers
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
-from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, InputQueryNull,
+from app.business_rule_exception import (InvalidFile, FileLimitExceeded, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
                                          MultipleFileUploaded, MissingRequestBody, InvalidRequestBody)
 
 
@@ -39,8 +39,8 @@ class MedicalInsightsExtractor:
                     raise InvalidFile(file_path)
 
                 file_size = get_file_size(file_path)
-                if file_size > 25:
-                    raise FileLimitExceeded(file_path)
+                if file_size > 1024:
+                    raise HandleFileLimitExceeded(file_path)
 
             extracted_information = await get_medical_insights(file_path)
             return web.json_response({'document': extracted_information}, headers=headers, status=200)
