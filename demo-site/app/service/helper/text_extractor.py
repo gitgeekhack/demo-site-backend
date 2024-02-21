@@ -79,6 +79,8 @@ async def extract_pdf_text(file_path):
 
     x = time.time()
 
+    logger.info("[Medical-Insights] Text Extraction from document is started...")
+
     if await is_textract_response_exists(file_path):
         pdf_name, output_dir = await update_file_path(file_path)
         dir_name = os.path.join(output_dir, 'textract_response')

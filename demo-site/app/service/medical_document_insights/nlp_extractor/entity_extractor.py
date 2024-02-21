@@ -1,4 +1,5 @@
 import os
+import re
 import json
 import boto3
 import asyncio
@@ -31,6 +32,31 @@ llm = Bedrock(
 bedrock_embeddings = BedrockEmbeddings(model_id=model_embeddings, client=bedrock_client)
 
 
+async def is_alpha(entity):
+    """ This method is used to validate entity by checking alphabet is present or not """
+
+    pattern = r'[a-zA-Z]'
+
+    if re.search(pattern, entity):
+        return True
+    else:
+        return False
+
+
+async def get_valid_entity(entities):
+    """ This method is used to validate entity by checking if alphabetic character is present or not """
+
+    valid_entities = {key: [] for key in entities}
+
+    for key, entity_list in entities.items():
+        for entity in entity_list:
+            processed_entity = await is_alpha(entity)
+            if processed_entity and entity.strip():
+                valid_entities[key].append(entity)
+
+    return valid_entities
+
+
 async def convert_str_into_json(text):
     """ This method is used to convert str into json object with consistent key-name """
 
@@ -46,7 +72,8 @@ async def convert_str_into_json(text):
     data_keys = ['diagnosis', 'treatments', 'medications']
     final_data = dict(zip(data_keys, list(data.values())))
 
-    return final_data
+    processed_data = await get_valid_entity(final_data)
+    return processed_data
 
 
 async def data_formatter(json_data):
@@ -149,7 +176,8 @@ async def get_extracted_entities(json_data):
     for entity in results.done:
         page_wise_entities.update(entity.result())
 
-    filter_empty_pages = {key: value for key, value in page_wise_entities.items() if any(value[key] for key in ['diagnosis', 'treatments', 'medications'])}
+    filter_empty_pages = {key: value for key, value in page_wise_entities.items() if
+                          any(value[key] for key in ['diagnosis', 'treatments', 'medications'])}
     page_wise_entities = dict(sorted(filter_empty_pages.items(), key=lambda item: int(item[0].split('_')[1])))
 
     return {'entities': page_wise_entities}

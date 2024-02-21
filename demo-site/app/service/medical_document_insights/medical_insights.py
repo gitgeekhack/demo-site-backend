@@ -15,6 +15,7 @@ async def get_summary(data):
     """ This method is used to get document summary """
 
     x = time.time()
+    logger.info("[Medical-Insights] Summary generation is started...")
     document_summarizer = DocumentSummarizer()
     summary = await document_summarizer.get_summary(data)
     logger.info(f"[Medical-Insights] Summary is generated in {time.time() - x} seconds.")
@@ -31,6 +32,7 @@ async def get_entities(data):
     """ This method is used to get entities from document """
 
     x = time.time()
+    logger.info("[Medical-Insights] Entity Extraction is started...")
     entities = await get_extracted_entities(data)
     logger.info(f"[Medical-Insights] Entity Extraction is completed in {time.time() - x} seconds.")
     return entities
@@ -46,6 +48,7 @@ async def get_phi_dates(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
+    logger.info("[Medical-Insights] PHI Dates Extraction is started...")
     phi_dates_extractor = PHIDatesExtractor()
     phi_dates = await phi_dates_extractor.get_phi_dates(data)
     logger.info(f"[Medical-Insights] PHI Dates Extraction is completed in {time.time() - x} seconds.")
@@ -62,9 +65,10 @@ async def get_patient_detail(data):
     """ This method is used to get document summary """
 
     x = time.time()
+    logger.info("[Medical-Insights] Patient Information Extraction is started...")
     patient_info = PatientInfoExtractor()
     result = await patient_info.get_patient_info(data)
-    logger.info(f"[Medical-Insights] Patient Information extraction is completed in {time.time() - x} seconds.")
+    logger.info(f"[Medical-Insights] Patient Information Extraction is completed in {time.time() - x} seconds.")
     return result
 
 
@@ -78,6 +82,7 @@ async def get_encounters(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
+    logger.info("[Medical-Insights] Encounters Extraction is started...")
     encounters_extractor = EncountersExtractor()
     encounter_events = await encounters_extractor.get_encounters(data)
     logger.info(f"[Medical-Insights] Encounters Extraction is completed in {time.time() - x} seconds.")
