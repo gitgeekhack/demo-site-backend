@@ -23,6 +23,17 @@ class FileLimitExceeded(Exception):
         return f'{self.file_url} -> {self.message}'
 
 
+class HandleFileLimitExceeded(Exception):
+
+    def __init__(self, file_url, message=ExceptionMessage.MAX_FILE_SIZE_EXCEEDED_ERROR):
+        self.message = message
+        self.file_url = file_url
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.file_url} -> {self.message}'
+
+
 class FilePathNull(Exception):
 
     def __init__(self, message=ExceptionMessage.FILE_PATH_NULL_EXCEPTION_MESSAGE):

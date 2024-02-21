@@ -60,8 +60,9 @@ def get_file_size(file_path):
 
         size_in_kb = size_in_bytes / 1024.0
         size_in_mb = size_in_kb / 1024.0
+        size_in_gb = size_in_mb / 1024.0
 
-        return size_in_mb
+        return size_in_gb
 
     except FileNotFoundError:
         return f"File not found: {file_path}"
@@ -113,7 +114,6 @@ async def save_file(file_object, folder_path):
 
 
 async def update_file_path(file_path):
-
     pdf_name = os.path.basename(file_path)
     output_dir = file_path.replace(".pdf", "")
     output_dir = output_dir.replace(sw_path, ds_path)
@@ -122,7 +122,6 @@ async def update_file_path(file_path):
 
 
 async def get_response_headers():
-
     headers = {
         'Access-Control-Allow-Origin': "*",
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
@@ -132,7 +131,6 @@ async def get_response_headers():
 
 
 def get_file_from_path(filepath):
-
     try:
         class FileData:
             def __init__(self):
