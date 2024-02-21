@@ -99,7 +99,8 @@ class COTDataPointExtractorV1(MonoState):
               "DocumentType": "[Extracted Document Type]",
               "TitleType": "[Extracted Title Type]",
               "OdometerBrand": "[Extracted Odometer Brand]",
-              "LicensePlate": "[Extracted License Plate]"
+              "LicensePlate": "[Extracted License Plate]",
+              "TitledState": "[Name of the state (give full name) from which Title is issued]"
             }}
             '''
         prompt_template = f"\n\nHuman:{prompt}\n\nAssistant:"
@@ -172,13 +173,14 @@ class COTDataPointExtractorV1(MonoState):
                     "zip_code": lien_holder.get("lienholderAddress", {}).get("Zipcode", '')
                 }
             } for lien_holder in record.get("lienholders", [])],
-            "black_and_white_flag": black_and_white_flag
+            "black_and_white_flag": black_and_white_flag,
+            "titled_state": record.get("TitledState", '')
         }
 
     def empty_response(self):
         return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
                 "issue_date": "", "owners": "", "document_type": "", "title_type": "", "license_plate": "",
-                "odometer": {"reading": "", "brand": ""}, "black_and_white_flag": None,
+                "odometer": {"reading": "", "brand": ""}, "black_and_white_flag": None, "titled_state": '',
                 "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
 
     async def extract(self, image_data):
