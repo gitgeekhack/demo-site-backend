@@ -89,7 +89,11 @@ class COTDataPointExtractorV1(MonoState):
               "BodyStyle": "[Extracted Body Style]",
               "OdometerReading": "[Extracted Odometer Reading]",
               "IssueDate": "[Extracted Issue Date]",
-              "Owners":"[Extracted Owner Name]",
+              "Owners":"[Owner Name]",
+              "OwnerNameList": :[
+                "[Owner1]",
+                "[Owner2]"
+              ],
               "OwnerAddress": {{
                 "Street": "[Extracted Owner Street]",
                 "City": "[Extracted Owner City]",
@@ -140,6 +144,19 @@ class COTDataPointExtractorV1(MonoState):
                 print("Error: Unable to parse the date.")
         return ''
 
+    def __get_ownership_type(self, owners, owner_name_list):
+        if len(owner_name_list) > 1:
+            owners = re.split(" |\\\|/|\|", owners.lower())  # Splits string using delimiters " ", "\", "/", and "|"
+            if 'or' in owners:
+                if 'and' in owners:
+                    return "Joint Tenancy With Right Of Survivorship"
+                else:
+                    return "Joint Tenancy"
+            else:
+                return "Tenancy In Common"
+        else:
+            return "Sole tenancy"
+
     async def __post_process(self, record, black_and_white_flag):
         return {
             "title_no": record.get("TitleNo", ''),
@@ -149,19 +166,23 @@ class COTDataPointExtractorV1(MonoState):
             "model": record.get("Model", ''),
             "body_style": record.get("BodyStyle", ''),
             "issue_date": await self.__parse_date(record.get("IssueDate", '')),
-            "owners": record.get("Owners", ''),
+            "owner": {
+                "names": record.get("OwnerNameList", []),
+                "ownership_type": self.__get_ownership_type(record.get("Owners", ''), record.get("OwnerNameList", []))
+                if record.get("OwnerNameList", []) else "",
+                "address": {
+                    "street": record.get("OwnerAddress", {}).get("Street", ''),
+                    "city": record.get("OwnerAddress", {}).get("City", ''),
+                    "state": record.get("OwnerAddress", {}).get("State", ''),
+                    "zip_code": record.get("OwnerAddress", {}).get("Zipcode", '')
+                }
+            },
             "document_type": record.get("DocumentType", ''),
             "title_type": record.get("TitleType", ''),
             "license_plate": record.get("LicensePlate", ''),
             "odometer": {
                 "reading": record.get("OdometerReading", ''),
                 "brand": record.get("OdometerBrand", '')
-            },
-            "owner_address": {
-                "street": record.get("OwnerAddress", {}).get("Street", ''),
-                "city": record.get("OwnerAddress", {}).get("City", ''),
-                "state": record.get("OwnerAddress", {}).get("State", ''),
-                "zip_code": record.get("OwnerAddress", {}).get("Zipcode", '')
             },
             "lien_holder": [{
                 "name": lien_holder.get("lienholderName", ''),
@@ -173,14 +194,14 @@ class COTDataPointExtractorV1(MonoState):
                     "zip_code": lien_holder.get("lienholderAddress", {}).get("Zipcode", '')
                 }
             } for lien_holder in record.get("lienholders", [])],
-            "black_and_white_flag": black_and_white_flag,
+            "is_black_and_white": black_and_white_flag,
             "titled_state": record.get("TitledState", '')
         }
 
     def empty_response(self):
         return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
                 "issue_date": "", "owners": "", "document_type": "", "title_type": "", "license_plate": "",
-                "odometer": {"reading": "", "brand": ""}, "black_and_white_flag": None, "titled_state": '',
+                "odometer": {"reading": "", "brand": ""}, "is_black_and_white": None, "titled_state": '',
                 "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
 
     async def extract(self, image_data):
