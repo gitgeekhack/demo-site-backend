@@ -8,9 +8,9 @@ from concurrent import futures
 from app import logger
 from app.common.utils import update_file_path
 from app.service.helper import textract_client
-from app.constant import MedicalInsights
+from app.constant import BotoClient
 
-os.environ['AWS_DEFAULT_REGION'] = MedicalInsights.AWS_DEFAULT_REGION
+os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 pdf_folder_name = None
 textract = textract_client
 
