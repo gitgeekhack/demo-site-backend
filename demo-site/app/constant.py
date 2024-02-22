@@ -2,7 +2,7 @@ import os
 from enum import Enum
 
 USER_DATA_PATH = os.getenv("USER_DATA_PATH")
-class MedicalInsights:
+class BotoClient:
     AWS_DEFAULT_REGION = "us-east-1"
     read_timeout = 3600
 

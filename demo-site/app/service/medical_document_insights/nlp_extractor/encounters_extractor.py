@@ -11,13 +11,13 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from app.constant import MedicalInsights
+from app.constant import BotoClient
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 
 class EncountersExtractor:
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = MedicalInsights.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-v2:1'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
