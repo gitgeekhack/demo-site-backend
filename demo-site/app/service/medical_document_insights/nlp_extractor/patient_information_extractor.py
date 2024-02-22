@@ -4,6 +4,7 @@ import json
 import boto3
 import dateparser
 from datetime import datetime, timedelta
+from app.constant import MedicalInsights
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -69,6 +70,29 @@ class PHIDatesExtractor:
         matches = re.findall(pattern, text, re.DOTALL)
         return matches
 
+    async def __get_document_type(self, vector_st):
+        doc_type_query = MedicalInsights.Prompts.DOC_TYPE_PROMPT
+        prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
+
+        prompt = PromptTemplate(
+            template=prompt_template, input_variables=["context", "question"]
+        )
+
+        qa = RetrievalQA.from_chain_type(
+            llm=self.llm,
+            chain_type="stuff",
+            retriever=vector_st.as_retriever(
+                search_type="similarity", search_kwargs={"k": 6}
+            ),
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": prompt}
+        )
+
+        answer = qa({"query": doc_type_query})
+        response = json.loads(answer['result'])
+        doc_type_value = response['document_type']
+        return doc_type_value
+
     async def get_phi_dates(self, data):
         """ This method is to provide the PHI dates from the document """
 
@@ -79,33 +103,9 @@ class PHIDatesExtractor:
             embedding=self.bedrock_embeddings,
         )
 
-        query = """
-        Your role is to extract important dates from a medical document, specifically focusing on the injury dates, admission dates, and discharge dates. This information is vital for medical records management and analysis. Your sole purpose is to provide the output in JSON format, without any additional text output.Don't refine anything, give an original answer.
-        Provide the information in JSON format as follows: {"Injury Date": ["dd/mm/yyyy", ...], "Admission Date": ["dd/mm/yyyy", ...], "Discharge Date": ["dd/mm/yyyy", ...]}. Strictly maintain the consistency in this format.
-        Note: Don't include visit dates, encounter dates, date of birth, MRI scan dates, X-ray dates, checkup dates, admin date/time, follow-up dates and 'filed at' date. Avoid including times in the output.
-
-        Here is the definition of valid Injury Date, Admission Date and Discharge Date:
-        Injury Date: In the medical field context, the injury date refers to the specific date on which a patient sustained an injury or trauma. Accident date of patient is also considered as injury date. It is the date when the event leading to the patient's medical condition or injury occurred.
-        Admission Date: The admission date, in the medical field context, refers to the date on which a patient is formally admitted to a healthcare facility, such as a hospital. It marks the beginning of the patient's stay for medical evaluation, treatment, or surgery.
-        Discharge Date: The discharge date, in the medical field context, refers to the date when a patient is released or discharged from a healthcare facility after receiving medical care or treatment. It marks the end of the patient's stay in the facility.
-
-        Instructions:
-        1. 'Injury Date': Extract the date of the patient's injury from the given medical text. There can be multiple injury dates present in the text. If the injury date is not mentioned in the document, fill the field with "None." Provide the extracted date in JSON format with "injury date" as the key.
-        2. 'Admission Date': Extract the date of the patient's admission from the given medical text. There can be multiple admission dates present in the text. Consider the date of the initial examination, initial visit, or the first time the patient was seen in as the admission date. The date with labels such as "Admit date" or "Admission date" should be considered as the admission date. If the admission date is not mentioned in the document, fill the field with "None." Provide the extracted date in JSON format with "admission date" as the key.
-        3. 'Discharge Date': Extract the date of the patient's discharge from the given medical text. There can be multiple discharge dates present in the text. Consider the date of the last visit or the last time the patient was seen as the discharge date. The date with labels such as "Discharge date" or "Date of Discharge" should be considered as the discharge date. If the discharge date is not mentioned in the document, fill the field with "None." Provide the extracted date in JSON format with "discharge date" as the key.
-
-        Note: Convert the final output to dd/mm/yyyy format
-        """
-
-        prompt_template = """
-        Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
-        <context>
-        {context}
-        </context>
-
-        Question: {question}
-
-        Assistant:"""
+        doc_type = await self.__get_document_type(vectorstore_faiss)
+        query = MedicalInsights.Prompts.PHI_PROMPT
+        prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
 
         prompt = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
@@ -132,8 +132,9 @@ class PHIDatesExtractor:
             result_key = await self.__get_key(key)
             dates[result_key] = value if isinstance(value, list) else [value]
 
+        if doc_type == "Ambulance" or doc_type == "Emergency":
+            dates["injury_dates"] = dates["admission_dates"]
         return {'patient_information': dates}
-
 
 class PatientInfoExtractor:
     def __init__(self):
@@ -206,16 +207,7 @@ class PatientInfoExtractor:
 
         docs = await self.__data_formatter(data)
 
-        query = """
-        Your task is to identify the valid name and the date of birth of the patient from the user-provided text without including additional information, notes, and context. 
-
-        Please follow the below guidelines:
-        1) Consider Date of Birth, Birth Date, and DOB as date_of_birth.
-        2) Do not consider age as value in date_of_birth.
-        3) Consider Patient Name, only Patient, only Name and RE as patient_name.
-
-        Please strictly only provide a JSON result containing the keys 'patient_name' and 'date_of_birth' containing a string as a value.
-        """
+        query = MedicalInsights.Prompts.PATIENT_INFO_PROMPT
 
         chain_qa = load_qa_chain(self.llm, chain_type="refine")
         result = chain_qa.run(input_documents=docs, question=query)

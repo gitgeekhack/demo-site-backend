@@ -2,6 +2,7 @@ import os
 import re
 import ast
 import boto3
+from app.constant import MedicalInsights
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -97,41 +98,8 @@ class EncountersExtractor:
             embedding=self.bedrock_embeddings,
         )
 
-        query = """
-        Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' from medical records.
-
-        'Encounter Date' : In medical record, it is defined as the specific date when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service.
-        Notes to keep in mind while extracting 'Encounter Date' :
-        - Extract only actual 'Encounter Date' and avoid giving any other types of dates which are listed below :
-          1. 'Birth date' : In medical record, it is defined as the specific date when a patient is born. It is typically recorded and used for identification, legal, and administrative purposes. It is also used to calculate a person's age.
-          2. 'Received date' : In medical record, it is defined as the specific date when a lab, hospital, or clinic received the test result.
-          3. 'Printed date' : In medical record, it is defined as the specific date when the document was created, updated, or reviewed.
-          4. 'Resulted date' : In medical record, it is defined as the specific date when the results of certain tests, procedures or treatments are made available or reported.
-        - Ensure all the actual 'Encounter Date' are strictly converted to the same format of 'MM/DD/YYYY'.
-        - Ensure none of the actual 'Encounter Date' is left behind. Ensure dates from Past Medical History / Past Surgical History are also included.
-
-        'Event' : It is associated with the corresponding 'Encounter Date'. It is described as the summary of all activities that occurred on that particular 'Encounter Date'.
-        Notes to keep in mind while extracting 'Event' :
-        - Ensure all 'Event' descriptions should include the key points, context, and any relevant supporting details.
-        - Also ensure all 'Event' descriptions are more detailed, thorough and comprehensive yet a concise summary in medium-sized paragraph.
-
-        You are required to present this output in a specific format using 'Tuple' and 'List'.
-        Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
-        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date' and 'Event'. It is created using parentheses and should be formatted as (Encounter Date, Event).
-        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ (Encounter Date, Event) ].
-        Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
-        Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
-        """
-
-        prompt_template = """
-        Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
-        <context>
-        {context}
-        </context>
-
-        Question: {question}
-
-        Assistant:"""
+        query = MedicalInsights.Prompts.ENCOUNTER_PROMPT
+        prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
 
         prompt = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
