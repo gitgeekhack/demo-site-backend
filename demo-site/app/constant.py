@@ -2,7 +2,9 @@ import os
 from enum import Enum
 
 USER_DATA_PATH = os.getenv("USER_DATA_PATH")
-
+class MedicalInsights:
+    AWS_DEFAULT_REGION = "us-east-1"
+    read_timeout = 3600
 
 class DrivingLicenseParser:
     WORLD_CITIES_LIST = './app/data/world_cities.csv'

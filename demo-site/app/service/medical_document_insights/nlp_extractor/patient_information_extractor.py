@@ -14,13 +14,14 @@ from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+from app.constant import MedicalInsights
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 
 class PHIDatesExtractor:
     def __init__(self):
-
-        os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
-        self.bedrock_client = boto3.client('bedrock-runtime', region_name="us-east-1")
+        os.environ['AWS_DEFAULT_REGION'] = MedicalInsights.AWS_DEFAULT_REGION
+        self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-instant-v1'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
 

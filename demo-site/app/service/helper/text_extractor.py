@@ -1,17 +1,18 @@
 import os
 import json
 import time
-import boto3
 import asyncio
 import pdf2image
 from concurrent import futures
 
 from app import logger
 from app.common.utils import update_file_path
+from app.service.helper import textract_client
+from app.constant import MedicalInsights
 
-os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
+os.environ['AWS_DEFAULT_REGION'] = MedicalInsights.AWS_DEFAULT_REGION
 pdf_folder_name = None
-textract = boto3.client('textract', region_name="us-east-1")
+textract = textract_client
 
 
 async def get_textract_response(image_path):
