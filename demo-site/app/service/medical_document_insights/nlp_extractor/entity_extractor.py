@@ -4,6 +4,7 @@ import json
 import boto3
 import asyncio
 from concurrent import futures
+from app.constant import MedicalInsights
 
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
@@ -99,37 +100,8 @@ async def get_medical_entities(key, value, page_wise_entities):
         embedding=bedrock_embeddings,
     )
 
-    query = """
-        Your task is to identify valid diagnoses, valid treatments and valid medications from the user-provided text without including additional information, notes, and context. 
-
-        The definition of a valid diagnosis, valid treatment and valid medications is given below:
-        Diagnosis: It is a process of identifying a patient's medical condition based on the evaluation of symptoms, history, and clinical evidence.
-        Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
-        Medication: It refers to drugs or substances used to treat, prevent, or diagnose diseases, relieve symptoms, or improve health.
-
-        Please follow the below guidelines:
-        1. Do not consider any diagnosis, treatment or medication information with negation.
-        2. Do not misinterpret the symptoms as diagnoses or treatments.
-        3. Associate the system organs and direction of organs with the medical entities.
-        4. Ensure a clear distinction between diagnosis, treatment and medications entities, avoiding overlap.
-        5. Consider Signs and Medical Conditions as a diagnosis. 
-        6. Consider Surgery, Psychotherapy, Immunotherapy, Imaging tests, and procedures as a treatment. 
-        7. Do not consider any diagnosis or treatment with hypothetical or conditional statements.
-        8. Do not consider the specialty of the doctor or practitioner as a medical entity.
-        9. Avoid repeating diagnoses and treatments when different terms refer to the same medical condition or treatment.
-
-        Please strictly only provide a JSON result containing the keys 'diagnosis', 'treatments' and 'medications' containing a list of valid entities.
-    """
-
-    prompt_template = """
-        Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
-        <context>
-        {context}
-        </context>
-
-        Question: {question}
-
-        Assistant:"""
+    query = MedicalInsights.Prompts.ENTITY_PROMPT
+    prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
 
     prompt = PromptTemplate(
         template=prompt_template, input_variables=["context", "question"]

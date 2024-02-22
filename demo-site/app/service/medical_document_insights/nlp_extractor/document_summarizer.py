@@ -1,6 +1,7 @@
 import os
 import boto3
 from fuzzywuzzy import fuzz
+from app.constant import MedicalInsights
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -72,17 +73,8 @@ class DocumentSummarizer:
             embedding=self.bedrock_embeddings,
         )
 
-        query = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
-
-        prompt_template = """
-        Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
-        <context>
-        {context}
-        </context>
-
-        Question: {question}
-
-        Assistant:"""
+        query = MedicalInsights.Prompts.SUMMARY_PROMPT
+        prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
 
         prompt = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
