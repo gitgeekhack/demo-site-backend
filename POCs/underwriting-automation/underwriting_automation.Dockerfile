@@ -5,7 +5,7 @@ WORKDIR /underwriting-automation
 RUN apt-get update
 RUN apt-get install tesseract-ocr python3-opencv libzbar0 -y
 
-ENV ENVIRONMENT=staging
+ENV ENVIRONMENT=development
 ADD ./app ./app
 ADD ./requirements.txt ./requirements.txt
 RUN pip install --upgrade pip==23.3
