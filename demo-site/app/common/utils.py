@@ -13,6 +13,8 @@ damage_detection_output_path = os.path.join(ds_path, 'damage-detection-output-im
 os.makedirs(damage_detection_output_path, exist_ok=True)
 vector_data_path = os.path.join(ds_path, 'vector_database')
 os.makedirs(vector_data_path, exist_ok=True)
+medical_insights_output_path = os.path.join(ds_path, 'medical_insights_output_json')
+os.makedirs(medical_insights_output_path, exist_ok=True)
 
 
 def load_config(import_name):
