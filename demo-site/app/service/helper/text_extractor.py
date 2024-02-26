@@ -1,8 +1,8 @@
 import os
 import json
 import time
+import fitz
 import asyncio
-import pdf2image
 from concurrent import futures
 
 from app import logger
@@ -13,6 +13,9 @@ from app.constant import BotoClient
 os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 pdf_folder_name = None
 textract = textract_client
+
+zoom = 2  # to increase the resolution of image
+matrix = fitz.Matrix(zoom, zoom)
 
 
 async def get_textract_response(image_path):
@@ -34,18 +37,21 @@ async def get_textract_response(image_path):
     return page_text
 
 
-async def convert_pdf_to_text(pdf_output_dir, image, index):
+async def convert_pdf_to_text(pdf_output_dir, page_no, doc_path):
     """ This method is used to convert pdf page into image and stores the page """
 
-    image_path = os.path.join(pdf_output_dir, f"{index + 1}.jpg")
+    document = fitz.open(doc_path)
+    page = document[page_no]
+    image = page.get_pixmap(matrix=matrix)
+    image_path = os.path.join(pdf_output_dir, f'{page_no + 1}.jpg')
     image.save(image_path)
     page_text = await get_textract_response(image_path)
-    return {f"page_{index + 1}": page_text}
+    return {f"page_{page_no + 1}": page_text}
 
 
-def convert_pdf_to_text_handler(pdf_output_dir, image, index):
+def convert_pdf_to_text_handler(pdf_output_dir, page_no, doc_path):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(convert_pdf_to_text(pdf_output_dir, image, index))
+    x = _loop.run_until_complete(convert_pdf_to_text(pdf_output_dir, page_no, doc_path))
     return x
 
 
@@ -93,19 +99,19 @@ async def extract_pdf_text(file_path):
         page_wise_text = json_data
 
     else:
-        pdf_images = pdf2image.convert_from_path(file_path)
-
         pdf_name, output_dir = await update_file_path(file_path)
         pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
         if not os.path.exists(pdf_output_dir):
             os.makedirs(pdf_output_dir, exist_ok=True)
 
+        document = fitz.open(file_path)
+
         task = []
         with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
-            for i, image in enumerate(pdf_images):
+            for page_no in range(len(document)):
                 new_future = executor.submit(convert_pdf_to_text_handler, pdf_output_dir=pdf_output_dir,
-                                             image=image, index=i)
+                                             page_no=page_no, doc_path=file_path)
                 task.append(new_future)
 
         results = futures.wait(task)
