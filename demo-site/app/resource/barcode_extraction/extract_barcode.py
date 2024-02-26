@@ -1,10 +1,10 @@
-import traceback
+import os
 import uuid
 import json
-import os
-
-import aiohttp_jinja2
+import traceback
 from aiohttp import web
+
+from app import logger
 from app.service.barcode_extraction.extract_barcode import BarcodeExtraction
 from app.common.utils import is_image_file, get_file_from_path, get_file_size, get_response_headers
 from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, MissingRequestBody
@@ -31,7 +31,7 @@ class BarCodeExtraction:
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
 
-                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                 files.append(file_path)
             else:
                 raise MultipleFileUploaded()
@@ -67,7 +67,7 @@ class BarCodeExtraction:
             return web.json_response(response, headers=headers, status=415)
 
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": "Internal Server Error"}
-            print(f'Request ID: [{x_uuid}] Response: {response}')
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)

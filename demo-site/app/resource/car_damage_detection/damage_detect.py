@@ -1,8 +1,8 @@
+import os
 import json
 import uuid
 import traceback
 from aiohttp import web
-import os
 
 from app import logger
 from app.service.car_damage_detection.damage_detect import DamageDetector
@@ -83,5 +83,6 @@ class DamageExtractor:
 
         except Exception as e:
             logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
-            response = {"message": f"Internal Server Error with error {e}"}
+            response = {"message": "Internal Server Error"}
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)

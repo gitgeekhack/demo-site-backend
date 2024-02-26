@@ -2,9 +2,6 @@ import os
 import json
 import time
 
-from app import logger
-from app.common.utils import update_file_path, vector_data_path
-
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.bedrock import Bedrock
@@ -12,8 +9,12 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
+from app import logger
 from app.constant import BotoClient
+from app.common.utils import update_file_path, vector_data_path
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
+
 
 class DocumentQnA:
     def __init__(self):

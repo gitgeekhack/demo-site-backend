@@ -1,10 +1,8 @@
 import os
 import re
 import json
-import boto3
 import asyncio
 from concurrent import futures
-from app.constant import MedicalInsights
 
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
@@ -13,9 +11,10 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from app.constant import BotoClient
-from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
+from app.constant import BotoClient
+from app.constant import MedicalInsights
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 

@@ -1,7 +1,5 @@
 import os
-import boto3
 from fuzzywuzzy import fuzz
-from app.constant import MedicalInsights
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -10,7 +8,9 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
+
 from app.constant import BotoClient
+from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 

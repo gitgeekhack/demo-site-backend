@@ -8,7 +8,7 @@ from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
 from app.service.medical_document_insights.nlp_extractor.encounters_extractor import EncountersExtractor
-from app.service.medical_document_insights.nlp_extractor.patient_information_extractor import PHIDatesExtractor, PatientInfoExtractor
+from app.service.medical_document_insights.nlp_extractor.phi_and_doc_type_extractor import PHIAndDocTypeExtractor
 
 
 async def get_summary(data):
@@ -44,37 +44,20 @@ def get_entities_handler(data):
     return x
 
 
-async def get_phi_dates(data):
+async def get_patient_information(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
-    logger.info("[Medical-Insights] PHI Dates Extraction is started...")
-    phi_dates_extractor = PHIDatesExtractor()
-    phi_dates = await phi_dates_extractor.get_phi_dates(data)
-    logger.info(f"[Medical-Insights] PHI Dates Extraction is completed in {time.time() - x} seconds.")
-    return phi_dates
+    logger.info("[Medical-Insights] Extraction of PHI and Document Type is started...")
+    phi_and_doc_type_extractor = PHIAndDocTypeExtractor()
+    patient_information = await phi_and_doc_type_extractor.get_patient_information(data)
+    logger.info(f"[Medical-Insights] Extraction of PHI and Document Type is completed in {time.time() - x} seconds.")
+    return patient_information
 
 
-def get_phi_handler(data):
+def get_patient_information_handler(data):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_phi_dates(data))
-    return x
-
-
-async def get_patient_detail(data):
-    """ This method is used to get document summary """
-
-    x = time.time()
-    logger.info("[Medical-Insights] Patient Information Extraction is started...")
-    patient_info = PatientInfoExtractor()
-    result = await patient_info.get_patient_info(data)
-    logger.info(f"[Medical-Insights] Patient Information Extraction is completed in {time.time() - x} seconds.")
-    return result
-
-
-def get_patient_detail_handler(data):
-    _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_patient_detail(data))
+    x = _loop.run_until_complete(get_patient_information(data))
     return x
 
 
@@ -99,7 +82,6 @@ async def get_medical_insights(document):
     """ This method is used to get the medical insights from the document """
 
     result = dict()
-    patient_info = dict()
 
     pdf_name = os.path.basename(document)
     result['name'] = pdf_name
@@ -110,20 +92,11 @@ async def get_medical_insights(document):
     with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
         task.append(executor.submit(get_summary_handler, data=page_wise_text))
         task.append(executor.submit(get_entities_handler, data=page_wise_text))
-        task.append(executor.submit(get_phi_handler, data=page_wise_text))
-        task.append(executor.submit(get_patient_detail_handler, data=page_wise_text))
         task.append(executor.submit(get_encounters_handler, data=page_wise_text))
+        task.append(executor.submit(get_patient_information_handler, data=page_wise_text))
 
     results = futures.wait(task)
-
     for x in results.done:
-
-        response = x.result()
-        if response.get('patient_name'):
-            patient_info = response
-        else:
-            result.update(response)
-
-    result['patient_information'].update(patient_info)
+        result.update(x.result())
 
     return result

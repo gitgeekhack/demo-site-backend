@@ -1,9 +1,7 @@
-import traceback
+import os
 import uuid
 import json
-import os
-
-import aiohttp_jinja2
+import traceback
 from aiohttp import web
 
 from app import logger
@@ -33,7 +31,7 @@ class DLExtractor:
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
 
-                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                 files.append(file_path)
             else:
                 raise MultipleFileUploaded()
@@ -66,7 +64,7 @@ class DLExtractor:
             return web.json_response(response, headers=headers, status=415)
 
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": "Internal Server Error"}
-            print(f'Request ID: [{x_uuid}] Response: {response}')
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)
