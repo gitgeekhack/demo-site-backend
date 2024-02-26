@@ -1,9 +1,9 @@
-import os.path
-import traceback
 import uuid
 import json
-
+import os.path
+import traceback
 from aiohttp import web
+
 
 from app import logger
 from app.service.certificate_of_title.extract import COTDataPointExtractorV1
@@ -32,7 +32,7 @@ class COTExtractor:
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
 
-                print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                 files.append(file_path)
             else:
                 raise MultipleFileUploaded()
@@ -64,7 +64,7 @@ class COTExtractor:
             return web.json_response(response, headers=headers, status=415)
 
         except Exception as e:
-            print(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
             response = {"message": "Internal Server Error"}
-            print(f'Request ID: [{x_uuid}] Response: {response}')
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)

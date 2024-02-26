@@ -1,7 +1,9 @@
 import os
+import uuid
 import json
 from aiohttp import web
 
+from app import logger
 from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
@@ -11,6 +13,7 @@ from app.business_rule_exception import (InvalidFile, FileLimitExceeded, HandleF
 
 class MedicalInsightsExtractor:
     async def post(self):
+        x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
             data_bytes = await self.content.read()
@@ -85,12 +88,15 @@ class MedicalInsightsExtractor:
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
-            response = {"message": f"Internal Server Error with error {e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"message": "Internal Server Error"}
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)
 
 
 class QnAExtractor:
     async def post(self):
+        x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
             data_bytes = await self.content.read()
@@ -166,5 +172,7 @@ class QnAExtractor:
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
-            response = {"message": f"Internal Server Error with error {e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"message": "Internal Server Error"}
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=500)

@@ -1,10 +1,9 @@
 import os
 import re
 import json
-import boto3
 import asyncio
+import traceback
 from concurrent import futures
-from app.constant import MedicalInsights
 
 from langchain.chains import RetrievalQA
 from langchain.vectorstores import FAISS
@@ -13,9 +12,11 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from app.constant import BotoClient
-from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
+from app import logger
+from app.constant import BotoClient
+from app.constant import MedicalInsights
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 
@@ -67,17 +68,22 @@ async def convert_str_into_json(text):
     start_index = text.find('{')
     end_index = text.rfind('}') + 1
     json_str = text[start_index:end_index]
+    final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
 
     if len(json_str) == 0:
-        final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
         return final_data
 
-    data = json.loads(json_str)
-    data_keys = ['diagnosis', 'treatments', 'medications']
-    final_data = dict(zip(data_keys, list(data.values())))
+    try:
+        data = json.loads(json_str)
+        data_keys = ['diagnosis', 'treatments', 'medications']
+        final_data = dict(zip(data_keys, list(data.values())))
+        final_data = await get_valid_entity(final_data)
 
-    processed_data = await get_valid_entity(final_data)
-    return processed_data
+    except Exception as e:
+        logger.error('%s -> %s', e, traceback.format_exc())
+        return final_data
+
+    return final_data
 
 
 async def data_formatter(json_data):
