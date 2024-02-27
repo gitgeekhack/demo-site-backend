@@ -1,9 +1,8 @@
 import os
-import traceback
-
 import cv2
-import numpy as np
 import torch
+import traceback
+import numpy as np
 
 from app import logger
 from app.common.utils import MonoState

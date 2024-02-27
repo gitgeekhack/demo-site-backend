@@ -1,12 +1,13 @@
 import os
+import cv2
 import traceback
+import numpy as np
 from pyzbar import pyzbar
+
 from app import logger
 from app.constant import USER_DATA_PATH
 from app.business_rule_exception import NoImageFoundException, InvalidFileException
 from app.service.helper.image_helper import ImageHelper
-import cv2
-import numpy as np
 
 
 class BarcodeExtraction:

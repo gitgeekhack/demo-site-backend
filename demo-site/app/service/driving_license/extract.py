@@ -1,12 +1,9 @@
-import asyncio
-import json
 import os
-import traceback
-
 import cv2
-import numpy as np
+import json
 import torch
-from werkzeug.utils import secure_filename
+import asyncio
+import traceback
 
 from app import logger, app
 from app.common.utils import MonoState
@@ -93,9 +90,9 @@ class DLDataPointExtractorV1(MonoState):
 
         if len(extracted_objects) > 0:
             skew_angle = await self.cv_helper.get_skew_angel(extracted_objects)
-            print(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
+            logger.info(f'Request ID: [{self.uuid}] found skew angle:[{skew_angle}]')
             if skew_angle >= 5 or skew_angle <= -5:
-                print(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
+                logger.info(f'Request ID: [{self.uuid}] fixing image skew with an angle of:[{skew_angle}]')
                 image = await self.cv_helper.fix_skew(image, skew_angle)
                 detected_objects = await self.__detect_objects(image)
                 object_extraction_coroutines = [
@@ -163,7 +160,7 @@ class DLDataPointExtractorV1(MonoState):
                     updated_results = await self.__update_labels(results)
                     data = updated_results
 
-                print(f'Request ID: [{self.uuid}] Response: {data}')
+                logger.info(f'Request ID: [{self.uuid}] Response: {data}')
 
         except Exception as e:
             logger.error('%s -> %s' % (e, traceback.format_exc()))
