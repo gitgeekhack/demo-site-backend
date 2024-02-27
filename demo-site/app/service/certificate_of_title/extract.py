@@ -1,9 +1,9 @@
-import json
 import os
-import time
-import traceback
 import re
+import time
+import json
 import boto3
+import traceback
 from PIL import Image
 from dateutil import parser
 from json.decoder import JSONDecodeError
@@ -141,7 +141,7 @@ class COTDataPointExtractorV1(MonoState):
                 formatted_date = date_object.strftime("%m-%d-%Y")
                 return formatted_date
             except ValueError:
-                print("Error: Unable to parse the date.")
+                logger.error("Error: Unable to parse the date.")
         return ''
 
     def __get_ownership_type(self, owners, owner_name_list):

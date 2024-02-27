@@ -45,7 +45,7 @@ class DamageExtractor:
                     if file_size > 25:
                         raise FileLimitExceeded(file_path)
 
-                    print(f'Request ID: [{x_uuid}] FileName: [{filename}]')
+                    logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
                     files.append(file_path)
 
             detector = DamageDetector(x_uuid)

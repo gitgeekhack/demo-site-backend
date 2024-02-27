@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+import traceback
 from aiohttp import web
 
 from app import logger
