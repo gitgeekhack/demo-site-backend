@@ -17,6 +17,7 @@ from app import logger
 from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
+from app.common.utils import update_file_path, vector_data_path
 
 
 class PHIAndDocTypeExtractor:
@@ -40,8 +41,13 @@ class PHIAndDocTypeExtractor:
 
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
-    async def __get_docs_embeddings(self, data):
+    async def __get_docs_embeddings(self, document):
         """ This method is used to prepare the embeddings and returns it """
+        doc_basename = os.path.basename(document).split(".")[0]
+        pdf_name, output_dir = await update_file_path(document)
+        dir_name = os.path.join(output_dir, 'textract_response')
+        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+            data = json.loads(file.read())
 
         docs = await self.__data_formatter(data)
 
@@ -49,6 +55,7 @@ class PHIAndDocTypeExtractor:
             documents=docs,
             embedding=self.bedrock_embeddings,
         )
+        vector_embeddings.save_local(vector_data_path, index_name=doc_basename)
 
         return vector_embeddings
 
@@ -202,12 +209,12 @@ class PHIAndDocTypeExtractor:
         processed_result = await self.__process_patient_name_and_dob(answer['result'])
         return processed_result
 
-    async def get_patient_information(self, data):
+    async def get_patient_information(self, document):
         """ This is expose method of the class """
 
         t = time.time()
         logger.info("[Medical-Insights] Embedding Generation for PHI and Document Type is started...")
-        embeddings = await self.__get_docs_embeddings(data)
+        embeddings = await self.__get_docs_embeddings(document)
         logger.info(f"[Medical-Insights] Embedding Generation for PHI and Document Type is completed in {time.time() - t} seconds.")
 
         t = time.time()
