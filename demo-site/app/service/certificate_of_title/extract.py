@@ -177,7 +177,6 @@ class COTDataPointExtractorV1(MonoState):
                     "zip_code": record.get("OwnerAddress", {}).get("Zipcode", '')
                 }
             },
-            "document_type": record.get("DocumentType", ''),
             "title_type": record.get("TitleType", ''),
             "license_plate": record.get("LicensePlate", ''),
             "odometer": {
@@ -200,7 +199,7 @@ class COTDataPointExtractorV1(MonoState):
 
     def empty_response(self):
         return {"title_no": "", "vin": "", "year": "", "make": "", "model": "", "body_style": "",
-                "issue_date": "", "owners": "", "document_type": "", "title_type": "", "license_plate": "",
+                "issue_date": "", "owners": "", "title_type": "", "license_plate": "",
                 "odometer": {"reading": "", "brand": ""}, "is_black_and_white": None, "titled_state": '',
                 "owner_address": {"street": "", "city": "", "state": "", "zip_code": ""}, "lien_holder": []}
 
