@@ -44,20 +44,20 @@ def get_entities_handler(data):
     return x
 
 
-async def get_patient_information(data):
+async def get_patient_information(document):
     """ This method is used to get phi dates from document """
 
     x = time.time()
     logger.info("[Medical-Insights] Extraction of PHI and Document Type is started...")
     phi_and_doc_type_extractor = PHIAndDocTypeExtractor()
-    patient_information = await phi_and_doc_type_extractor.get_patient_information(data)
+    patient_information = await phi_and_doc_type_extractor.get_patient_information(document)
     logger.info(f"[Medical-Insights] Extraction of PHI and Document Type is completed in {time.time() - x} seconds.")
     return patient_information
 
 
-def get_patient_information_handler(data):
+def get_patient_information_handler(document):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_patient_information(data))
+    x = _loop.run_until_complete(get_patient_information(document))
     return x
 
 
@@ -93,7 +93,7 @@ async def get_medical_insights(document):
         task.append(executor.submit(get_summary_handler, data=page_wise_text))
         task.append(executor.submit(get_entities_handler, data=page_wise_text))
         task.append(executor.submit(get_encounters_handler, data=page_wise_text))
-        task.append(executor.submit(get_patient_information_handler, data=page_wise_text))
+        task.append(executor.submit(get_patient_information_handler, document=document))
 
     results = futures.wait(task)
     for x in results.done:
