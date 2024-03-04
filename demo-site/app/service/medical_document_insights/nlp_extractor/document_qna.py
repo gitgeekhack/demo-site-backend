@@ -10,16 +10,18 @@ from langchain.embeddings import BedrockEmbeddings
 from app import logger
 from app.constant import BotoClient
 from app.common.utils import update_file_path, vector_data_path
-from app.service.medical_document_insights.nlp_extractor import bedrock_client
+from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
 class DocumentQnA:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
+        self.model_id_llm = 'anthropic.claude-instant-v1'
+        self.model_embeddings = 'amazon.titan-embed-text-v1'
 
-        self.llm = Bedrock(
-            model_id="anthropic.claude-instant-v1",
+        self.anthropic_llm = Bedrock(
+            model_id=self.model_id_llm,
             model_kwargs={
                 "max_tokens_to_sample": 4000,
                 "temperature": 0.75,
@@ -30,11 +32,11 @@ class DocumentQnA:
             client=self.bedrock_client,
         )
 
-        self.bedrock_embeddings = BedrockEmbeddings(model_id="amazon.titan-embed-text-v1", client=self.bedrock_client)
+        self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
+        self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
         self.prompt = self.__create_prompt_template()
 
     def __create_prompt_template(self):
-
         prompt_template = """
         Human: You are a Medical Assistant that provides concise answers to the questions related to the medical text context given to you. Strictly answer the questions related to the following information 
         <context>
@@ -45,9 +47,13 @@ class DocumentQnA:
         Question: {question}
 
         Medical Assistant:"""
+
+        self.prompt_template_tokens = self.anthropic_llm.get_num_tokens(prompt_template)
+
         prompt = PromptTemplate(
             input_variables=["context", "question"], template=prompt_template
         )
+
         return prompt
 
     async def __prepare_data(self, document_name):
@@ -60,11 +66,12 @@ class DocumentQnA:
     async def __create_conversation_chain(self, vectored_data, prompt_template):
 
         qa = RetrievalQA.from_chain_type(
-            llm=self.llm,
+            llm=self.anthropic_llm,
             chain_type="stuff",
             retriever=vectored_data.as_retriever(
                 search_type="similarity", search_kwargs={"k": 6}
             ),
+            return_source_documents=True,
             chain_type_kwargs={"prompt": prompt_template},
         )
 
@@ -79,6 +86,16 @@ class DocumentQnA:
         x = time.time()
         conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
         answer = conversation_chain({'query': query})
+
+        input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
+        output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+
+        logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
+                    f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
+
+        logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
+                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
+
         logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
 
         return answer
