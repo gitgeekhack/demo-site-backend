@@ -89,7 +89,7 @@ async def get_medical_insights(document):
     page_wise_text = await extract_pdf_text(document)
 
     task = []
-    with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
+    with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
         task.append(executor.submit(get_summary_handler, data=page_wise_text))
         task.append(executor.submit(get_entities_handler, data=page_wise_text))
         task.append(executor.submit(get_encounters_handler, data=page_wise_text))

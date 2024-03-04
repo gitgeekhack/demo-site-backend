@@ -209,7 +209,7 @@ class CarDamageDetection:
         DETECTED_PATH = "damage_detection/Detected/"
         INSTANCE_LOG_FOLDER_PATH = os.path.abspath(os.path.join(__file__, '..', '..', '..', 'logs'))
         YOLOV5 = 'ultralytics/yolov5:v6.0'
-        MODEL_PATH = "/home/vivek/Files/maruti-ds-demos/demo-site/app/model/car_damage_detection/DamagePartDetection_04-03-2024.pt"
+        MODEL_PATH = "./app/model/car_damage_detection/DamagePartDetection_04-03-2024.pt"
         FONT_PATH = "./app/static/damage_detection/font_file/arial.ttf"
 
 
