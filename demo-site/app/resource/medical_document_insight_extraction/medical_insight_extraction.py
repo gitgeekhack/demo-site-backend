@@ -137,6 +137,7 @@ class QnAExtractor:
                     raise HandleFileLimitExceeded(file_path)
 
             result = await get_query_response(input_query, file_path)
+            del result['source_documents']
             result = json.dumps(result).encode('utf-8')
             return web.Response(body=result, headers=headers, content_type='application/json', status=200)
 
