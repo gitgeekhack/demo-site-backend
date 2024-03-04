@@ -149,7 +149,8 @@ class Annotator:
             xmin, ymin, xmax, ymax = scaled_bbox
             b, g, r = co_ord[1]
             rgb_tuple = (r, g, b)
-            resized_image = self.draw_text(resized_image, f"{co_ord[2]}", font_path, pos=(xmin, ymin - 26),
+            draw_text_ymin = ymin - 26 if ymin > 26 else ymin
+            resized_image = self.draw_text(resized_image, f"{co_ord[2]}", font_path, pos=(xmin, draw_text_ymin),
                                            text_color_bg=rgb_tuple)
             cv2.rectangle(resized_image, (xmin, ymin), (xmax, ymax), co_ord[1], 2)
         cv2.imwrite(save_path, resized_image)
