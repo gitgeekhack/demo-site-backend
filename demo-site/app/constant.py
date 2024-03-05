@@ -213,24 +213,6 @@ class CarDamageDetection:
         FONT_PATH = "./app/static/damage_detection/font_file/arial.ttf"
 
 
-class PDFAnnotationAndExtraction:
-    class Regex:
-        DATE = r'[0-9]{1,2}/[0-9]{1,2}/[[0-9]{4}|[0-9]{2}]'
-
-    class TypesOfDynamicData:
-        DATE_RANGE = 'DateRange'
-        TABLE = 'Table'
-
-    APP_ROOT = os.path.dirname(os.path.abspath(__file__))
-    STATIC_FOLDER = os.path.join(APP_ROOT, 'static', 'pdf_annotation_and_extraction')
-    UPLOAD_FOLDER = os.path.join(STATIC_FOLDER, 'uploaded_files')
-    CVAT_ANNOTATION_STORAGE_FOLDER = os.path.join(STATIC_FOLDER, 'cvat_annotations')
-    ANNOTATION_FOLDER = os.path.join(STATIC_FOLDER, 'annotation_files')
-    CONVERTED_PDF_FOLDER = os.path.join(USER_DATA_PATH, 'converted_files')
-    CSV_FOLDER = os.path.join(STATIC_FOLDER, 'csv')
-    PDF_IMAGES_FOLDER = os.path.join(USER_DATA_PATH, 'pdf_images')
-    CVAT_IP = os.getenv('CVAT_IP')
-
 class MedicalInsights:
     class Prompts:
         PROMPT_TEMPLATE = """
