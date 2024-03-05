@@ -11,7 +11,7 @@ The Marut OCR repository contains proof-of-concepts for the Machine Learning Pro
 1. Driving Licence OCR
 2. Certificate Of Title OCR
 3. Vehicle Damage Part Detection
-4. PDF Data Annotation & Extraction
+4. Answering Machine Detection
 5. Veronica's Underwriting Automation
 6. Medical Insights Extractor
 
@@ -25,8 +25,6 @@ The Marut OCR repository contains proof-of-concepts for the Machine Learning Pro
 - `tesseract == 5.1.0`
 - `sudo apt-get install tesseract-ocr-eng`
 - `poppler-utils == 0.86.1` (In Order to run **Documents Insights Extractor** POC, poppler-utils should be installed in development machine. To install and configure poppler-utils please refer following [[link]](https://pdf2image.readthedocs.io/en/latest/installation.html))
-- `CVAT == 2.1.0` (In Order to run **PDF Annotation & Extraction** POC, CVAT should be installed in development machine. To install and configure CVAT please refer following [[link]](https://openvinotoolkit.github.io/cvat/docs/administration/basics/installation/))
-  - Once CVAT installed successfully in your development machine, please follow this steps.
 
 ## Getting Started 
 
@@ -69,29 +67,7 @@ python run.py
     > To access tesseract-OCR from any location you may have to add the directory where the tesseract-OCR binaries are located to the Path variables, probably **C:\Program Files\Tesseract-OCR**.
     - To set environment variable in Windows machine please refer this [link](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
 
-## Configure CVAT
-
-
----
-
----
-- Grab your local IP address of development machine using terminal (Ubuntu) or CMD (Windows)
-  - #### Ubuntu
-    ```commandline
-    ifconfig
-    ```
-  - #### Windows
-    ```commandline 
-    ipconfig
-    ```
-- Once IP address got, set the environment variable accordingly.
-  - #### Ubuntu
-    ```commandline
-    export CVAT_IP="http://<YOUR_IP_ADDRESS>:8081"
-    ```
-  - #### Windows
-    > To set environment variable in Windows machine please refer this [[link]](https://docs.oracle.com/en/database/oracle/machine-learning/oml4r/1.5.1/oread/creating-and-modifying-environment-variables-on-windows.html)
-    
+  
 ## Veronicas Underwriting Automation
 
 

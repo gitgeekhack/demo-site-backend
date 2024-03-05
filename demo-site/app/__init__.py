@@ -9,12 +9,9 @@ from app.resource.get_user_files.get_file import GetResourceData
 from app.resource.certificate_of_title.extract import COTExtractor
 from app.resource.car_damage_detection.damage_detect import DamageExtractor
 from app.resource.barcode_extraction.extract_barcode import BarCodeExtraction
-from app.resource.pdf_annotation_and_extraction.PDFExtractor import HomePage, DataExtraction
 from app.resource.medical_document_insight_extraction.medical_insight_extraction import MedicalInsightsExtractor, QnAExtractor
 
 app.router.add_view('/', Index)
-app.router.add_view('/pdf', HomePage)
-app.router.add_view('/pdf/extract', DataExtraction)
 app.router.add_view('/get-resource', GetResourceData)
 
 app.router.add_route('POST', '/driving-license/extract', DLExtractor.post)

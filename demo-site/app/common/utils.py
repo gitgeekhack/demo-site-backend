@@ -3,7 +3,7 @@ import sys
 import logging
 import aiofiles
 
-from app.constant import AllowedFileType, PDFAnnotationAndExtraction
+from app.constant import AllowedFileType
 
 USER_DATA_PATH = os.getenv('USER_DATA_PATH')
 ds_path = os.path.join(USER_DATA_PATH, 'data-science')
