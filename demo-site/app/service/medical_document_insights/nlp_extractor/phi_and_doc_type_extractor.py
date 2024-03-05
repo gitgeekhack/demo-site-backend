@@ -234,7 +234,7 @@ class PHIAndDocTypeExtractor:
             llm=self.anthropic_llm,
             chain_type="stuff",
             retriever=embeddings.as_retriever(
-                search_type="similarity", search_kwargs={"k": 6}
+                search_type="similarity", search_kwargs={"k": 1}
             ),
             return_source_documents=True,
             chain_type_kwargs={"prompt": prompt}
