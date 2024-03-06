@@ -38,11 +38,10 @@ anthropic_llm = Bedrock(
 titan_llm = Bedrock(model_id=model_embeddings, client=bedrock_client)
 bedrock_embeddings = BedrockEmbeddings(model_id=model_embeddings, client=bedrock_client)
 
-manager = multiprocessing.Manager()
-emb_tokens = manager.list()
-emb_prompt_tokens = manager.list()
-input_tokens = manager.list()
-output_tokens = manager.list()
+emb_tokens = None
+emb_prompt_tokens = None
+input_tokens = None
+output_tokens = None
 
 
 async def is_alpha(entity):
@@ -162,6 +161,11 @@ async def get_extracted_entities(json_data):
     """ This method is used to provide medical entities from document"""
 
     global emb_tokens, emb_prompt_tokens, input_tokens, output_tokens
+    manager = multiprocessing.Manager()
+    emb_tokens = manager.list()
+    emb_prompt_tokens = manager.list()
+    input_tokens = manager.list()
+    output_tokens = manager.list()
 
     entity = {}
 
