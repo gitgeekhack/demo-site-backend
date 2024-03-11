@@ -3,7 +3,8 @@ from botocore.config import Config
 from app.constant import BotoClient
 
 bedrock_client = boto3.client(service_name='bedrock-runtime', region_name=BotoClient.AWS_DEFAULT_REGION,
-                              config=Config(BotoClient.read_timeout))
+                              config=Config(read_timeout=BotoClient.read_timeout,
+                                            connect_timeout=BotoClient.connect_timeout))
 
 
 def get_llm_input_tokens(llm, llm_response):

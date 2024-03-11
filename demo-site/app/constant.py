@@ -2,9 +2,13 @@ import os
 from enum import Enum
 
 USER_DATA_PATH = os.getenv("USER_DATA_PATH")
+
+
 class BotoClient:
     AWS_DEFAULT_REGION = "us-east-1"
     read_timeout = 3600
+    connect_timeout = 3600
+
 
 class DrivingLicenseParser:
     WORLD_CITIES_LIST = './app/data/world_cities.csv'
@@ -316,4 +320,6 @@ class MedicalInsights:
         Please strictly only provide a JSON result containing the keys 'diagnosis', 'treatments' and 'medications' containing a list of valid entities.
     """
 
-        SUMMARY_PROMPT =  """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
+        SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
+
+        CONCATENATE_SUMMARY = "Concatenate the summaries and remove the duplicate information from the summaries and make one summary without losing any information."
