@@ -43,7 +43,7 @@ class MedicalInsightsExtractor:
                     raise InvalidFile(file_path)
 
                 file_size = get_file_size(file_path)
-                if file_size > 1024:
+                if file_size > 100:
                     raise HandleFileLimitExceeded(file_path)
 
             document_name = os.path.basename(file_path).split(".")[0]
@@ -133,7 +133,7 @@ class QnAExtractor:
                     raise InvalidFile(file_path)
 
                 file_size = get_file_size(file_path)
-                if file_size > 1024:
+                if file_size > 100:
                     raise HandleFileLimitExceeded(file_path)
 
             result = await get_query_response(input_query, file_path)
