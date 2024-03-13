@@ -115,7 +115,7 @@ class ExceptionMessage:
     FAILED_TO_DOWNLOAD_FILE_FROM_URL_EXCEPTION_MESSAGE = 'Unable to download file from url'
     NO_IMAGE_FOUND_EXCEPTION_MESSAGE = "Unable to find image in PDF"
     FILE_LIMIT_EXCEEDED_EXCEPTION_MESSAGE = "File limit exceeded, only upload file upto 25 MB"
-    MAX_FILE_SIZE_EXCEEDED_ERROR = "File limit exceeded, only upload file upto 1 GB"
+    MAX_FILE_SIZE_EXCEEDED_ERROR = "File limit exceeded, only upload file upto 100 MB"
     FILE_PATH_NULL_EXCEPTION_MESSAGE = "File is not uploaded"
     INPUT_QUERY_NULL_EXCEPTION_MESSAGE = "Input query is empty or null"
     MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple files are uploaded, only upload single file"
