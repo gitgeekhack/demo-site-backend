@@ -9,4 +9,4 @@ worker_class = 'aiohttp.worker.GunicornWebWorker'
 # preload_app = True
 workers = 1
 # capture_output = True
-
+timeout = 300

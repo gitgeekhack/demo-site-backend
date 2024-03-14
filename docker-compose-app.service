@@ -1,0 +1,12 @@
+[Unit]
+Description=Docker Compose Application Service
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+WorkingDirectory=/home/ubuntu/demo-site-backend/demo-site
+ExecStart=/bin/bash -c '/usr/bin/docker run -v /mnt/user-data:/mnt/user-data -p 80:3000 -d frontend && /usr/bin/docker-compose up'
+
+[Install]
+WantedBy=multi-user.target

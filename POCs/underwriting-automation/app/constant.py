@@ -651,6 +651,8 @@ class ExceptionMessage:
     UNABLE_TO_EXTRACT_EOD_SECTION = 'Unable to extract end of the document'
     UNABLE_TO_EXTRACT_DATE = 'Unable to Extract Date'
     UNABLE_TO_EXTRACT_DATAPOINT = 'Request ID: [{}] -> Unable to extract {}'
+    SIZE_LIMIT_EXCEEDED = 'File Limit Exceeded'
+    MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple files are uploaded, only upload single file"
 
 
 class ErrorCode:
@@ -659,6 +661,8 @@ class ErrorCode:
     MISSING_DOCUMENT = 'missing_document'
     INVALID_URL = 'invalid_document_url'
     INVALID_PDF_STRUCTURE = 'invalid_pdf_document_structure'
+    SIZE_LIMIT_EXCEEDED = 'file_size_limit_exceeded'
+    MULTIPLE_FILE_UPLOADED = 'Multiple Files Uploaded'
 
 
 class ErrorMessage:
@@ -667,9 +671,11 @@ class ErrorMessage:
     INVALID_DOCUMENT = 'Input document is invalid'
     INVALID_URL = 'Input document URL is invalid'
     MISSING_DOCUMENT = 'Missing required input document'
-    MISSING_DOCUMENTS_FOR_VERIFICATION = 'Missing one of more required documents'
+    MISSING_DOCUMENTS_FOR_VERIFICATION = 'Missing one or more required documents'
     SERVER_ERROR = 'Internal server error'
     INVALID_PDF_STRUCTURE = 'Input document is of invalid pdf structure'
+    SIZE_LIMIT_EXCEEDED = 'File limit exceeded, only upload file upto 25 MB'
+    MULTIPLE_FILE_UPLOADED = 'Multiple files are uploaded, only upload single file'
 
 
 class DrivingLicense:
@@ -772,3 +778,12 @@ class NonOwnersLetter:
         PADDING = (-0.01, -0.05, 0.01, 0.005)
         PAGE_NO = 0
         SORT_SIMILARITY_RATIO = 100
+
+
+class Keys:
+    KEYS_DIC = {"driving_license": None, "itc": None, "crm_receipt": None, "application": None,
+                "motor_vehicle_record": None, "broker_package": None, "pleasure_use_letter": None,
+                "artisan_use_letter": None, "eft": None, "non_owners_letter": None, "stripe_receipt": None,
+                "registration": None, "vehicle_record": None, "promise_to_provide": None}
+    IMAGE_KEYS = ['driving_license', 'registration']
+    REQUIRED_KEYS = ['driving_license', 'itc', 'crm_receipt', 'application', 'motor_vehicle_record', 'broker_package']

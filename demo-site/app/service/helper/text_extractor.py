@@ -1,57 +1,129 @@
-import pdf2image
 import os
-import boto3
 import json
+import time
+import fitz
+import asyncio
+from concurrent import futures
+
+from app import logger
+from app.common.utils import update_file_path
+from app.service.helper import textract_client
+from app.constant import BotoClient
+
+os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
+pdf_folder_name = None
+textract = textract_client
+
+zoom = 2  # to increase the resolution of image
+matrix = fitz.Matrix(zoom, zoom)
 
 
-class PDFTextExtractor:
-    def __init__(self, input_dir, output_dir):
-        os.environ['AWS_PROFILE'] = "maruti-root"
-        os.environ['AWS_DEFAULT_REGION'] = "us-east-1"
-        self.input_dir = input_dir
-        self.output_dir = output_dir
-        self.text_per_page = []
-        self.page_text_json = {}
-        self.document_page_counter = 1
-        self.textract = boto3.client('textract', region_name="us-east-1")
+async def get_textract_response(image_path):
+    """ This method used to call the textract and return the response """
 
-    def convert_pdf_to_images(self):
-        pdf_images = pdf2image.convert_from_path(self.input_dir)
-        self.pdf_folder_name = os.path.basename(self.input_dir).replace(".pdf", "")
-        pdf_output_dir = os.path.join(self.output_dir, "pdf_images", self.pdf_folder_name)
+    with open(image_path, 'rb') as image_file:
+        img = bytearray(image_file.read())
+        response = textract.detect_document_text(
+            Document={
+                'Bytes': img,
+            },
+        )
+
+    page_text = ""
+    for item in response['Blocks']:
+        if item['BlockType'] == 'LINE':
+            page_text += item['Text'] + ' '
+
+    return page_text
+
+
+async def convert_pdf_to_text(pdf_output_dir, page_no, doc_path):
+    """ This method is used to convert pdf page into image and stores the page """
+
+    document = fitz.open(doc_path)
+    page = document[page_no]
+    image = page.get_pixmap(matrix=matrix)
+    image_path = os.path.join(pdf_output_dir, f'{page_no + 1}.jpg')
+    image.save(image_path)
+    page_text = await get_textract_response(image_path)
+    return {f"page_{page_no + 1}": page_text}
+
+
+def convert_pdf_to_text_handler(pdf_output_dir, page_no, doc_path):
+    _loop = asyncio.new_event_loop()
+    x = _loop.run_until_complete(convert_pdf_to_text(pdf_output_dir, page_no, doc_path))
+    return x
+
+
+async def save_textract_response(pdf_name, output_dir, page_wise_text):
+    """ This method is used to save the textract response in the storage """
+
+    json_output_dir = os.path.join(output_dir, "textract_response")
+
+    if not os.path.exists(json_output_dir):
+        os.makedirs(json_output_dir, exist_ok=True)
+
+    json_file_path = os.path.join(json_output_dir, f"{pdf_name}_text.json")
+
+    with open(json_file_path, 'w') as json_file:
+        json.dump(page_wise_text, json_file, indent=4)
+
+
+async def is_textract_response_exists(file_path):
+
+    pdf_name, output_dir = await update_file_path(file_path)
+    dir_name = os.path.join(output_dir, 'textract_response')
+    os.makedirs(dir_name, exist_ok=True)
+
+    if os.path.exists(f'{dir_name}/{pdf_name}_text.json'):
+        return True
+    else:
+        return False
+
+
+async def extract_pdf_text(file_path):
+    """ This method is used to provide extracted get from pdf """
+
+    x = time.time()
+
+    logger.info("[Medical-Insights] Text Extraction from document is started...")
+
+    if await is_textract_response_exists(file_path):
+        pdf_name, output_dir = await update_file_path(file_path)
+        dir_name = os.path.join(output_dir, 'textract_response')
+
+        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+            json_data = json.loads(file.read())
+
+        logger.info("[Medical-Insights] Reading textract response from the cache...")
+        page_wise_text = json_data
+
+    else:
+        pdf_name, output_dir = await update_file_path(file_path)
+        pdf_output_dir = os.path.join(output_dir, "pdf_images")
 
         if not os.path.exists(pdf_output_dir):
             os.makedirs(pdf_output_dir, exist_ok=True)
 
-        for i, image in enumerate(pdf_images):
-            image_path = os.path.join(pdf_output_dir, f"{i + 1}.jpg")
-            image.save(image_path)
-            self.extract_text_from_image(image_path, i)
+        document = fitz.open(file_path)
 
-    def extract_text_from_image(self, image_path, page_number):
-        with open(image_path, 'rb') as image_file:
-            img = bytearray(image_file.read())
-            response = self.textract.detect_document_text(
-                Document={
-                    'Bytes': img,
-                },
-            )
-            page_text = ""
-            for item in response['Blocks']:
-                if item['BlockType'] == 'LINE':
-                    page_text += item['Text'] + ' '
-            self.text_per_page.append(page_text)
-            self.page_text_json[f"Page {page_number + 1}"] = page_text
-        return self.page_text_json
+        task = []
+        with futures.ProcessPoolExecutor(os.cpu_count() - 1) as executor:
+            for page_no in range(len(document)):
+                new_future = executor.submit(convert_pdf_to_text_handler, pdf_output_dir=pdf_output_dir,
+                                             page_no=page_no, doc_path=file_path)
+                task.append(new_future)
 
-    def save_text_to_json(self):
-        json_output_dir = os.path.join(self.output_dir, "json_save")
-        if not os.path.exists(json_output_dir):
-            os.makedirs(json_output_dir, exist_ok=True)
-        json_file_path = os.path.join(json_output_dir, f"{self.pdf_folder_name}_text.json")
-        with open(json_file_path, 'w') as json_file:
-            json.dump(self.page_text_json, json_file, indent=4)
+        results = futures.wait(task)
 
-    def extract_and_save_text(self):
-        self.convert_pdf_to_images()
-        self.save_text_to_json()
+        texts = {}
+        for page_text in results.done:
+            texts.update(page_text.result())
+
+        page_wise_text = dict(sorted(texts.items(), key=lambda item: int(item[0].split('_')[1])))
+
+        await save_textract_response(pdf_name, output_dir, page_wise_text)
+
+    logger.info(f"[Medical-Insights] Text Extraction from document is completed in {time.time() - x} seconds.")
+
+    return page_wise_text

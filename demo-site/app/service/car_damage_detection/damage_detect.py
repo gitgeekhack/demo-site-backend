@@ -1,13 +1,12 @@
 import os
-
 import cv2
-import numpy as np
 import torch
-from werkzeug.utils import secure_filename
+import traceback
+import numpy as np
 
 from app import logger
 from app.common.utils import MonoState
-from app.common.utils import make_dir
+from app.common.utils import damage_detection_output_path
 from app.constant import CarDamageDetection, USER_DATA_PATH
 from app.service.helper.cv_helper import Annotator
 
@@ -27,50 +26,45 @@ class DamageDetector(MonoState):
 
     async def __annotate(self, image, co_ordinates, save_path):
         annotator = Annotator(image, co_ordinates)
-        annotator.annotate_and_save_image(save_path)
-        print(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
+        annotator.annotate_and_save_image(save_path, CarDamageDetection.Path.FONT_PATH)
+        logger.info(f"Request ID: [{self.uuid}] Generated image/s with damage detections")
 
     async def __label_colour(self, key):
         color = CarDamageDetection.ColorLabels.CAR_DAMAGE[key]
-        print(f'Request ID: [{self.uuid}] damaged part:[{key}]found colour: [{color}]')
+        logger.info(f'Request ID: [{self.uuid}] damaged part:[{key}]found colour: [{color}]')
         return color
 
     async def __predict_labels(self, image_path, save_path):
-        conf_labels = []
+        conf_labels = {}
         results = self.model(image_path)
         pred = results.pred
         all_labels = results.names
+        for label_index in range(len(all_labels)):
+            all_labels[label_index] = all_labels[label_index].lower().replace(' ','_')
         for p in pred:
             img_res = tuple(map(tuple, p.numpy()))
             multi_conf_labels = [[x, [0]] for x in all_labels]
-            co_ordinates = [[res[:4], await self.__label_colour(all_labels[int(res[-1])])] for res in img_res]
+            co_ordinates = [[res[:4], await self.__label_colour(all_labels[int(res[-1])]), all_labels[int(res[-1])]] for res in img_res]
             for label in multi_conf_labels:
                 for res in img_res:
                     if all_labels[int(res[-1])] == label[0]:
                         label[1].append(int(res[4] * 100))
             for label in multi_conf_labels:
-                conf_labels.append([label[0], max(label[1])])
+                conf_labels[label[0]] = max(label[1])
             img = cv2.imread(image_path)
             await self.__annotate(img, co_ordinates, save_path)
-            print(f'Request ID: [{self.uuid}] co-ordinates obtained: [{co_ordinates}]')
+            logger.info(f'Request ID: [{self.uuid}] co-ordinates obtained: [{co_ordinates}]')
         return conf_labels
 
     async def detect(self, image_data):
         results = []
-        image_count = 1
 
-        for file_data in image_data:
-            np_array = np.asarray(bytearray(file_data.file.read()), dtype=np.uint8)
-            filename = secure_filename(file_data.filename)
-            input_file_path = os.path.join(USER_DATA_PATH, filename)
-            output_file_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(input_file_path, input_image)
-            print(f"Request ID: [{self.uuid}]Input image/s received...")
-            detection = await self.__predict_labels(input_file_path, output_file_path)
-            detection[0][0] = "Headlights(Broken/Missing)"
-            out_path = os.path.join(USER_DATA_PATH, 'out_' + filename)
-            results.append({'image_path': out_path, 'detection': detection, 'image_count': image_count})
-            image_count += 1
-        print(f'Request ID: [{self.uuid}] results obtained: [{results}]')
+        for file_path in image_data:
+            filename = os.path.basename(file_path)
+            output_file_path = os.path.join(damage_detection_output_path, 'out_' + filename)
+            logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
+            detection = await self.__predict_labels(file_path, output_file_path)
+            results.append({'results': detection, 'file_path': output_file_path})
+
+        logger.info(f'Request ID: [{self.uuid}] results obtained: [{results}]')
         return results

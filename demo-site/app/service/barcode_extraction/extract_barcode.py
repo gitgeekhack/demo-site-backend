@@ -1,11 +1,13 @@
-from werkzeug.utils import secure_filename
 import os
+import cv2
+import traceback
+import numpy as np
 from pyzbar import pyzbar
+
+from app import logger
 from app.constant import USER_DATA_PATH
 from app.business_rule_exception import NoImageFoundException, InvalidFileException
 from app.service.helper.image_helper import ImageHelper
-import cv2
-import numpy as np
 
 
 class BarcodeExtraction:
@@ -33,34 +35,16 @@ class BarcodeExtraction:
         return lr_number
 
     def extract(self, image_data):
-        results = []
-        image_count = 1
+        data = []
 
-        for file in image_data:
-            data = {"barcode_detection": None}
-            np_array = np.asarray(bytearray(file.file.read()), dtype=np.uint8)
-            filename = secure_filename(file.filename)
-            file_path = os.path.join(USER_DATA_PATH, filename)
-            input_image = cv2.imdecode(np_array, cv2.IMREAD_COLOR)
-            cv2.imwrite(file_path, input_image)
-            data['filename'] = filename
-            lr_number = None
+        for file_path in image_data:
             try:
-                if filename.split('.')[-1].lower() not in ['jpg', 'jpeg', 'pdf', 'png']:
-                    raise InvalidFileException()
                 image = cv2.imread(file_path)
                 lr_number = self.detect_lr(image)
-                data['barcode_detection'] = {'Barcode Data': lr_number[0] if lr_number else 'NA'}
-                data['image_count'] = image_count
-
-                results.append(data)
-                image_count = image_count+1
-            except NoImageFoundException as e:
-                data['barcode_detection'] = lr_number
-                data['image_count'] = image_count
-
-                results.append(data)
-                image_count = image_count+1
+                if len(lr_number) == 0:
+                    return 'No Code'
+                data = lr_number
             except Exception as e:
-                raise
-        return results
+                logger.error('%s -> %s' % (e, traceback.format_exc()))
+                data = 500
+        return data

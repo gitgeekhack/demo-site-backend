@@ -1,9 +1,20 @@
-import logging
 import os
 import sys
+import logging
 import aiofiles
 
-from app.constant import AllowedFileType, PDFAnnotationAndExtraction
+from app.constant import AllowedFileType
+
+USER_DATA_PATH = os.getenv('USER_DATA_PATH')
+ds_path = os.path.join(USER_DATA_PATH, 'data-science')
+sw_path = os.path.join(USER_DATA_PATH, 'software')
+os.makedirs(ds_path, exist_ok=True)
+damage_detection_output_path = os.path.join(ds_path, 'damage-detection-output-images')
+os.makedirs(damage_detection_output_path, exist_ok=True)
+vector_data_path = os.path.join(ds_path, 'vector_database')
+os.makedirs(vector_data_path, exist_ok=True)
+medical_insights_output_path = os.path.join(ds_path, 'medical_insights_output_json')
+os.makedirs(medical_insights_output_path, exist_ok=True)
 
 
 def load_config(import_name):
@@ -34,8 +45,31 @@ class MonoState(object):
 
 
 def is_image_file(file):
-    file_type = file.split('/')[-1].split('.')[-1].lower()
+    file_name = os.path.basename(file)
+    file_type = file_name.split('.')[-1].lower()
     return file_type in AllowedFileType.IMAGE
+
+
+def is_pdf_file(file):
+    file_type = os.path.basename(file)
+    ext = file_type.split('.')[-1]
+    return ext in AllowedFileType.PDF
+
+
+def get_file_size(file_path):
+    try:
+        size_in_bytes = os.path.getsize(file_path)
+
+        size_in_kb = size_in_bytes / 1024.0
+        size_in_mb = size_in_kb / 1024.0
+
+        return size_in_mb
+
+    except FileNotFoundError:
+        return f"File not found: {file_path}"
+
+    except Exception as e:
+        return f"An error occurred: {str(e)}"
 
 
 class PackagePathFilter(logging.Filter):
@@ -57,7 +91,7 @@ async def make_dir(target_path):
 
 
 def get_logger():
-    logger = logging.getLogger('gunicorn.error')
+    logger = logging.getLogger('demo-site')
     logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                    '[Logger: %(name)s] - '
                                                    '[Level: %(levelname)s] - '
@@ -80,10 +114,31 @@ async def save_file(file_object, folder_path):
         await f.write(file_object.file.read())
 
 
-def get_file_from_path(filepath):
-    class FileData:
-        def __init__(self):
-            self.filename = os.path.basename(filepath)
-            self.file = open(os.path.join(os.getcwd(), 'app', filepath[1:]), 'rb')
+async def update_file_path(file_path):
+    pdf_name = os.path.basename(file_path)
+    output_dir = file_path.replace(".pdf", "")
+    output_dir = output_dir.replace(sw_path, ds_path)
 
-    return FileData()
+    return pdf_name, output_dir
+
+
+async def get_response_headers():
+    headers = {
+        'Access-Control-Allow-Origin': "*",
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
+    return headers
+
+
+def get_file_from_path(filepath):
+    try:
+        class FileData:
+            def __init__(self):
+                self.filename = os.path.basename(filepath)
+                self.file = open(filepath, 'rb')
+
+        return FileData()
+
+    except Exception as e:
+        return e

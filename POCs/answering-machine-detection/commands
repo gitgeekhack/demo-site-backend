@@ -1,0 +1,8 @@
+docker rm -f amd_api
+docker image rm -f coregears
+docker build . -t coregears
+docker run -d --name amd_api -p 8081:8081 coregears
+docker stop amd_api
+docker save coregears > coregears.tar
+docker load -i coregears.tar
+docker run -d --name amd_api -p 8081:8081 coregears

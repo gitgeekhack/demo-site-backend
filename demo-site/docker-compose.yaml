@@ -12,13 +12,24 @@ services:
       CVAT_IP: "http://localhost:8080/"
       USER_DATA_PATH: "/mnt/user-data"
     ports:
-      - "80:80"
+      - "8081:8081"
 
   underwriting_automation:
     build:
       context: ../POCs/underwriting-automation
       dockerfile: underwriting_automation.Dockerfile
+    volumes:
+      - "/mnt/user-data:/mnt/user-data:rw"
     environment:
       Tesseract_PATH: "/usr/bin/tesseract"
     ports:
       - "8000:8000"
+
+  answering_machine_detection:
+    build:
+      context: ../POCs/answering-machine-detection
+      dockerfile: amd.Dockerfile
+    volumes:
+      - "/mnt/user-data:/mnt/user-data:rw"
+    ports:
+      - "8082:8082"
