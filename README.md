@@ -1,6 +1,6 @@
 # demo-site-backend
 
-The Marut OCR repository contains proof-of-concepts for the Machine Learning Project. Projects like object detection, OCR (Optical Character Recognition), data annotation, and extraction from PDF documents.
+The Demo Site repository contains proof-of-concepts for the Machine Learning Project. Projects like object detection, OCR (Optical Character Recognition), data annotation, and extraction from PDF documents.
 
 ## List of POCs currently presented in Demo Site
 
