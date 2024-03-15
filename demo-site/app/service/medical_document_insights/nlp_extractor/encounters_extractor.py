@@ -52,7 +52,7 @@ class EncountersExtractor:
 
         for text in texts:
             threshold = self.anthropic_llm.get_num_tokens(text)
-            if threshold > 7000:
+            if threshold > 6000:
                 text_splitter = RecursiveCharacterTextSplitter(
                     chunk_size=10000, chunk_overlap=200
                 )
