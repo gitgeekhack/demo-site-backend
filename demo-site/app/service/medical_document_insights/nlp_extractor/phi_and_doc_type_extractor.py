@@ -95,6 +95,15 @@ class PHIAndDocTypeExtractor:
 
         texts = text_splitter.split_text(raw_text)
 
+        for text in texts:
+            threshold = self.anthropic_llm.get_num_tokens(text)
+            if threshold > 5000:
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=10000, chunk_overlap=200
+                )
+                texts = text_splitter.split_text(raw_text)
+                break
+
         docs = [Document(page_content=t) for t in texts]
         return docs
 
