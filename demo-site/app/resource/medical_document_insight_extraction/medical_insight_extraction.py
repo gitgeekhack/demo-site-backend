@@ -4,12 +4,13 @@ import json
 import traceback
 from aiohttp import web
 
+from app.constant import MedicalInsights
 from app import logger
-from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path
+from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
-from app.business_rule_exception import (InvalidFile, FileLimitExceeded, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
-                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody)
+from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
+                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody, TotalPageExceeded)
 
 
 class MedicalInsightsExtractor:
@@ -24,51 +25,53 @@ class MedicalInsightsExtractor:
 
             data = json.loads(data_bytes)
 
-            file_path = data['file_path']
+            file_paths = data['file_paths']
 
-            if not file_path:
+            if not file_paths:
                 raise FilePathNull()
 
-            if isinstance(file_path, int) or isinstance(file_path, dict):
+            if not isinstance(file_paths, list):
                 raise InvalidRequestBody()
 
-            if isinstance(file_path, list) or isinstance(file_path, dict):
-                raise MultipleFileUploaded()
+            page_count = 0
+            for file_path in file_paths:
+                if isinstance(file_path, str):
+                    if not os.path.exists(file_path):
+                        raise FileNotFoundError(os.path.basename(file_path))
 
-            if isinstance(file_path, str):
-                if not os.path.exists(file_path):
-                    raise FileNotFoundError
+                    if not is_pdf_file(file_path):
+                        raise InvalidFile(file_path)
 
-                if not is_pdf_file(file_path):
-                    raise InvalidFile(file_path)
+                    page_count += get_pdf_page_count(file_path)
+                    if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
+                        raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
 
-                file_size = get_file_size(file_path)
-                if file_size > 100:
-                    raise HandleFileLimitExceeded(file_path)
+            for file_path in file_paths:
+                document_name = os.path.basename(file_path).split(".")[0]
+                document_response_path = os.path.join(medical_insights_output_path, f'{document_name}.json')
 
-            document_name = os.path.basename(file_path).split(".")[0]
-            document_response_path = os.path.join(medical_insights_output_path, f'{document_name}.json')
+                if os.path.exists(document_response_path):
+                    with open(document_response_path, 'r') as file:
+                        document_response = json.loads(file.read())
+                else:
+                    extracted_information = await get_medical_insights(file_path)
+                    document_response = {'document': extracted_information}
+                    with open(document_response_path, 'w') as file:
+                        file.write(json.dumps(document_response))
 
-            if os.path.exists(document_response_path):
-                with open(document_response_path, 'r') as file:
-                    document_response = json.loads(file.read())
-            else:
-                extracted_information = await get_medical_insights(file_path)
-                document_response = {'document': extracted_information}
-                with open(document_response_path, 'w') as file:
-                    file.write(json.dumps(document_response))
+                    # Handle output of each document
 
             return web.json_response(document_response, headers=headers, status=200)
+
+        except TotalPageExceeded as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, headers=headers, status=400)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
         except MultipleFileUploaded as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, headers=headers, status=400)
-
-        except FileLimitExceeded as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
@@ -132,10 +135,6 @@ class QnAExtractor:
                 if not is_pdf_file(file_path):
                     raise InvalidFile(file_path)
 
-                file_size = get_file_size(file_path)
-                if file_size > 100:
-                    raise HandleFileLimitExceeded(file_path)
-
             result = await get_query_response(input_query, file_path)
             del result['source_documents']
             result = json.dumps(result).encode('utf-8')
@@ -150,10 +149,6 @@ class QnAExtractor:
             return web.json_response(response, headers=headers, status=400)
 
         except MultipleFileUploaded as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, headers=headers, status=400)
-
-        except FileLimitExceeded as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 

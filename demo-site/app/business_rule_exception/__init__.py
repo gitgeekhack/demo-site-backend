@@ -44,6 +44,17 @@ class FilePathNull(Exception):
         return f'{self.message}'
 
 
+class TotalPageExceeded(Exception):
+
+    def __init__(self, page_count_threshold, message=ExceptionMessage.TOTAL_PAGE_EXCEEDED_EXCEPTION_MESSAGE):
+        self.page_count_threshold = page_count_threshold
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return self.message.format(page_count_threshold=self.page_count_threshold)
+
+
 class InputQueryNull(Exception):
 
     def __init__(self, message=ExceptionMessage.INPUT_QUERY_NULL_EXCEPTION_MESSAGE):

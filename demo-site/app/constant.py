@@ -122,6 +122,7 @@ class ExceptionMessage:
     MISSING_REQUEST_BODY_EXCEPTION_MESSAGE = "Missing request body in the request"
     INVALID_REQUEST_BODY_EXCEPTION_MESSAGE = "Invalid request body received"
     FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
+    TOTAL_PAGE_EXCEEDED_EXCEPTION_MESSAGE = "Combined document pages must not exceed {page_count_threshold}. Please upload fewer pages."
 
 
 class APIEndPointURL:
@@ -218,6 +219,7 @@ class CarDamageDetection:
 
 
 class MedicalInsights:
+    TOTAL_PAGES_THRESHOLD = 1000
     class Prompts:
         PROMPT_TEMPLATE = """
         Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
