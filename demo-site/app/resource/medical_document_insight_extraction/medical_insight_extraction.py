@@ -1,6 +1,7 @@
 import os
 import uuid
 import json
+import glob
 import traceback
 from aiohttp import web
 
@@ -25,41 +26,38 @@ class MedicalInsightsExtractor:
 
             data = json.loads(data_bytes)
 
-            file_paths = data['file_paths']
+            project_path = data['project_path']
 
-            if not file_paths:
+            if not project_path:
                 raise FilePathNull()
 
-            if not isinstance(file_paths, list):
+            if isinstance(project_path, int) or isinstance(project_path, dict) or isinstance(project_path, list):
                 raise InvalidRequestBody()
 
+            if not os.path.exists(project_path):
+                raise FileNotFoundError(project_path)
+
             page_count = 0
-            for file_path in file_paths:
-                if isinstance(file_path, str):
-                    if not os.path.exists(file_path):
-                        raise FileNotFoundError(os.path.basename(file_path))
+            document_list = glob.glob(os.path.join(project_path, '*'))
+            for file_path in document_list:
+                if not is_pdf_file(file_path):
+                    raise InvalidFile(file_path)
 
-                    if not is_pdf_file(file_path):
-                        raise InvalidFile(file_path)
+                page_count += get_pdf_page_count(file_path)
+                if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
+                    raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
 
-                    page_count += get_pdf_page_count(file_path)
-                    if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
-                        raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
+            project_id = os.path.basename(project_path).split("/")[-1]
+            project_response_path = os.path.join(medical_insights_output_path, f'{project_id}.json')
 
-            for file_path in file_paths:
-                document_name = os.path.basename(file_path).split(".")[0]
-                document_response_path = os.path.join(medical_insights_output_path, f'{document_name}.json')
-
-                if os.path.exists(document_response_path):
-                    with open(document_response_path, 'r') as file:
-                        document_response = json.loads(file.read())
-                else:
-                    extracted_information = await get_medical_insights(file_path)
-                    document_response = {'document': extracted_information}
-                    with open(document_response_path, 'w') as file:
-                        file.write(json.dumps(document_response))
-
-                    # Handle output of each document
+            if os.path.exists(project_response_path):
+                with open(project_response_path, 'r') as file:
+                    document_response = json.loads(file.read())
+            else:
+                extracted_information = await get_medical_insights(project_path, document_list)
+            document_response = {'data': extracted_information}
+            with open(project_response_path, 'w') as file:
+                file.write(json.dumps(document_response))
 
             return web.json_response(document_response, headers=headers, status=200)
 

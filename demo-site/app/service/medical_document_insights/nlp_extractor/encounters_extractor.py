@@ -110,7 +110,7 @@ class EncountersExtractor:
 
             encounters = []
             for date, event in list_of_tuples:
-                encounters.append({'date': date, 'event': event})
+                encounters.append({'date': date.replace('/', '-'), 'event': event})
 
             return encounters
 

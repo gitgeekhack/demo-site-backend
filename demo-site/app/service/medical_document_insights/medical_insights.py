@@ -78,25 +78,99 @@ def get_encounters_handler(data):
     return x
 
 
-async def get_medical_insights(document):
+def format_output(document_wise_response):
+    encounters = []
+    patient_names = []
+    dob_list = []
+    for document_resp in document_wise_response:
+        encounters.extend(document_resp['encounters'])
+        document_resp.pop('encounters')
+
+        patient_names.append(document_resp['patient_information']['patient_name'])
+        document_resp['patient_information'].pop('patient_name')
+
+        dob_list.append(document_resp['patient_information']['date_of_birth'])
+        document_resp['patient_information'].pop('date_of_birth')
+        document_resp['phi_dates'] = document_resp.pop('patient_information')
+
+    encounters = sorted(encounters, key=lambda e: parse_date(e['date']))
+
+    patient_name = ""
+    if len(patient_names) > 0:
+        patient_names.sort(key=len)
+        patient_name = patient_names[-1]
+
+    dob = ""
+    if len(dob_list) > 0:
+        dob = sorted(dob_list)[0]
+
+    resp_obj = {
+        "patient_information": {
+            "patient_name": patient_name,
+            "date_of_birth": dob
+        },
+        "encounters": encounters,
+        "documents": document_wise_response
+    }
+    return resp_obj
+
+
+def get_textract_text_handler(document):
+    _loop = asyncio.new_event_loop()
+    x = _loop.run_until_complete(extract_pdf_text(document))
+    res = {
+        'name': document,
+        'page_wise_text': x
+    }
+    return res
+
+
+def parse_date(date_str):
+    parts = date_str.split('-')
+    if len(parts) == 3:
+        month, day, year = map(int, parts)
+        return year, month, day
+    elif len(parts) == 2:
+        month, year = map(int, parts)
+        day = 1
+        return year, month, day
+    elif len(parts) == 1:
+        year = int(parts[0])
+        month = 1
+        day = 1
+        return year, month, day
+    else:
+        raise ValueError("Invalid date format: {}".format(date_str))
+
+
+async def get_medical_insights(project_path, document_list):
     """ This method is used to get the medical insights from the document """
 
-    result = dict()
-
-    pdf_name = os.path.basename(document)
-    result['name'] = pdf_name
-
-    page_wise_text = await extract_pdf_text(document)
-
-    task = []
+    text_result = []
+    document_task = []
     with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
-        task.append(executor.submit(get_summary_handler, data=page_wise_text))
-        task.append(executor.submit(get_entities_handler, data=page_wise_text))
-        task.append(executor.submit(get_encounters_handler, data=page_wise_text))
-        task.append(executor.submit(get_patient_information_handler, document=document))
+        for document in document_list:
+            new_future = executor.submit(get_textract_text_handler, document=document)
+            document_task.append(new_future)
 
-    results = futures.wait(task)
-    for x in results.done:
-        result.update(x.result())
+    document_results = futures.wait(document_task)
+    for x in document_results.done:
+        text_result.append(x.result())
 
-    return result
+    document_wise_response = []
+    for document in text_result:
+        task = []
+        with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+            task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
+            task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
+            task.append(executor.submit(get_encounters_handler, data=document['page_wise_text']))  # Change "document['page_wise_text']" to "document" for object
+            task.append(
+                executor.submit(get_patient_information_handler, document=os.path.join(project_path, document['name'])))
+
+        extracted_outputs = {'name': os.path.basename(document['name'])}
+        results = futures.wait(task)
+        for x in results.done:
+            extracted_outputs.update(x.result())
+        document_wise_response.append(extracted_outputs)
+    res = format_output(document_wise_response)
+    return res
