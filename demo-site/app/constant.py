@@ -123,6 +123,7 @@ class ExceptionMessage:
     INVALID_REQUEST_BODY_EXCEPTION_MESSAGE = "Invalid request body received"
     FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
     TOTAL_PAGE_EXCEEDED_EXCEPTION_MESSAGE = "Combined document pages must not exceed {page_count_threshold}. Please upload fewer pages."
+    FOLDER_PATH_NULL_EXCEPTION_MESSAGE = "Project not uploaded"
 
 
 class APIEndPointURL:

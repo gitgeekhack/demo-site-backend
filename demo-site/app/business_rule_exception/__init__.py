@@ -146,3 +146,13 @@ class NoImageFoundException(Exception):
 
     def __str__(self):
         return f'{self.file_url} -> {self.message}'
+
+
+class FolderPathNull(Exception):
+
+    def __init__(self, message=ExceptionMessage.FOLDER_PATH_NULL_EXCEPTION_MESSAGE):
+        self.message = message
+        super().__init__(self.message)
+
+    def __str__(self):
+        return f'{self.message}'

@@ -10,7 +10,7 @@ from app import logger
 from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
-from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
+from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull, FolderPathNull,
                                          MultipleFileUploaded, MissingRequestBody, InvalidRequestBody, TotalPageExceeded)
 
 
@@ -26,10 +26,13 @@ class MedicalInsightsExtractor:
 
             data = json.loads(data_bytes)
 
-            project_path = data['project_path']
+            if 'project_path' in data.keys():
+                project_path = data['project_path']
+            else:
+                raise MissingRequestBody()
 
             if not project_path:
-                raise FilePathNull()
+                raise FolderPathNull()
 
             if isinstance(project_path, int) or isinstance(project_path, dict) or isinstance(project_path, list):
                 raise InvalidRequestBody()
@@ -55,7 +58,7 @@ class MedicalInsightsExtractor:
                     document_response = json.loads(file.read())
             else:
                 extracted_information = await get_medical_insights(project_path, document_list)
-            document_response = {'data': extracted_information}
+                document_response = {'data': extracted_information}
             with open(project_response_path, 'w') as file:
                 file.write(json.dumps(document_response))
 
@@ -65,11 +68,7 @@ class MedicalInsightsExtractor:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
-        except FilePathNull as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, headers=headers, status=400)
-
-        except MultipleFileUploaded as e:
+        except FolderPathNull as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
@@ -86,7 +85,7 @@ class MedicalInsightsExtractor:
             return web.json_response(response, headers=headers, status=415)
 
         except FileNotFoundError:
-            response = {"message": "File Not Found"}
+            response = {"message": "Project Not Found"}
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
