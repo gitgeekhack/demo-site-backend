@@ -59,8 +59,8 @@ class MedicalInsightsExtractor:
             else:
                 extracted_information = await get_medical_insights(project_path, document_list)
                 document_response = {'data': extracted_information}
-            with open(project_response_path, 'w') as file:
-                file.write(json.dumps(document_response))
+                with open(project_response_path, 'w') as file:
+                    file.write(json.dumps(document_response))
 
             return web.json_response(document_response, headers=headers, status=200)
 

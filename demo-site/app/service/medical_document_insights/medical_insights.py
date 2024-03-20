@@ -163,7 +163,7 @@ async def get_medical_insights(project_path, document_list):
         with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
             task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
             task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
-            task.append(executor.submit(get_encounters_handler, data=document['page_wise_text']))  # Change "document['page_wise_text']" to "document" for object
+            task.append(executor.submit(get_encounters_handler, data=document))
             task.append(
                 executor.submit(get_patient_information_handler, document=os.path.join(project_path, document['name'])))
 
