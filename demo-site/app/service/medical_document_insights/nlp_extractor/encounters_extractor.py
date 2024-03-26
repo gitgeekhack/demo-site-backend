@@ -82,9 +82,20 @@ class EncountersExtractor:
         chunk_length = []
         docs = []
         chunk_start_index = 0
+        overlap = 0
+        max_overlap = 200
+        previous_text = ''
         for text in texts:
-            chunk_indexes = [int(chunk_start_index), int(chunk_start_index) + len(text) - 1]
-            chunk_start_index += len(text)
+            current_text = text
+            if len(previous_text) != 0:
+                min_overlap = min(len(previous_text), len(current_text))
+                possible_overlap = min(max_overlap, min_overlap)
+                for i in range(1, possible_overlap + 1):
+                    if previous_text[-i:] == current_text[:i]:
+                        overlap = i
+            chunk_start_index = chunk_start_index + len(previous_text) - overlap
+            chunk_indexes = [int(chunk_start_index), int(chunk_start_index) + len(current_text) - 1]
+            previous_text = current_text
 
             chunk_length.append(self.anthropic_llm.get_num_tokens(text))
             start_page, end_page = await self.__find_page_range(page_indexes_dict, chunk_indexes)
@@ -128,7 +139,6 @@ class EncountersExtractor:
             cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
             all_text = []
 
-        # Find the index of the page with the highest cosine similarity
         most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
 
         most_similar_chunk = relevant_chunks[most_similar_chunk_index]
@@ -148,7 +158,6 @@ class EncountersExtractor:
             cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
             all_text = []
 
-        # Find the index of the page with the highest cosine similarity
         most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
 
         most_similar_page = [page.metadata['page'] for page in relevant_pages][most_similar_page_index]
