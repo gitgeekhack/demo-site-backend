@@ -41,15 +41,20 @@ class EncountersExtractor:
         self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
-    async def __find_page_range(self, page_indexes_dict, chunk_indexes):
+    async def __find_page_range(self, page_indexes_dict, chunk_indexes, search_start_page):
         start_index, end_index = chunk_indexes
-        page_numbers = []
-        for page, indexes in page_indexes_dict.items():
-            if indexes[0] <= start_index <= indexes[1] or indexes[0] <= end_index <= indexes[1]:
-                page_numbers.append(int(page.split('_')[1]))
-        start_page = page_numbers[0]
-        end_page = page_numbers[-1]
-        return [start_page, end_page]
+        search_index = end_index - 200
+        start_page, end_page = None, None
+        for page, indexes in list(page_indexes_dict.items())[search_start_page - 1:]:
+            if indexes[0] <= start_index <= indexes[1]:
+                start_page = int(page.split('_')[1])
+            if indexes[0] <= end_index <= indexes[1]:
+                end_page = int(page.split('_')[1])
+            if indexes[0] <= search_index <= indexes[1]:
+                search_start_page = int(page.split('_')[1])
+            if start_page and end_page and search_start_page:
+                break
+        return start_page, end_page, search_start_page
 
     async def __data_formatter(self, filename, json_data):
         """ This method is used to format the data and prepare chunks """
@@ -82,14 +87,15 @@ class EncountersExtractor:
         chunk_length = []
         docs = []
         chunk_start_index = 0
+        search_start_page = 1
         overlap = 0
         max_overlap = 200
         previous_text = ''
         for text in texts:
             current_text = text
             if len(previous_text) != 0:
-                min_overlap = min(len(previous_text), len(current_text))
-                possible_overlap = min(max_overlap, min_overlap)
+                overlap_threshold = min(len(previous_text), len(current_text))
+                possible_overlap = min(max_overlap, overlap_threshold)
                 for i in range(1, possible_overlap + 1):
                     if previous_text[-i:] == current_text[:i]:
                         overlap = i
@@ -98,7 +104,7 @@ class EncountersExtractor:
             previous_text = current_text
 
             chunk_length.append(self.anthropic_llm.get_num_tokens(text))
-            start_page, end_page = await self.__find_page_range(page_indexes_dict, chunk_indexes)
+            start_page, end_page, search_start_page = await self.__find_page_range(page_indexes_dict, chunk_indexes, search_start_page)
             # Create multiple documents
             docs.append(Document(page_content=text, metadata={'source': filename, 'start_page': start_page, 'end_page': end_page}))
         return docs, chunk_length, list_of_page_contents
