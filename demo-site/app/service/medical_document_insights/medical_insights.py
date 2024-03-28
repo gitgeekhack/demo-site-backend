@@ -1,5 +1,6 @@
 import os
 import time
+import json
 import asyncio
 from concurrent import futures
 
@@ -105,11 +106,11 @@ def format_output(document_wise_response):
         dob = sorted(dob_list)[0]
 
     resp_obj = {
-        "patient_information": {
+        "patient_demographics": {
             "patient_name": patient_name,
             "date_of_birth": dob
         },
-        "encounters": encounters,
+        "medical_chronology": encounters,
         "documents": document_wise_response
     }
     return resp_obj
@@ -145,32 +146,52 @@ def parse_date(date_str):
 
 async def get_medical_insights(project_path, document_list):
     """ This method is used to get the medical insights from the document """
-
-    text_result = []
-    document_task = []
-    with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
-        for document in document_list:
-            new_future = executor.submit(get_textract_text_handler, document=document)
-            document_task.append(new_future)
-
-    document_results = futures.wait(document_task)
-    for x in document_results.done:
-        text_result.append(x.result())
-
-    document_wise_response = []
-    for document in text_result:
-        task = []
+    try:
+        text_result = []
+        document_task = []
         with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
-            task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
-            task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
-            task.append(executor.submit(get_encounters_handler, data=document))
-            task.append(
-                executor.submit(get_patient_information_handler, document=os.path.join(project_path, document['name'])))
+            for document in document_list:
+                new_future = executor.submit(get_textract_text_handler, document=document)
+                document_task.append(new_future)
 
-        extracted_outputs = {'name': os.path.basename(document['name'])}
-        results = futures.wait(task)
-        for x in results.done:
-            extracted_outputs.update(x.result())
-        document_wise_response.append(extracted_outputs)
-    res = format_output(document_wise_response)
-    return res
+        document_results = futures.wait(document_task)
+        for x in document_results.done:
+            text_result.append(x.result())
+
+        document_wise_response = []
+        for document in text_result:
+            task = []
+            with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+                task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
+                task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
+                task.append(executor.submit(get_encounters_handler, data=document))
+                task.append(
+                    executor.submit(get_patient_information_handler, document=os.path.join(project_path, document['name'])))
+
+            extracted_outputs = {'name': os.path.basename(document['name'])}
+            results = futures.wait(task)
+            for x in results.done:
+                extracted_outputs.update(x.result())
+            document_wise_response.append(extracted_outputs)
+        res = format_output(document_wise_response)
+        res_obj = {
+            "status_code": 200,
+            "data": res,
+            "message": "OK"
+        }
+        project_response_path = project_path.replace("upload_files", "response")
+        os.makedirs(project_response_path, exist_ok=True)
+        project_response_file_path = os.path.join(project_response_path, 'output.json')
+        with open(project_response_file_path, 'w') as file:
+            file.write(json.dumps(res_obj))
+    except Exception:
+        res_obj = {
+            "status_code": 500,
+            "data": "Error",
+            "message": "Internal Server Error"
+        }
+        project_response_path = project_path.replace("upload_files", "response")
+        os.makedirs(project_response_path, exist_ok=True)
+        project_response_file_path = os.path.join(project_response_path, 'output.json')
+        with open(project_response_file_path, 'w') as file:
+            file.write(json.dumps(res_obj))

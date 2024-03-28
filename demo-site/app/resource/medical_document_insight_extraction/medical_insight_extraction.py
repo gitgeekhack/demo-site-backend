@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import glob
+import asyncio
 import traceback
 from aiohttp import web
 
@@ -50,19 +51,14 @@ class MedicalInsightsExtractor:
                 if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
                     raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
 
-            project_id = os.path.basename(project_path).split("/")[-1]
-            project_response_path = os.path.join(medical_insights_output_path, f'{project_id}.json')
+            project_response_path = project_path.replace("upload_files", "response")
+            project_response_file_path = os.path.join(project_response_path, 'output.json')
 
-            if os.path.exists(project_response_path):
-                with open(project_response_path, 'r') as file:
-                    document_response = json.loads(file.read())
+            if os.path.exists(project_response_file_path):
+                pass
             else:
-                extracted_information = await get_medical_insights(project_path, document_list)
-                document_response = {'data': extracted_information}
-                with open(project_response_path, 'w') as file:
-                    file.write(json.dumps(document_response))
-
-            return web.json_response(document_response, headers=headers, status=200)
+                asyncio.create_task(get_medical_insights(project_path, document_list))
+            return web.json_response(headers=headers, status=202)
 
         except TotalPageExceeded as e:
             response = {"message": f"{e}"}
@@ -74,7 +70,7 @@ class MedicalInsightsExtractor:
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
-            return web.json_response(response,headers=headers, status=400)
+            return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
@@ -83,6 +79,59 @@ class MedicalInsightsExtractor:
         except InvalidFile:
             response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
             return web.json_response(response, headers=headers, status=415)
+
+        except FileNotFoundError:
+            response = {"message": "Project Not Found"}
+            return web.json_response(response, headers=headers, status=404)
+
+        except Exception as e:
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            response = {"message": "Internal Server Error"}
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
+            return web.json_response(response, headers=headers, status=500)
+
+    async def get(self):
+        x_uuid = uuid.uuid1()
+        headers = await get_response_headers()
+        try:
+            if 'project_path' in self.query.keys():
+                project_path = self.query.get("project_path")
+            else:
+                raise MissingRequestBody()
+
+            if not project_path:
+                raise FolderPathNull()
+
+            if isinstance(project_path, int) or isinstance(project_path, dict) or isinstance(project_path, list):
+                raise InvalidRequestBody()
+
+            if not os.path.exists(project_path):
+                raise FileNotFoundError(project_path)
+
+            project_response_path = project_path.replace("upload_files", "response")
+            project_response_file_path = os.path.join(project_response_path, 'output.json')
+
+            if os.path.exists(project_response_file_path):
+                with open(project_response_file_path, 'r') as file:
+                    res = json.loads(file.read())
+                    if res["status_code"] == 200:
+                        return web.json_response(data=res['data'], headers=headers, status=200)
+                    else:
+                        raise Exception
+            else:
+                return web.json_response(headers=headers, status=102)
+
+        except FolderPathNull as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, headers=headers, status=400)
+
+        except InvalidRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, headers=headers, status=400)
+
+        except MissingRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, headers=headers, status=400)
 
         except FileNotFoundError:
             response = {"message": "Project Not Found"}

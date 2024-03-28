@@ -193,4 +193,4 @@ async def get_extracted_entities(json_data):
     logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
                 f'Output tokens: {sum(output_tokens)}')
 
-    return {'entities': page_wise_entities}
+    return {'medical_entities': page_wise_entities}
