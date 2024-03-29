@@ -51,7 +51,7 @@ class MedicalInsightsExtractor:
                 if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
                     raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
 
-            project_response_path = project_path.replace("upload_files", "response")
+            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
             if os.path.exists(project_response_file_path):
@@ -108,7 +108,7 @@ class MedicalInsightsExtractor:
             if not os.path.exists(project_path):
                 raise FileNotFoundError(project_path)
 
-            project_response_path = project_path.replace("upload_files", "response")
+            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
             if os.path.exists(project_response_file_path):

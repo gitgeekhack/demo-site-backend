@@ -5,6 +5,7 @@ import asyncio
 from concurrent import futures
 
 from app import logger
+from app.constant import MedicalInsights
 from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
@@ -179,7 +180,7 @@ async def get_medical_insights(project_path, document_list):
             "data": res,
             "message": "OK"
         }
-        project_response_path = project_path.replace("upload_files", "response")
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
         with open(project_response_file_path, 'w') as file:
@@ -190,7 +191,7 @@ async def get_medical_insights(project_path, document_list):
             "data": "Error",
             "message": "Internal Server Error"
         }
-        project_response_path = project_path.replace("upload_files", "response")
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
         with open(project_response_file_path, 'w') as file:
