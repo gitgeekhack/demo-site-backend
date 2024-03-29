@@ -9,7 +9,6 @@ from langchain.embeddings import BedrockEmbeddings
 
 from app import logger
 from app.constant import BotoClient
-from app.common.utils import update_file_path, vector_data_path
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
@@ -56,11 +55,8 @@ class DocumentQnA:
 
         return prompt
 
-    async def __prepare_data(self, document_name):
-        """ The embedding generated in PHI is used here """
-
-        doc_basename = os.path.basename(document_name).split(".")[0]
-        vectored_data = FAISS.load_local(vector_data_path, self.bedrock_embeddings, index_name=doc_basename)
+    async def __prepare_data(self, project_response_path):
+        vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings')
         return vectored_data
 
     async def __create_conversation_chain(self, vectored_data, prompt_template):
@@ -77,10 +73,10 @@ class DocumentQnA:
 
         return qa
 
-    async def get_query_response(self, query, document):
+    async def get_query_response(self, query, project_response_path):
 
         x = time.time()
-        vectored_data = await self.__prepare_data(document)
+        vectored_data = await self.__prepare_data(project_response_path)
         logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
         x = time.time()

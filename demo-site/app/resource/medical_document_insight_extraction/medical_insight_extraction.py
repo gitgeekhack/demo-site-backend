@@ -156,17 +156,14 @@ class QnAExtractor:
 
             data = json.loads(data_bytes)
 
-            file_path = data['file_path']
+            project_path = data['project_path']
             input_query = data['input_query']
 
-            if not file_path:
+            if not project_path:
                 raise FilePathNull()
 
-            if isinstance(file_path, int) or isinstance(file_path, dict):
+            if isinstance(project_path, int) or isinstance(project_path, dict) or isinstance(project_path, list):
                 raise InvalidRequestBody()
-
-            if isinstance(file_path, list) or isinstance(file_path, dict):
-                raise MultipleFileUploaded()
 
             if not input_query:
                 raise InputQueryNull()
@@ -174,27 +171,26 @@ class QnAExtractor:
             if isinstance(input_query, int) or isinstance(input_query, dict) or isinstance(input_query, list):
                 raise InvalidRequestBody()
 
-            if isinstance(file_path, str):
-                if not os.path.exists(file_path):
+            if isinstance(project_path, str):
+                if not os.path.exists(project_path):
                     raise FileNotFoundError
 
-                if not is_pdf_file(file_path):
-                    raise InvalidFile(file_path)
+            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+            project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
 
-            result = await get_query_response(input_query, file_path)
-            del result['source_documents']
-            result = json.dumps(result).encode('utf-8')
-            return web.Response(body=result, headers=headers, content_type='application/json', status=200)
+            if os.path.exists(project_response_file_path):
+                result = await get_query_response(input_query, project_response_path)
+                del result['source_documents']
+                result = json.dumps(result).encode('utf-8')
+                return web.Response(body=result, headers=headers, content_type='application/json', status=200)
+            else:
+                return web.json_response(headers=headers, status=102)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
         except InputQueryNull as e:
-            response = {"message": f"{e}"}
-            return web.json_response(response, headers=headers, status=400)
-
-        except MultipleFileUploaded as e:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
@@ -206,12 +202,8 @@ class QnAExtractor:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
-        except InvalidFile:
-            response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
-            return web.json_response(response, headers=headers, status=415)
-
         except FileNotFoundError:
-            response = {"message": "File Not Found"}
+            response = {"message": "Project Not Found"}
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
