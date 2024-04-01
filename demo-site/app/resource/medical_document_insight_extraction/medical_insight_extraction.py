@@ -155,7 +155,8 @@ class QnAExtractor:
                 raise MissingRequestBody()
 
             data = json.loads(data_bytes)
-
+            if 'project_path' not in data.keys() or 'input_query' not in data.keys():
+                raise MissingRequestBody()
             project_path = data['project_path']
             input_query = data['input_query']
 
@@ -174,17 +175,10 @@ class QnAExtractor:
             if isinstance(project_path, str):
                 if not os.path.exists(project_path):
                     raise FileNotFoundError
-
-            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-            project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
-
-            if os.path.exists(project_response_file_path):
-                result = await get_query_response(input_query, project_response_path)
-                del result['source_documents']
-                result = json.dumps(result).encode('utf-8')
-                return web.Response(body=result, headers=headers, content_type='application/json', status=200)
-            else:
-                return web.json_response(headers=headers, status=102)
+            result = await get_query_response(input_query, project_path)
+            del result['source_documents']
+            result = json.dumps(result).encode('utf-8')
+            return web.Response(body=result, headers=headers, content_type='application/json', status=200)
 
         except FilePathNull as e:
             response = {"message": f"{e}"}

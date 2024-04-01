@@ -1,14 +1,20 @@
 import os
 import time
+import glob
+import json
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
+from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
+from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
 from app.constant import BotoClient
+from app.constant import MedicalInsights
+from app.common.utils import update_file_path
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
@@ -55,9 +61,63 @@ class DocumentQnA:
 
         return prompt
 
-    async def __prepare_data(self, project_response_path):
-        vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings')
+    async def __prepare_data(self, project_path):
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+        project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
+        if os.path.exists(project_response_file_path):
+            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings')
+        else:
+            raw_text = ""
+            document_list = glob.glob(os.path.join(project_path, '*'))
+            for document in document_list:
+                pdf_name, output_dir = await update_file_path(document)
+                dir_name = os.path.join(output_dir, 'textract_response')
+                with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+                    data = json.loads(file.read())
+                    raw_text = raw_text + "".join(data.values())
+            docs = await self.__data_formatter(raw_text)
+            vectored_data = await self.__prepare_embeddings(docs, project_response_path)
         return vectored_data
+
+    async def __data_formatter(self, raw_text):
+        """ This method is used to format the data and prepare chunks """
+
+        text_splitter = RecursiveCharacterTextSplitter(
+            chunk_size=15000, chunk_overlap=200
+        )
+
+        texts = text_splitter.split_text(raw_text)
+
+        for text in texts:
+            threshold = self.anthropic_llm.get_num_tokens(text)
+            if threshold > 5000:
+                text_splitter = RecursiveCharacterTextSplitter(
+                    chunk_size=10000, chunk_overlap=200
+                )
+                texts = text_splitter.split_text(raw_text)
+                break
+
+        docs = [Document(page_content=t) for t in texts]
+        return docs
+
+    async def __prepare_embeddings(self, docs, project_response_path):
+        x = time.time()
+        emb_tokens = 0
+        for i in docs:
+            emb_tokens += self.titan_llm.get_num_tokens(i.page_content)
+
+        y = time.time()
+        logger.info(f'[Medical-Insights][QnA-Embeddings] Chunk Preparation Time: {y - x}')
+
+        vector_embeddings = FAISS.from_documents(
+            documents=docs,
+            embedding=self.bedrock_embeddings,
+        )
+        vector_embeddings.save_local(project_response_path, index_name='embeddings')
+        logger.info(
+            f'[Medical-Insights][QnA-Embeddings][{self.model_embeddings}] Input embedding tokens: {emb_tokens}'
+            f'and Generation time: {time.time() - y}')
+        return vector_embeddings
 
     async def __create_conversation_chain(self, vectored_data, prompt_template):
 
@@ -73,10 +133,10 @@ class DocumentQnA:
 
         return qa
 
-    async def get_query_response(self, query, project_response_path):
+    async def get_query_response(self, query, project_path):
 
         x = time.time()
-        vectored_data = await self.__prepare_data(project_response_path)
+        vectored_data = await self.__prepare_data(project_path)
         logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
         x = time.time()

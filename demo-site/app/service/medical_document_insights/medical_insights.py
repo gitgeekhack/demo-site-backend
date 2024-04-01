@@ -4,13 +4,6 @@ import json
 import asyncio
 from concurrent import futures
 
-from langchain.vectorstores import FAISS
-from langchain.llms.bedrock import Bedrock
-from langchain.docstore.document import Document
-from langchain.embeddings import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from app.service.medical_document_insights.nlp_extractor import bedrock_client
-
 from app import logger
 from app.constant import MedicalInsights
 from app.service.helper.text_extractor import extract_pdf_text
@@ -53,20 +46,20 @@ def get_entities_handler(data):
     return x
 
 
-async def get_patient_information(document):
+async def get_patient_information(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
     logger.info("[Medical-Insights] Extraction of PHI and Document Type is started...")
     phi_and_doc_type_extractor = PHIAndDocTypeExtractor()
-    patient_information = await phi_and_doc_type_extractor.get_patient_information(document)
+    patient_information = await phi_and_doc_type_extractor.get_patient_information(data)
     logger.info(f"[Medical-Insights] Extraction of PHI and Document Type is completed in {time.time() - x} seconds.")
     return patient_information
 
 
-def get_patient_information_handler(document):
+def get_patient_information_handler(data):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_patient_information(document))
+    x = _loop.run_until_complete(get_patient_information(data))
     return x
 
 
@@ -152,64 +145,6 @@ def parse_date(date_str):
         raise ValueError("Invalid date format: {}".format(date_str))
 
 
-async def data_formatter(json_data):
-    """ This method is used to format the data and prepare chunks """
-    anthropic_llm = Bedrock(
-        model_id='anthropic.claude-instant-v1',
-        model_kwargs={
-            "max_tokens_to_sample": 4000,
-            "temperature": 0.75,
-            "top_p": 0.01,
-            "top_k": 0,
-            "stop_sequences": [],
-        },
-        client=bedrock_client,
-    )
-    raw_text = ""
-    for doc in json_data:
-        raw_text = raw_text + "".join(doc['page_wise_text'].values())
-
-    text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=15000, chunk_overlap=200
-    )
-
-    texts = text_splitter.split_text(raw_text)
-
-    for text in texts:
-        threshold = anthropic_llm.get_num_tokens(text)
-        if threshold > 5000:
-            text_splitter = RecursiveCharacterTextSplitter(
-                chunk_size=10000, chunk_overlap=200
-            )
-            texts = text_splitter.split_text(raw_text)
-            break
-
-    docs = [Document(page_content=t) for t in texts]
-    return docs
-
-
-async def prepare_qna_embeddings(text_result, project_response_path):
-    titan_llm = Bedrock(model_id='amazon.titan-embed-text-v1', client=bedrock_client)
-    bedrock_embeddings = BedrockEmbeddings(model_id='amazon.titan-embed-text-v1', client=bedrock_client)
-
-    x = time.time()
-    docs = await data_formatter(text_result)
-    emb_tokens = 0
-    for i in docs:
-        emb_tokens += titan_llm.get_num_tokens(i.page_content)
-
-    y = time.time()
-    logger.info(f'[Medical-Insights][QnA-Embeddings] Chunk Preparation Time: {y - x}')
-
-    vector_embeddings = FAISS.from_documents(
-        documents=docs,
-        embedding=bedrock_embeddings,
-    )
-    vector_embeddings.save_local(project_response_path, index_name='embeddings')
-    logger.info(f'[Medical-Insights][QnA-Embeddings][amazon.titan-embed-text-v1] Input embedding tokens: {emb_tokens}'
-                f'and Generation time: {time.time() - y}')
-
-
 async def get_medical_insights(project_path, document_list):
     """ This method is used to get the medical insights from the document """
     try:
@@ -231,9 +166,7 @@ async def get_medical_insights(project_path, document_list):
                 task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_encounters_handler, data=document))
-                task.append(
-                    executor.submit(get_patient_information_handler,
-                                    document=os.path.join(project_path, document['name'])))
+                task.append(executor.submit(get_patient_information_handler, data=document['page_wise_text']))
 
             extracted_outputs = {'name': os.path.basename(document['name'])}
             results = futures.wait(task)
@@ -253,8 +186,6 @@ async def get_medical_insights(project_path, document_list):
 
         with open(project_response_file_path, 'w') as file:
             file.write(json.dumps(res_obj))
-
-        await prepare_qna_embeddings(text_result, project_response_path)
 
     except Exception as e:
         res_obj = {
