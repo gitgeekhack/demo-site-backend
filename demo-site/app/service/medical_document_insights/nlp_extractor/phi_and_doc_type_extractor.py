@@ -131,20 +131,23 @@ class PHIAndDocTypeExtractor:
         end_index = text.rfind('}') + 1
         json_str = text[start_index:end_index]
 
-        if len(json_str) == 0:
-            final_data = {'patient_name': '', 'date_of_birth': ''}
+        final_data = {'patient_name': '', 'date_of_birth': ''}
+        if not json_str or not eval(json_str):
             return final_data
 
         data = json.loads(json_str)
         data_keys = ['patient_name', 'date_of_birth']
 
-        final_data = dict(zip(data_keys, list(data.values())))
+        updated_final_data = dict(zip(data_keys, list(data.values())))
+        for key in data_keys:
+            if key not in updated_final_data.keys():
+                updated_final_data[key] = ''
 
-        if final_data['date_of_birth'] and isinstance(final_data['date_of_birth'], str):
-            x = await self.__parse_date(final_data['date_of_birth'])
-            final_data['date_of_birth'] = x
+        if updated_final_data['date_of_birth'] and isinstance(updated_final_data['date_of_birth'], str):
+            x = await self.__parse_date(updated_final_data['date_of_birth'])
+            updated_final_data['date_of_birth'] = x
 
-        return final_data
+        return updated_final_data
 
     async def __get_document_type(self, embeddings):
         """ This method is used to get the document type using vectored embeddings """

@@ -46,7 +46,7 @@ class MedicalInsightsExtractor:
                 if file_size > 100:
                     raise HandleFileLimitExceeded(file_path)
 
-            document_name = os.path.basename(file_path).split(".")[0]
+            document_name = os.path.splitext(os.path.basename(file_path))[0]
             document_response_path = os.path.join(medical_insights_output_path, f'{document_name}.json')
 
             if os.path.exists(document_response_path):
