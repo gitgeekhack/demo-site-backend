@@ -122,7 +122,7 @@ class PHIAndDocTypeExtractor:
                 date = date - timedelta(days=36525)
             date = date.strftime("%d/%m/%Y")
             return date
-        return ""
+        return "None"
 
     async def __process_patient_name_and_dob(self, text):
         """ This method is used to convert the string response of LLM into the JSON """
@@ -131,7 +131,7 @@ class PHIAndDocTypeExtractor:
         end_index = text.rfind('}') + 1
         json_str = text[start_index:end_index]
 
-        final_data = {'patient_name': '', 'date_of_birth': ''}
+        final_data = {'patient_name': 'None', 'date_of_birth': 'None'}
         if not json_str or not eval(json_str):
             return final_data
 
@@ -141,7 +141,7 @@ class PHIAndDocTypeExtractor:
         updated_final_data = dict(zip(data_keys, list(data.values())))
         for key in data_keys:
             if key not in updated_final_data.keys():
-                updated_final_data[key] = ''
+                updated_final_data[key] = 'None'
 
         if updated_final_data['date_of_birth'] and isinstance(updated_final_data['date_of_birth'], str):
             x = await self.__parse_date(updated_final_data['date_of_birth'])
