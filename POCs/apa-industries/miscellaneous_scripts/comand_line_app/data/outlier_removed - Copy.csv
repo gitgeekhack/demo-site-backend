@@ -1,6 +1,0 @@
-units_sold,firstSold,vehicleMaxQty,isDevelopment,make,category,year,TotalVIO,SaleYearRank,HasPartsAuthorityPurchased,HasWorldPacPurchased,HasSSFPurchased
-15,2021-02-05 17:31:27.987,1,False,Volkswagen,Engine,2021,246108,1,True,False,False
-320,2020-06-27 00:14:32.680,2,False,BMW,Fuel,2020,202000,1,False,False,True
-1372,2019-04-09 00:20:58.000,1,False,Chevrolet,Cooling,2019,724803,1,True,True,False
-2031,2018-12-04 00:52:46.610,2,False,Saab,Electrical,2019,7142799,2,True,True,False
-9,2018-10-10 00:40:50.540,1,False,Chevrolet,Body,2021,8446568,4,True,True,False
