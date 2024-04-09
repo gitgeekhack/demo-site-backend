@@ -13,6 +13,7 @@ from app.service.medical_document_insights.nlp_extractor.document_summarizer imp
 from app.service.medical_document_insights.nlp_extractor.encounters_extractor import EncountersExtractor
 from app.service.medical_document_insights.nlp_extractor.phi_and_doc_type_extractor import PHIAndDocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
+from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
 
 
 async def get_summary(data):
@@ -45,6 +46,22 @@ async def get_entities(data):
 def get_entities_handler(data):
     _loop = asyncio.new_event_loop()
     x = _loop.run_until_complete(get_entities(data))
+    return x
+
+async def get_patient_demographics(data):
+    """ This method is used to get phi dates from document """
+
+    x = time.time()
+    logger.info("[Medical-Insights] Extraction of Patient Demographics is started...")
+    demographics_extractor = PatientDemographicsExtractor()
+    patient_demographics = await demographics_extractor.get_patient_demographics(data)
+    logger.info(f"[Medical-Insights] Extraction of Patient Demographics is completed in {time.time() - x} seconds.")
+    return patient_demographics
+
+
+def get_patient_demographics_handler(data):
+    _loop = asyncio.new_event_loop()
+    x = _loop.run_until_complete(get_patient_demographics(data))
     return x
 
 
@@ -179,14 +196,15 @@ async def get_medical_insights(project_path, document_list):
             text_result.append(x.result())
 
         document_wise_response = []
-        for document in text_result:
-            task = []
-            with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+        task = []
+        with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+            for document in text_result:
                 task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_encounters_handler, data=document))
                 task.append(executor.submit(get_patient_information_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_history_handler, data=document['page_wise_text']))
+            task.append(executor.submit(get_patient_demographics_handler, data=text_result))
 
             extracted_outputs = {'name': os.path.basename(document['name'])}
             results = futures.wait(task)
