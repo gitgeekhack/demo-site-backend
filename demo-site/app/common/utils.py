@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 import aiofiles
+import fitz
 
 from app.constant import AllowedFileType
 
@@ -54,6 +55,11 @@ def is_pdf_file(file):
     file_type = os.path.basename(file)
     ext = file_type.split('.')[-1]
     return ext in AllowedFileType.PDF
+
+
+def get_pdf_page_count(file_path):
+    doc = fitz.open(file_path)
+    return len(doc)
 
 
 def get_file_size(file_path):
