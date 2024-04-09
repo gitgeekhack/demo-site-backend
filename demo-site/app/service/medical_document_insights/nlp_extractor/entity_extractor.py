@@ -77,14 +77,17 @@ async def convert_str_into_json(text):
     json_str = text[start_index:end_index]
     final_data = {'diagnosis': [], 'treatments': [], 'medications': []}
 
-    if len(json_str) == 0:
+    if not json_str or not eval(json_str):
         return final_data
 
     try:
         data = json.loads(json_str)
         data_keys = ['diagnosis', 'treatments', 'medications']
-        final_data = dict(zip(data_keys, list(data.values())))
-        final_data = await get_valid_entity(final_data)
+        updated_final_data = dict(zip(data_keys, list(data.values())))
+        for key in data_keys:
+            if key not in updated_final_data.keys():
+                updated_final_data[key] = []
+        final_data = await get_valid_entity(updated_final_data)
 
     except Exception as e:
         logger.error('%s -> %s', e, traceback.format_exc())
