@@ -2,6 +2,7 @@ import os
 import time
 import json
 import asyncio
+import traceback
 from concurrent import futures
 
 from app import logger
@@ -11,6 +12,7 @@ from app.service.medical_document_insights.nlp_extractor.entity_extractor import
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
 from app.service.medical_document_insights.nlp_extractor.encounters_extractor import EncountersExtractor
 from app.service.medical_document_insights.nlp_extractor.phi_and_doc_type_extractor import PHIAndDocTypeExtractor
+from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 
 
 async def get_summary(data):
@@ -77,6 +79,23 @@ async def get_encounters(data):
 def get_encounters_handler(data):
     _loop = asyncio.new_event_loop()
     x = _loop.run_until_complete(get_encounters(data))
+    return x
+
+
+async def get_history(data):
+    """ This method is used to get History and Psychiatric Injury from document """
+
+    x = time.time()
+    logger.info("[Medical-Insights] History & Psychiatric Injury Extraction is started...")
+    history_extractor = HistoryExtractor()
+    history_info = await history_extractor.get_history(data)
+    logger.info(f"[Medical-Insights] History & Psychiatric Injury Extraction is completed in {time.time() - x} seconds.")
+    return history_info
+
+
+def get_history_handler(data):
+    _loop = asyncio.new_event_loop()
+    x = _loop.run_until_complete(get_history(data))
     return x
 
 
@@ -167,6 +186,7 @@ async def get_medical_insights(project_path, document_list):
                 task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_encounters_handler, data=document))
                 task.append(executor.submit(get_patient_information_handler, data=document['page_wise_text']))
+                task.append(executor.submit(get_history_handler, data=document['page_wise_text']))
 
             extracted_outputs = {'name': os.path.basename(document['name'])}
             results = futures.wait(task)
@@ -190,9 +210,10 @@ async def get_medical_insights(project_path, document_list):
     except Exception as e:
         res_obj = {
             "status_code": 500,
-            "data": "Error",
+            "data": str(e),
             "message": "Internal Server Error"
         }
+        logger.error(f'{e} -> {traceback.format_exc()}')
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
