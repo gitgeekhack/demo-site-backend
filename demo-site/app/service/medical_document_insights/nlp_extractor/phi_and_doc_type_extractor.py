@@ -16,7 +16,6 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app import logger
 from app.constant import BotoClient
 from app.constant import MedicalInsights
-from app.common.utils import update_file_path, vector_data_path
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
@@ -43,14 +42,8 @@ class PHIAndDocTypeExtractor:
         self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
-    async def __get_docs_embeddings(self, document):
+    async def __get_docs_embeddings(self, data):
         """ This method is used to prepare the embeddings and returns it """
-
-        doc_basename = os.path.basename(document).split(".")[0]
-        pdf_name, output_dir = await update_file_path(document)
-        dir_name = os.path.join(output_dir, 'textract_response')
-        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
-            data = json.loads(file.read())
 
         x = time.time()
         docs = await self.__data_formatter(data)
@@ -66,7 +59,6 @@ class PHIAndDocTypeExtractor:
             documents=docs,
             embedding=self.bedrock_embeddings,
         )
-        vector_embeddings.save_local(vector_data_path, index_name=doc_basename)
         logger.info(f'[Medical-Insights][PHI-Embeddings][{self.model_embeddings}] Input embedding tokens: {emb_tokens}'
                     f'and Generation time: {time.time() - y}')
 
@@ -263,11 +255,11 @@ class PHIAndDocTypeExtractor:
         processed_result = await self.__process_patient_name_and_dob(answer['result'])
         return processed_result
 
-    async def get_patient_information(self, document):
+    async def get_patient_information(self, data):
         """ This is expose method of the class """
 
         t = time.time()
-        embeddings = await self.__get_docs_embeddings(document)
+        embeddings = await self.__get_docs_embeddings(data)
         logger.info(f"[Medical-Insights][PHI] Embedding Generation for PHI and Document Type is completed in {time.time() - t} seconds.")
 
         t = time.time()

@@ -187,7 +187,12 @@ async def get_extracted_entities(json_data):
 
     filter_empty_pages = {key: value for key, value in page_wise_entities.items() if
                           any(value[key] for key in ['diagnosis', 'treatments', 'medications'])}
-    page_wise_entities = dict(sorted(filter_empty_pages.items(), key=lambda item: int(item[0].split('_')[1])))
+    sorted_filtered = dict(sorted(filter_empty_pages.items(), key=lambda item: int(item[0].split('_')[1])))
+    page_wise_entities = []
+    for page_k, page_v in sorted_filtered.items():
+        page_no = int(page_k.split("_")[1])
+        page_v |= {"page_no": page_no}
+        page_wise_entities.append(page_v)
 
     logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Input Embedding tokens: {sum(emb_tokens)}')
 
@@ -196,4 +201,4 @@ async def get_extracted_entities(json_data):
     logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
                 f'Output tokens: {sum(output_tokens)}')
 
-    return {'entities': page_wise_entities}
+    return {'medical_entities': page_wise_entities}
