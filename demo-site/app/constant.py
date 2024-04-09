@@ -329,6 +329,48 @@ class MedicalInsights:
 
         CONCATENATE_SUMMARY = "Concatenate the summaries and remove the duplicate information from the summaries and make one summary without losing any information."
 
+        HISTORY_PROMPT = """
+        Model Instructions:
+        Social History:
+        Smoking: Check if there is any history of smoking (current or past). If there is, respond with "Yes" for both "Smoking" and "Tobacco". If there is no smoking history, proceed to evaluate tobacco use.
+        Alcohol: Determine if the patient has ever consumed alcohol. If the patient currently consumes alcohol or has in the past, respond with "Yes". If not, respond with "No".
+        Tobacco: If there is no history of smoking, assess the use of smokeless tobacco products such as chewing tobacco or snuff. Respond with "Yes" for "Tobacco" only if such non-smoking tobacco use is present. If there is no use of any tobacco products, respond with "No" for both "Smoking" and "Tobacco".
+
+        Family History:
+        Additional Information: Do not generate information beyond what is provided.
+        Medical vs. Family History: Do not confuse the patient's medical history with their family history.
+        Condition Details: List only the names of medical conditions, omitting details like onset, age, or timing.
+        Key-Value Pairs: Use key-value pairs to represent significant medical histories of family members. The key is the family member's relation to the patient, and the value is a concise description of their significant medical history.
+        Unspecified Relations: If a relation is not specified, use "NotMentioned" as the key. Do not include the "NotMentioned" key if there is no significant history.
+        Exclusions: Leave out family members without a significant medical history, non-medical information, and personal identifiers. Focus solely on health conditions relevant to the patient's medical or genetic predisposition. Also exclude outputs such as {'NotMentioned': 'None'} because it is irrelevant for usecase. 
+
+        JSON Template:
+        Fill in the JSON template with the appropriate responses based on the medical text provided. Ensure that only family members with significant medical histories are included in the "Family_History" section.
+        {
+          "Social_History": {
+            "Smoking": "Yes or No",
+            "Alcohol": "Yes or No",
+            "Tobacco": "Yes or No"
+          },
+          "Family_History": {
+            // Insert key-value pairs for family members with significant medical history
+            // Omit entries for family members without significant history
+          }
+        }
+        """
+
+        PSYCHIATRIC_INJURY_PROMPT = """
+        Instructions for the model:
+        Psychiatric Injury:       
+        Compile a list of the names of psychiatric injuries or disorders the patient may have. This should encompass any diagnosed mental illnesses, traumatic brain injuries, psychological traumas, or other psychiatric conditions.
+        Provide only the names of the psychiatric injuries or disorders without any additional details such as onset, treatment, or management strategies.
+
+        Extract the relevant information from the provided medical text regarding the patient's psychiatric injuries or disorders and record your findings in the JSON template provided below:
+        {
+          "Psychiatric_Injury": ["name of injury or disorder", "another injury or disorder", ...]
+        }
+        """
+
         PATIENT_DEMOGRAPHICS_PROMPT = """
         Your task is to identify the name, date of birth, age, gender, height and weight from the user-provided text without including additional information, notes, and context.
 
