@@ -328,3 +328,40 @@ class MedicalInsights:
         SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
 
         CONCATENATE_SUMMARY = "Concatenate the summaries and remove the duplicate information from the summaries and make one summary without losing any information."
+
+        PATIENT_DEMOGRAPHICS_PROMPT = """
+        Your task is to identify the name, date of birth, age, gender, height and weight from the user-provided text without including additional information, notes, and context.
+
+        Please follow the below guidelines:
+        1) Consider Date of Birth, Birth Date, and DOB as date_of_birth.
+        2) Use Age or years old to identify the patient's age. Do not derive age from the date_of_birth. If multiple age values are mentioned, choose the highest value.
+        3) Consider Patient Name, only Patient, only Name, and RE as patient_name.
+        4) Use Gender, Sex, Male, Female, M, F, Mr. , Mrs. to identify the patient's gender. Do not assume or derive gender from the patient_name.
+        5) Use Height, Ht to identify the patient's height. Strictly provide the height in inches only. If the height value of patient is present multiple time, ensure to return the current height of the patient.
+            - Also provide the recent date on which the measurements of height were taken.
+        6) Use Weight, Wt to identify the patient's weight. Strictly provide the weight in pounds only. If the weight value of patient is present multiple time, ensure to return the current weight of the patient.
+            - Also provide the recent date on which the measurements of height were taken.
+        7) The `date` for both `height` and `weight` should be the most recent date on which these measurements were taken.
+        8) Don't provide your analysis in the final response.
+        9) If the weight is present in kilograms(kgs), convert it into pounds(lbs).
+        10) If the height is present in centimeters(cm), convert it into inches(in).
+
+        Please strictly only provide a JSON result as given below:
+        {
+          "patient_name": "",
+          "date_of_birth": "",
+          "age": "",
+          "gender": "",
+          "height": {
+            "value": "",
+            "date": ""
+          },
+          "weight": {
+            "value": "",
+            "date": ""
+          }
+        }
+
+        Ensure that height and weight are accurately reflected according to the specified units of measurement.
+        Note: If any of the value is not found, fill the value with an empty string.
+        """
