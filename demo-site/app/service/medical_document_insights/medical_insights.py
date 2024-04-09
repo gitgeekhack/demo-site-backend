@@ -2,6 +2,7 @@ import os
 import time
 import json
 import asyncio
+import traceback
 from concurrent import futures
 
 from app import logger
@@ -190,9 +191,10 @@ async def get_medical_insights(project_path, document_list):
     except Exception as e:
         res_obj = {
             "status_code": 500,
-            "data": "Error",
+            "data": str(e),
             "message": "Internal Server Error"
         }
+        logger.error(f'{e} -> {traceback.format_exc()}')
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
