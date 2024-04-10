@@ -10,7 +10,7 @@ from app.constant import MedicalInsights
 from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
-from app.service.medical_document_insights.nlp_extractor.encounters_extractor import EncountersExtractor
+from app.service.medical_document_insights.nlp_extractor.medical_chronology_extractor import MedicalChronologyExtractor
 from app.service.medical_document_insights.nlp_extractor.phi_and_doc_type_extractor import PHIAndDocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
@@ -82,20 +82,20 @@ def get_patient_information_handler(data):
     return x
 
 
-async def get_encounters(data):
+async def get_medical_chronology(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
-    logger.info("[Medical-Insights] Encounters Extraction is started...")
-    encounters_extractor = EncountersExtractor()
-    encounter_events = await encounters_extractor.get_encounters(data)
-    logger.info(f"[Medical-Insights] Encounters Extraction is completed in {time.time() - x} seconds.")
-    return encounter_events
+    logger.info("[Medical-Insights] Medical Chronology Extraction is started...")
+    medical_chronology_extractor = MedicalChronologyExtractor()
+    medical_chronology = await medical_chronology_extractor.get_medical_chronology(data)
+    logger.info(f"[Medical-Insights] Medical Chronology Extraction is completed in {time.time() - x} seconds.")
+    return medical_chronology
 
 
-def get_encounters_handler(data):
+def get_medical_chronology_handler(data):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_encounters(data))
+    x = _loop.run_until_complete(get_medical_chronology(data))
     return x
 
 
@@ -117,12 +117,12 @@ def get_history_handler(data):
 
 
 def format_output(document_wise_response):
-    encounters = []
+    medical_chronology = []
     patient_names = []
     dob_list = []
     for document_resp in document_wise_response:
-        encounters.extend(document_resp['encounters'])
-        document_resp.pop('encounters')
+        medical_chronology.extend(document_resp['medical_chronology'])
+        document_resp.pop('medical_chronology')
 
         patient_names.append(document_resp['patient_information']['patient_name'])
         document_resp['patient_information'].pop('patient_name')
@@ -131,7 +131,7 @@ def format_output(document_wise_response):
         document_resp['patient_information'].pop('date_of_birth')
         document_resp['phi_dates'] = document_resp.pop('patient_information')
 
-    encounters = sorted(encounters, key=lambda e: parse_date(e['date']))
+    medical_chronology = sorted(medical_chronology, key=lambda e: parse_date(e['date']))
 
     patient_name = ""
     if len(patient_names) > 0:
@@ -147,7 +147,7 @@ def format_output(document_wise_response):
             "patient_name": patient_name,
             "date_of_birth": dob
         },
-        "medical_chronology": encounters,
+        "medical_chronology": medical_chronology,
         "documents": document_wise_response
     }
     return resp_obj
@@ -201,7 +201,7 @@ async def get_medical_insights(project_path, document_list):
             for document in text_result:
                 task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
-                task.append(executor.submit(get_encounters_handler, data=document))
+                task.append(executor.submit(get_medical_chronology_handler, data=document))
                 task.append(executor.submit(get_patient_information_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_history_handler, data=document['page_wise_text']))
             task.append(executor.submit(get_patient_demographics_handler, data=text_result))
