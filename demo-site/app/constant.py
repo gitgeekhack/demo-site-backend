@@ -266,11 +266,15 @@ class MedicalInsights:
         {"document_type": "Other"}
         """
 
-        ENCOUNTER_PROMPT = """
-        Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' from medical records.
+        MEDICAL_CHRONOLOGY_PROMPT = """
+        Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' along with 'Doctor' from medical records.
 
         'Encounter Date' : In medical record, it is defined as the specific date when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service.
         Notes to keep in mind while extracting 'Encounter Date' :
+        - Ensure 'Encounter Date' should also include other types of Protected Health Information dates which are listed below :
+          1. 'Injury date' : In medical record, it is defined as the specific date when a patient sustained any type of injury.
+          2. 'Admission date' : In medical record, it is defined as the specific date when a patient is officially admitted to a healthcare facility, such as a hospital or clinic, for inpatient care.
+          3. 'Discharge date' : In medical record, it is defined as the specific date when a patient is discharged or released from a healthcare facility after receiving treatment or completing a course of care.
         - Extract only actual 'Encounter Date' and avoid giving any other types of dates which are listed below :
           1. 'Birth date' : In medical record, it is defined as the specific date when a patient is born. It is typically recorded and used for identification, legal, and administrative purposes. It is also used to calculate a person's age.
           2. 'Received date' : In medical record, it is defined as the specific date when a lab, hospital, or clinic received the test result.
@@ -284,10 +288,60 @@ class MedicalInsights:
         - Ensure all 'Event' descriptions should include the key points, context, and any relevant supporting details.
         - Also ensure all 'Event' descriptions are more detailed, thorough and comprehensive yet a concise summary in medium-sized paragraph.
 
+        'Doctor' : In medical record, a 'Doctor' is typically defined as the name of a licensed medical professional. A 'Doctor' is responsible for attending, diagnosing, and treating illnesses, injuries, and other health conditions. A 'Doctor' often provides preventive care and health education to patients during the encounter.
+        Notes to keep in mind while extracting 'Doctor' :
+        - Ensure that the 'Doctor' pertains to the relevant 'Encounter Date' and 'Event'.
+        - In case, if 'Doctor' is found then provide the name of 'Doctor' in the json format as below :
+          {
+            'Doctor' : "Doctor",
+            'Role' : "None",
+            'Institution' : "None"
+          }
+        - In case, if 'Doctor' is unknown then follow steps listed as below to find the 'Doctor' :
+          Step-1 : Find the 'Institution' or 'Role' relevant to the 'Encounter Date' and 'Event'.
+                   'Institution' and 'Role' are defined as below :
+                   1. 'Institution' : In medical record, it is defined as the specific workplace of 'Doctor'.
+                       If 'Institution' is found then go to Step-2.
+                   2. 'Role' : In medical record, it is defined as the specific work role of 'Doctor'.
+                       If 'Role' is found then go to Step-2.
+          Step-2 : Find the name of 'Doctor' working at or related to that specific found 'Institution' or bearing that specific or similar found 'Role'.
+          Step-3 : If the 'Doctor' is still not found then provide the name of 'Doctor' in one of the most suitable format out of four formats described below :
+                   1. If 'Role' and 'Institution' are both found then provide the name of 'Doctor' in the json format as below :
+                      {
+                        'Doctor' : "None",
+                        'Role' : "Role",
+                        'Institution' : "Institution"
+                      }
+                   2. If 'Institution' is not found but 'Role' is found then provide the name of 'Doctor' in the json format as below :
+                      {
+                        'Doctor' : "None",
+                        'Role' : "Role",
+                        'Institution' : "None"
+                      }
+                   3. If 'Role' is not found but 'Institution' is found then provide the name of 'Doctor' in the json format as below :
+                      {
+                        'Doctor' : "None",
+                        'Role' : "None",
+                        'Institution' : "Institution"
+                      }
+                   4. If 'Role' and 'Institution' are both not found then find the 'Doctor' who is most relevant to the context of encounter.
+                      If 'Doctor' is still not found then provide the name of 'Doctor' in the json format as below :
+                      {
+                        'Doctor' : "None",
+                        'Role' : "None",
+                        'Institution' : "None"
+                      }
+          Step-4 : If the 'Doctor' is found then provide the name of 'Doctor' in the json format as below :
+                    {
+                      'Doctor' : "Doctor",
+                      'Role' : "None",
+                      'Institution' : "None"
+                    }
+
         You are required to present this output in a specific format using 'Tuple' and 'List'.
         Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
-        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date' and 'Event'. It is created using parentheses and should be formatted as (Encounter Date, Event).
-        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ (Encounter Date, Event) ].
+        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date', 'Event' and 'Doctor'. It is created using parentheses and should be formatted as ("Encounter Date", "Event", "Doctor").
+        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ ("Encounter Date", "Event", "Doctor") ].
         Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
         Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
         """

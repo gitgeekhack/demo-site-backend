@@ -19,7 +19,7 @@ from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
-class EncountersExtractor:
+class MedicalChronologyExtractor:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
@@ -133,19 +133,23 @@ class EncountersExtractor:
 
         return stuff_calls
 
-    async def __get_page_number(self, date_with_event, list_of_page_contents, relevant_chunks):
-        cosine_similarities = []
-        for chunk in relevant_chunks:
-            all_text = [chunk.page_content]
-            all_text.append(date_with_event)
-
-            vectorizer = CountVectorizer()
-            vectorized_text = vectorizer.fit_transform(all_text)
-
-            cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
+    async def __get_page_number(self, date_doctor_event, list_of_page_contents, relevant_chunks):
+        if len(relevant_chunks) == 1:
+            most_similar_chunk_index = 0
+        else:
+            cosine_similarities = []
             all_text = []
+            for chunk in relevant_chunks:
+                all_text.append(chunk.page_content)
+                all_text.append(date_doctor_event)
 
-        most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
+                vectorizer = CountVectorizer()
+                vectorized_text = vectorizer.fit_transform(all_text)
+
+                cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
+                all_text = []
+
+            most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
 
         most_similar_chunk = relevant_chunks[most_similar_chunk_index]
         filename = most_similar_chunk.metadata['source']
@@ -153,18 +157,22 @@ class EncountersExtractor:
         end_page = most_similar_chunk.metadata['end_page']
         relevant_pages = list_of_page_contents[start_page - 1: end_page]
 
-        cosine_similarities = []
-        for page in relevant_pages:
-            all_text = [page.page_content]
-            all_text.append(date_with_event)
-
-            vectorizer = CountVectorizer()
-            vectorized_text = vectorizer.fit_transform(all_text)
-
-            cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
+        if len(relevant_pages) == 1:
+            most_similar_page_index = 0
+        else:
+            cosine_similarities = []
             all_text = []
+            for page in relevant_pages:
+                all_text.append(page.page_content)
+                all_text.append(date_doctor_event)
 
-        most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
+                vectorizer = CountVectorizer()
+                vectorized_text = vectorizer.fit_transform(all_text)
+
+                cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
+                all_text = []
+
+            most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
 
         most_similar_page = [page.metadata['page'] for page in relevant_pages][most_similar_page_index]
 
@@ -182,25 +190,67 @@ class EncountersExtractor:
                 list_of_tuples = ast.literal_eval(string_of_tuples.replace('“', '"').replace('”', '"'))
 
             except Exception:
-                # Use a regular expression to match the dates and events
-                matches = re.findall(r'\(([^,]*), ([^\)]*)\)', string_of_tuples)
+                # Use a regular expression to match the dates, events and doctor
+                matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', string_of_tuples)
 
                 # Convert the matches to a list of tuples
-                list_of_tuples = [(date.strip(), event.strip()) for date, event in matches]
+                list_of_tuples = [(date.strip(), event.strip(), doctor.strip()) for date, event, doctor in matches]
 
-            encounters = []
-            for date, event in list_of_tuples:
-                date_with_event = date+" "+event
-                page, filename = await self.__get_page_number(date_with_event, list_of_page_contents, relevant_chunks)
-                encounters.append({'date': date.replace('/', '-'), 'event': event, 'document_name': filename, 'page_no': page})
+            medical_chronology = []
+            for date, event, doctor in list_of_tuples:
+                # Post-processing for date
+                date = date.replace('/', '-')
+                date_parts = date.split('-')
+                year = date_parts[-1]
+                if len(year) < 4:
+                    year = str(2000 + int(year))
+                    date_parts[-1] = year
+                    date = '-'.join(date_parts)
+                date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
 
-            return encounters
+                # Post-processing for doctor name
+                doctor_json = doctor
+                doctor_name = doctor_json['Doctor']
+                doctor_role = doctor_json['Role']
+                doctor_inst = doctor_json['Institution']
+                if doctor_name == 'None':
+                    if doctor_role == 'None':
+                        if doctor_inst == 'None':
+                            doctor = 'Medical Professional'
+                        else:
+                            doctor = 'Medical Professional at ' + doctor_inst
+                    else:
+                        if doctor_inst == 'None':
+                            doctor = doctor_role
+                        else:
+                            doctor = doctor_role + ' at ' + doctor_inst
+                else:
+                    if doctor_role == 'None':
+                        if doctor_inst == 'None':
+                            doctor = doctor_name
+                        else:
+                            doctor = doctor_name + ' from ' + doctor_inst
+                    else:
+                        if doctor_inst == 'None':
+                            doctor = doctor_name + '; ' + doctor_role
+                        else:
+                            doctor = doctor_name + '; ' + doctor_role + ' at ' + doctor_inst
+
+                if doctor == 'Medical Professional':
+                    date_doctor_event = date + " " + event
+                else:
+                    date_doctor_event = date + " " + doctor + " " + event
+
+                page, filename = await self.__get_page_number(date_doctor_event, list_of_page_contents, relevant_chunks)
+                medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'document_name': filename, 'page_no': page})
+
+            return medical_chronology
 
         except Exception:
             return []
 
-    async def get_encounters(self, document):
-        """ This method is used to generate the encounters """
+    async def get_medical_chronology(self, document):
+        """ This method is used to generate the medical chronology """
         filename = os.path.basename(document['name'])
         data = document['page_wise_text']
         x = time.time()
@@ -211,25 +261,25 @@ class EncountersExtractor:
             emb_tokens += self.titan_llm.get_num_tokens(i.page_content)
 
         z = time.time()
-        logger.info(f'[Medical-Insights][Encounter] Chunk Preparation Time: {z - x}')
+        logger.info(f'[Medical-Insights][Medical Chronology] Chunk Preparation Time: {z - x}')
 
-        query = MedicalInsights.Prompts.ENCOUNTER_PROMPT
+        query = MedicalInsights.Prompts.MEDICAL_CHRONOLOGY_PROMPT
         prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
         prompt = PromptTemplate(
             template=prompt_template, input_variables=["context", "question"]
         )
 
-        encounters = []
+        medical_chronology = []
         for docs in stuff_calls:
             vectorstore_faiss = FAISS.from_documents(
                 documents=docs,
                 embedding=self.bedrock_embeddings,
             )
             y = time.time()
-            logger.info(f'[Medical-Insights][Encounter][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
+            logger.info(f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
                         f'and Generation time: {y - z}')
 
-            logger.info(f'[Medical-Insights][Encounter][{self.model_embeddings}] Embedding tokens for LLM call: '
+            logger.info(f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Embedding tokens for LLM call: '
                         f'{self.titan_llm.get_num_tokens(query) + self.titan_llm.get_num_tokens(prompt_template)}')
 
             qa = RetrievalQA.from_chain_type(
@@ -248,10 +298,10 @@ class EncountersExtractor:
             input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.anthropic_llm.get_num_tokens(prompt_template)
             output_tokens = self.anthropic_llm.get_num_tokens(response)
 
-            logger.info(f'[Medical-Insights][Encounter][{self.model_id_llm}] Input tokens: {input_tokens} '
+            logger.info(f'[Medical-Insights][Medical Chronology][{self.model_id_llm}] Input tokens: {input_tokens} '
                         f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
 
-            encounters_list = await self.__post_processing(list_of_page_contents, response, relevant_chunks)
-            encounters.extend(encounters_list)
+            medical_chronology_list = await self.__post_processing(list_of_page_contents, response, relevant_chunks)
+            medical_chronology.extend(medical_chronology_list)
 
-        return {'encounters': encounters}
+        return {'medical_chronology': medical_chronology}
