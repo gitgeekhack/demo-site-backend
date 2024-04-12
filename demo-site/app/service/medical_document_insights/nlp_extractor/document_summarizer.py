@@ -3,7 +3,7 @@ import time
 from fuzzywuzzy import fuzz
 
 from langchain.chains.question_answering import load_qa_chain
-from langchain.llms.bedrock import Bedrock
+from langchain_community.chat_models import BedrockChat
 from langchain.docstore.document import Document
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
@@ -17,24 +17,20 @@ class DocumentSummarizer:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
-        self.model_id_llm = 'anthropic.claude-v2'
+        self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
 
-        self.anthropic_llm = Bedrock(
+        self.anthropic_llm = BedrockChat(
             model_id=self.model_id_llm,
             model_kwargs={
-                "max_tokens_to_sample": 10000,
+                "max_tokens": 4096,
                 "temperature": 0.5,
                 "top_p": 0.9,
-                "top_k": 250,
+                "top_k": 500,
                 "stop_sequences": [],
             },
             client=self.bedrock_client,
         )
-        self.reference_summary_first_lines = [
-            'Based on the provided medical report, here is a summary of the key information:',
-            'Here is a detailed and accurate summary based on the provided medical notes:',
-            'Here is a consolidated summary without duplicate information:',
-            'Based on the consultation note, the key points are:']
+        self.reference_summary_first_last_line = MedicalInsights.LineRemove.SUMMARY_FIRST_LAST_LINE_REMOVE
         self.matching_threshold = 60
 
     async def __generate_summary(self, docs, query):
@@ -55,11 +51,16 @@ class DocumentSummarizer:
         docs = [Document(page_content=t) for t in texts]
         return docs, chunk_length
 
-    async def __is_summary_line_similar(self, generated_summary_first_line):
-        for reference_line in self.reference_summary_first_lines:
-            if fuzz.token_sort_ratio(reference_line, generated_summary_first_line) > self.matching_threshold:
-                return True
-        return False
+    async def __first_line_remove(self, line, examples):
+        words = line.split()
+        start_of_first_line = ' '.join(words[:4])
+        return any(
+            fuzz.token_sort_ratio(start_of_first_line, example) > self.matching_threshold for example in examples)
+
+    async def __last_line_remove(self, line, examples):
+        words = line.split()
+        start_of_last_line = ' '.join(words[:4])
+        return any(fuzz.token_sort_ratio(start_of_last_line, example) > self.matching_threshold for example in examples)
 
     async def __get_stuff_calls(self, docs, chunk_length):
         stuff_calls = []
@@ -89,8 +90,10 @@ class DocumentSummarizer:
         text = summary.replace('- ', '')
         text = text.strip()
         lines = text.split('\n')
-        if await self.__is_summary_line_similar(lines[0]):
+        if await self.__first_line_remove(lines[0], self.reference_summary_first_last_line):
             lines = lines[1:]
+        if await self.__last_line_remove(lines[-1], self.reference_summary_first_last_line):
+            lines = lines[:-1]
 
         if lines[-1].__contains__('?'):
             lines = lines[:-1]
@@ -113,7 +116,7 @@ class DocumentSummarizer:
         y = time.time()
         summary = []
 
-        if len(stuff_calls) <= 1:
+        if len(stuff_calls) == 1:
             if stuff_calls:
                 docs = stuff_calls[0]
                 summary = await self.__generate_summary(docs, query)

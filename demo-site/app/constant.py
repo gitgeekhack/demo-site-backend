@@ -223,6 +223,7 @@ class MedicalInsights:
     TOTAL_PAGES_THRESHOLD = 1000
     REQUEST_FOLDER_NAME = "request"
     RESPONSE_FOLDER_NAME = "response"
+
     class Prompts:
         PROMPT_TEMPLATE = """
         Human: Use the following pieces of context to provide a concise answer to the question at the end. If you don't know the answer, don't try to make up an answer.
@@ -379,7 +380,7 @@ class MedicalInsights:
         Please strictly only provide a JSON result containing the keys 'diagnosis', 'treatments' and 'medications' containing a list of valid entities.
     """
 
-        SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
+        SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input, concentrating specifically on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the patient's medical history. Ensure precision and conciseness to deliver a focused and insightful summary, including the patient's name, age, and hospital name if provided. Avoid any suggestions or misconceptions not presented in the document."""
 
         CONCATENATE_SUMMARY = "Concatenate the summaries and remove the duplicate information from the summaries and make one summary without losing any information."
 
@@ -461,3 +462,15 @@ class MedicalInsights:
         Ensure that height and weight are accurately reflected according to the specified units of measurement.
         Note: If any of the value is not found, fill the value with an empty string.
         """
+
+    class LineRemove:
+        SUMMARY_FIRST_LAST_LINE_REMOVE = [
+            'Based on the provided',
+            'Here is a detailed',
+            'Here is a consolidated',
+            'Based on the',
+            'Based on the detailed',
+            'Based on the provided',
+            'Based on the information provided',
+            'Here is the',
+            'In summary,']
