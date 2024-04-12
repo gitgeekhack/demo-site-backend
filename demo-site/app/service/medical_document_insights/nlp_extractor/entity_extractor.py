@@ -65,14 +65,15 @@ async def parse_date(date):
     return None
 
 
-async def get_valid_entity(entities):
+async def get_valid_entity(entities, page_number):
     """ This method is used to validate entities by checking if alphabetic character is present or not """
 
     valid_entities = {
         "diagnosis": {"allergies": [], "pmh": [], "others": []},
         "treatments": {"pmh": [], "others": []},
         "procedures": {"test": [], "lab_test": [], "reports": []},
-        "medications": {"pmh": [], "others": []}
+        "medications": {"pmh": [], "others": []},
+        "page_no": page_number
     }
 
     async def validate_entity_field(e):
@@ -99,7 +100,7 @@ async def get_valid_entity(entities):
     return valid_entities
 
 
-async def convert_str_into_json(text):
+async def convert_str_into_json(text, page_number):
     """ This method is used to convert str into json object with consistent key-name """
 
     start_index = text.find('{')
@@ -110,7 +111,8 @@ async def convert_str_into_json(text):
         "diagnosis": {"allergies": [], "pmh": [], "others": []},
         "treatments": {"pmh": [], "others": []},
         "procedures": {"test": [], "lab_test": [], "reports": []},
-        "medications": {"pmh": [], "others": []}
+        "medications": {"pmh": [], "others": []},
+        "page_no": page_number
     }
 
     if not json_str or not eval(json_str):
@@ -118,10 +120,10 @@ async def convert_str_into_json(text):
 
     try:
         data = json.loads(json_str)
-        final_data = await get_valid_entity(data)
+        final_data = await get_valid_entity(data, page_number)
 
     except Exception as e:
-        print('%s -> %s', e, traceback.format_exc())
+        logger.error('%s -> %s', e, traceback.format_exc())
         return final_data
 
     return final_data
@@ -176,11 +178,13 @@ async def get_medical_entities(key, value):
     diagnosis_treatment_result = chain_qa.run(input_documents=docs, question=diagnosis_treatment_query)
     procedure_medication_result = chain_qa.run(input_documents=docs, question=procedure_medication_query)
 
-    input_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_query) + anthropic_llm.get_num_tokens(procedure_medication_query) + 2 * (total_tokens))
-    output_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_result) + anthropic_llm.get_num_tokens(procedure_medication_result))
+    input_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_query) + anthropic_llm.get_num_tokens(
+        procedure_medication_query) + 2 * total_tokens)
+    output_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_result) + anthropic_llm.get_num_tokens(
+        procedure_medication_result))
 
-    page_entities = await convert_str_into_json(diagnosis_treatment_result)
-    procedure_medication_entities = await convert_str_into_json(procedure_medication_result)
+    page_entities = await convert_str_into_json(diagnosis_treatment_result, page_number)
+    procedure_medication_entities = await convert_str_into_json(procedure_medication_result, page_number)
     page_entities['procedures'] = procedure_medication_entities['procedures']
     page_entities['medications'] = procedure_medication_entities['medications']
 
