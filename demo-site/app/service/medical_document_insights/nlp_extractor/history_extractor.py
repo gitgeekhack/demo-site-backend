@@ -194,6 +194,11 @@ class HistoryExtractor:
 
         logger.info(f'[Medical-Insights][History][{self.model_id_llm}] Input tokens: {input_tokens} '
                     f'Output tokens: {output_tokens} LLM execution time: {time.time() - llm_start_time}')
+
+        for parent_key in list(output):
+            for key in list(output[parent_key]['values']):
+                output[parent_key]['values'][key.lower()] = output[parent_key]['values'].pop(key)
+
         return output
 
     async def get_psychiatric_injury(self, vectorstore_faiss, list_of_page_contents):
