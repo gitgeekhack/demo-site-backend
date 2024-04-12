@@ -357,27 +357,107 @@ class MedicalInsights:
         Please strictly only provide a JSON result containing the keys 'patient_name' and 'date_of_birth' containing a string as a value.
         """
 
-        ENTITY_PROMPT = """
-        Your task is to identify valid diagnoses, valid treatments and valid medications from the user-provided text without including additional information, notes, and context. 
+        DIAGNOSIS_TREATMENT_ENTITY_PROMPT = """
+            Task: Identify diagnoses and treatments from provided text without extra information.
+            
+            The definition of a valid diagnosis, valid treatment and valid medications is given below:
+            Diagnosis: It is a process of identifying a patient's medical condition based on the evaluation of symptoms, history, and clinical evidence.
+            Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
+            PMH (Past Medical History): It is a record of a patient's health information regarding previous illnesses, surgeries, injuries, treatments, and other relevant medical events in life.
+                    
+            Guidelines for Extraction:
+            1. Exclude negated diagnosis and treatment information.
+            2. Categorize diagnoses as allergy, PMH, or current condition.
+            3. Include signs, injuries, chronic pain, and medical conditions as diagnoses.
+            4. Avoid repetition of PMH, allergies, and clear diagnoses.
+            5. Extract only therapeutic procedures, surgeries, or interventions as treatments. Include past medical procedures under treatments.
+            6. Exclude specific medication names and dosages from treatments.
+            7. Avoid misinterpreting symptoms as diagnoses or treatments.
+            8. Include system organs and direction of organs with medical entities.
+            9. Exclude hypothetical and conditional statements.
+            10. Categorize entities under appropriate PMH based on identification, ensuring treatments are not included in diagnosis and vice versa.
+            
+            Output Response Format:
+            1. Clear distinction between diagnosis and treatment entities.
+            2. Exclude tests from diagnoses.
+            3. Exclude medication from treatments.
+            4. Exclude clinical findings, physical exam findings, and observations.
+            5. Exclude doctor and patient names.
+            6. Avoid repeating diagnoses and treatments if referring to the same condition or treatment.
+            
+            Please provide a JSON response strictly using the format below. Use this response as an example, but do not include the entity if it is not present, and include empty string values for missing keys:
+            {
+              "diagnosis":{
+                "allergies":["Peanuts"],
+                "pmh":["Type 2 Diabetes"],
+                "others":["Hypertension"]
+              },
+              "treatments":{
+                "pmh":["NORCO"],
+                "others":["REST"]
+              }
+            } 
+        """
 
-        The definition of a valid diagnosis, valid treatment and valid medications is given below:
-        Diagnosis: It is a process of identifying a patient's medical condition based on the evaluation of symptoms, history, and clinical evidence.
-        Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
+        PROCEDURE_MEDICATION_ENTITY_PROMPT = """
+        Your task is to identify valid procedures and valid medications from the user-provided text without including additional information, notes, and context.
+        
+        The definition of the medical terms are given below:
+        PMH (Past Medical History): It is a record of a patient's health information regarding previous illnesses, surgeries, injuries, treatments, and other relevant events in life.
+        Procedures: It refers to a method used to conduct tests and analyze laboratory data for health assessment.
         Medication: It refers to drugs or substances used to treat, prevent, or diagnose diseases, relieve symptoms, or improve health.
-
+        Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
+        Tests: It is a medical procedure to determine the presence or extent of a health condition.
+        Laboratory Tests: It is a specific analysis performed on clinical samples to diagnose or monitor diseases.
+        Dosage: It refers to the specific amount of a drug to be taken at one time or within a certain period, as prescribed by a healthcare professional.
+        
         Please follow the below guidelines:
-        1. Do not consider any diagnosis, treatment or medication information with negation.
-        2. Do not misinterpret the symptoms as diagnoses or treatments.
-        3. Associate the system organs and direction of organs with the medical entities.
-        4. Ensure a clear distinction between diagnosis, treatment and medications entities, avoiding overlap.
-        5. Consider Signs and Medical Conditions as a diagnosis. 
-        6. Consider Surgery, Psychotherapy, Immunotherapy, Imaging tests, and procedures as a treatment. 
-        7. Do not consider any diagnosis or treatment with hypothetical or conditional statements.
-        8. Do not consider the specialty of the doctor or practitioner as a medical entity.
-        9. Avoid repeating diagnoses and treatments when different terms refer to the same medical condition or treatment.
-
-        Please strictly only provide a JSON result containing the keys 'diagnosis', 'treatments' and 'medications' containing a list of valid entities.
-    """
+        1. Identify and categorize medications as past medical history (PMH) or current medications, including dosage.
+        2. Exclude 'Medication' entity from the medication category.
+        3. Extract all the procedures from the document and categorize them as tests or laboratory tests.
+        4. Only include diagnostic imaging, blood tests, or other standard medical tests in the test category.
+        5. Ensure that every procedure is linked with the relevant date.
+        6. Ensure treatments are not mistaken as medications.
+        7. Avoid repeating entities across all categories and sub-categories. For instance, if an entity is listed under procedures, do not include it in medications.
+        
+        Please provide a JSON response strictly using the format below. Use this response as an example, but do not include the entity if it is not present, and include empty string values for missing keys:
+        {
+          "procedures":{
+            "test":[
+              {
+                "date":"2023-03-25",
+                "name":"Electrocardiogram (ECG)"
+              }
+            ],
+            "lab_test":[
+              {
+                "date":"2023-03-30",
+                "name":"Hemoglobin A1c"
+              }
+            ],
+            "reports":[
+              {
+                "date":"2023-03-31",
+                "name":"MRI scan report of the brain"
+              }
+            ]
+          },
+          "medications":{
+            "pmh":[
+              {
+                "name":"Metformin",
+                "dosage":"500 mg twice daily"
+              }
+            ],
+            "others":[
+              {
+                "name":"Lisinopril",
+                "dosage":"10 mg once daily"
+              }
+            ]
+          }
+        } 
+        """
 
         SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
 
