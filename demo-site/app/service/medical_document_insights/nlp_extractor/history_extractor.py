@@ -246,9 +246,10 @@ class HistoryExtractor:
                     f'Output tokens: {output_tokens} LLM execution time: {time.time() - llm_start_time}')
         return output
 
-    async def get_history(self, data):
+    async def get_history(self, document):
         """ This method is used to generate the encounters """
 
+        data = document['page_wise_text']
         output = {}
         t1 = time.time()
         docs, list_of_page_contents = await self.__data_formatter(data)
@@ -273,4 +274,4 @@ class HistoryExtractor:
         injury_output = await self.get_psychiatric_injury(vectorstore_faiss, list_of_page_contents)
         output.update(injury_output)
 
-        return {"general_history": output}
+        return {"general_history": output, "document_name": document['name']}
