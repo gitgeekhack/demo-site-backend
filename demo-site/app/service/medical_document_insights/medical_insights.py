@@ -48,6 +48,7 @@ def get_entities_handler(data):
     x = _loop.run_until_complete(get_entities(data))
     return x
 
+
 async def get_patient_demographics(data):
     """ This method is used to get phi dates from document """
 
@@ -116,43 +117,6 @@ def get_history_handler(data):
     return x
 
 
-def format_output(document_wise_response):
-    medical_chronology = []
-    patient_names = []
-    dob_list = []
-    for document_resp in document_wise_response:
-        medical_chronology.extend(document_resp['medical_chronology'])
-        document_resp.pop('medical_chronology')
-
-        patient_names.append(document_resp['patient_information']['patient_name'])
-        document_resp['patient_information'].pop('patient_name')
-
-        dob_list.append(document_resp['patient_information']['date_of_birth'])
-        document_resp['patient_information'].pop('date_of_birth')
-        document_resp['phi_dates'] = document_resp.pop('patient_information')
-
-    medical_chronology = sorted(medical_chronology, key=lambda e: parse_date(e['date']))
-
-    patient_name = ""
-    if len(patient_names) > 0:
-        patient_names.sort(key=len)
-        patient_name = patient_names[-1]
-
-    dob = ""
-    if len(dob_list) > 0:
-        dob = sorted(dob_list)[0]
-
-    resp_obj = {
-        "patient_demographics": {
-            "patient_name": patient_name,
-            "date_of_birth": dob
-        },
-        "medical_chronology": medical_chronology,
-        "documents": document_wise_response
-    }
-    return resp_obj
-
-
 def get_textract_text_handler(document):
     _loop = asyncio.new_event_loop()
     x = _loop.run_until_complete(extract_pdf_text(document))
@@ -181,6 +145,122 @@ def parse_date(date_str):
         raise ValueError("Invalid date format: {}".format(date_str))
 
 
+def format_output(extracted_outputs):
+    logger.info("[Medical-Insights] Formatting of Response started...")
+
+    medical_chronology = []
+    patient_demographics = {}
+    document_wise_response = {}
+    for document_resp in extracted_outputs:
+        if 'document_name' in document_resp.keys():
+            if document_resp['document_name'] not in document_wise_response.keys():
+                document_wise_response[document_resp['document_name']] = {}
+            key = list(document_resp.keys())
+            key.remove("document_name")
+            document_wise_response[document_resp['document_name']][key[0]] = document_resp[key[0]]
+
+        elif "medical_chronology" in document_resp.keys():
+            medical_chronology.extend(document_resp['medical_chronology'])
+        elif "patient_demographics" in document_resp.keys():
+            patient_demographics |= document_resp['patient_demographics']
+
+    document_wise_response_list = []
+
+    for key, value in document_wise_response.items():
+        value |= {"name": os.path.basename(key)}
+        document_wise_response_list.append(value)
+
+    medical_chronology = sorted(medical_chronology, key=lambda e: parse_date(e['date']))
+
+    resp_obj = {
+        "patient_demographics": patient_demographics,
+        "medical_chronology": medical_chronology,
+        "documents": document_wise_response_list
+    }
+
+    logger.info("[Medical-Insights] Formatting of Response ended...")
+    return resp_obj
+
+
+def merge_outputs(formatted_output, project_path):
+    logger.info("[Medical-Insights] Merging of Responses started...")
+    project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+    project_response_file_path = os.path.join(project_response_path, 'output.json')
+    if os.path.exists(project_response_file_path):
+        with open(project_response_file_path, 'r') as file:
+            processed_data = json.loads(file.read())
+        merged_data = dict.fromkeys(processed_data['data'])
+
+        medical_chronology = processed_data['data']['medical_chronology']
+        medical_chronology.extend(formatted_output['medical_chronology'])
+        medical_chronology = sorted(medical_chronology, key=lambda e: parse_date(e['date']))
+
+        documents = processed_data['data']['documents']
+        documents.extend(formatted_output['documents'])
+
+        merged_data['medical_chronology'] = medical_chronology
+        merged_data['documents'] = documents
+
+        combined_demographics = {}
+        for key in processed_data['data']['patient_demographics'].keys():
+            combined_demographics[key] = [processed_data['data']['patient_demographics'][key],
+                                          formatted_output['patient_demographics'][key]]
+
+        patient_demographics = {}
+
+        combined_demographics['patient_name'].sort(key=len)
+        patient_demographics['patient_name'] = combined_demographics['patient_name'][-1]
+
+        patient_demographics['date_of_birth'] = sorted(combined_demographics['date_of_birth'])[0]
+
+        combined_demographics['gender'].sort(key=len)
+        patient_demographics['gender'] = combined_demographics['gender'][-1]
+
+        if combined_demographics['age'][0] == '':
+            patient_demographics['age'] = combined_demographics['age'][1]
+        elif combined_demographics['age'][1] == '':
+            patient_demographics['age'] = combined_demographics['age'][0]
+        else:
+            patient_demographics['age'] = combined_demographics['age'][0] \
+                if int(combined_demographics['age'][0]) > int(combined_demographics['age'][1]) \
+                else combined_demographics['age'][1]
+
+        if combined_demographics['bmi'][0] == '':
+            patient_demographics['bmi'] = combined_demographics['bmi'][1]
+        elif combined_demographics['bmi'][1] == '':
+            patient_demographics['bmi'] = combined_demographics['bmi'][0]
+        else:
+            patient_demographics['bmi'] = combined_demographics['bmi'][1] \
+                if float(combined_demographics['bmi'][0]) != float(combined_demographics['bmi'][1]) \
+                else combined_demographics['bmi'][0]
+
+        if not combined_demographics['height'][0]['date']:
+            patient_demographics['height'] = combined_demographics['height'][1]
+        else:
+            if not combined_demographics['height'][1]['date']:
+                patient_demographics['height'] = combined_demographics['height'][0]
+            else:
+                patient_demographics['height'] = combined_demographics['height'][0] \
+                    if combined_demographics['height'][0]['date'] > combined_demographics['height'][1]['date'] \
+                    else combined_demographics['height'][1]
+
+        if not combined_demographics['weight'][0]['date']:
+            patient_demographics['weight'] = combined_demographics['weight'][1]
+        else:
+            if not combined_demographics['weight'][1]['date']:
+                patient_demographics['weight'] = combined_demographics['weight'][0]
+            else:
+                patient_demographics['weight'] = combined_demographics['weight'][0] \
+                    if combined_demographics['weight'][0]['date'] > combined_demographics['weight'][1]['date'] \
+                    else combined_demographics['weight'][1]
+        merged_data['patient_demographics'] = patient_demographics
+
+        logger.info("[Medical-Insights] Merging of Responses ended...")
+        return merged_data
+    else:
+        return formatted_output
+
+
 async def get_medical_insights(project_path, document_list):
     """ This method is used to get the medical insights from the document """
     try:
@@ -195,26 +275,25 @@ async def get_medical_insights(project_path, document_list):
         for x in document_results.done:
             text_result.append(x.result())
 
-        document_wise_response = []
         task = []
         with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
             for document in text_result:
-                task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
-                task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
+                task.append(executor.submit(get_summary_handler, data=document))
+                task.append(executor.submit(get_entities_handler, data=document))
                 task.append(executor.submit(get_medical_chronology_handler, data=document))
-                task.append(executor.submit(get_patient_information_handler, data=document['page_wise_text']))
-                task.append(executor.submit(get_history_handler, data=document['page_wise_text']))
+                task.append(executor.submit(get_history_handler, data=document))
             task.append(executor.submit(get_patient_demographics_handler, data=text_result))
 
-            extracted_outputs = {'name': os.path.basename(document['name'])}
+            extracted_outputs = []
             results = futures.wait(task)
             for x in results.done:
-                extracted_outputs.update(x.result())
-            document_wise_response.append(extracted_outputs)
-        res = format_output(document_wise_response)
+                extracted_outputs.append(x.result())
+
+        formatted_output = format_output(extracted_outputs)
+        merged_output = merge_outputs(formatted_output, project_path)
         res_obj = {
             "status_code": 200,
-            "data": res,
+            "data": merged_output,
             "message": "OK"
         }
 
@@ -224,6 +303,17 @@ async def get_medical_insights(project_path, document_list):
 
         with open(project_response_file_path, 'w') as file:
             file.write(json.dumps(res_obj))
+        logger.info(f"[Medical-Insights] Output Stored in {project_response_file_path} !!!")
+
+        project_embedding_file_path = os.path.join(project_response_path, 'embeddings.pkl')
+        if os.path.exists(project_embedding_file_path):
+            os.remove(project_embedding_file_path)
+            logger.info(f"[Medical-Insights] embeddings.pkl removed from {project_embedding_file_path} !!!")
+
+        project_vector_file_path = os.path.join(project_response_path, 'embeddings.faiss')
+        if os.path.exists(project_vector_file_path):
+            os.remove(project_vector_file_path)
+            logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
 
     except Exception as e:
         res_obj = {

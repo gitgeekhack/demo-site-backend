@@ -198,10 +198,11 @@ def extract_entity_handler(key, value):
     return x
 
 
-async def get_extracted_entities(json_data):
+async def get_extracted_entities(document):
     """ This method is used to provide medical entities from document"""
 
     global input_tokens, output_tokens
+    json_data = document['page_wise_text']
     manager = multiprocessing.Manager()
     input_tokens = manager.list()
     output_tokens = manager.list()
@@ -226,4 +227,4 @@ async def get_extracted_entities(json_data):
     logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
                 f'Output tokens: {sum(output_tokens)}')
 
-    return {'medical_entities': sorted_page_wise_entities}
+    return {'medical_entities': sorted_page_wise_entities, "document_name": document['name']}

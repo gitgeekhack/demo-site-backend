@@ -101,9 +101,10 @@ class DocumentSummarizer:
         modified_text = '\n'.join(lines)
         return modified_text.strip()
 
-    async def get_summary(self, json_data):
+    async def get_summary(self, document):
         """ This method is used to get the summary of document """
 
+        json_data = document['page_wise_text']
         x = time.time()
         docs, chunk_length = await self.__data_formatter(json_data)
         logger.info(f'[Medical-Insights][Summary] Chunk Preparation Time: {time.time() - x}')
@@ -128,4 +129,4 @@ class DocumentSummarizer:
         logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] LLM execution time: {time.time() - y}')
 
         summary = await self.__post_processing(summary)
-        return {"summary": summary}
+        return {"summary": summary, "document_name": document['name']}
