@@ -193,19 +193,12 @@ class EncountersExtractor:
                 date_with_event = date+" "+event
                 date = date.replace('/', '-')
                 date_parts = date.split('-')
-                if len(date_parts) == 3:
-                    if int(date_parts[0]) > 12:
-                        day = date_parts[0]
-                        month = date_parts[1]
-                    else:
-                        day = date_parts[1]
-                        month = date_parts[0]
+                if len(date_parts) == 3 and int(date_parts[0]) > 12:
+                    date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
                 year = date_parts[-1]
                 if len(year) < 4:
                     year = str(2000 + int(year))
-                date_parts[0] = month
-                date_parts[1] = day
-                date_parts[-1] = year
+                    date_parts[-1] = year
                 date = '-'.join(date_parts)
                 date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
 
