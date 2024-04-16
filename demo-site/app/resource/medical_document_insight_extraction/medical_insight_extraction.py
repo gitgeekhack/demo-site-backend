@@ -17,6 +17,7 @@ from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, F
 
 class MedicalInsightsExtractor:
     async def post(self):
+        logger.info("Post request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
@@ -92,6 +93,7 @@ class MedicalInsightsExtractor:
 
     async def get(self):
         x_uuid = uuid.uuid1()
+        logger.info("GET request received.")
         headers = await get_response_headers()
         try:
             if 'project_path' in self.query.keys():
@@ -115,11 +117,13 @@ class MedicalInsightsExtractor:
                 with open(project_response_file_path, 'r') as file:
                     res = json.loads(file.read())
                     if res["status_code"] == 200:
+                        logger.info("Process is completed and send status code 200.")
                         return web.json_response(data=res['data'], headers=headers, status=200)
                     else:
                         raise Exception
             else:
-                return web.json_response(headers=headers, status=102)
+                logger.info("Processing status send with 425")
+                return web.json_response(headers=headers, status=425)
 
         except FolderPathNull as e:
             response = {"message": f"{e}"}

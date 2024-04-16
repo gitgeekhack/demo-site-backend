@@ -173,7 +173,7 @@ async def get_extracted_entities(json_data):
     entity = {}
 
     task = []
-    with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+    with futures.ThreadPoolExecutor(1) as executor:
         for key, value in json_data.items():
             new_future = executor.submit(extract_entity_handler, key=key,
                                          value=value, page_wise_entities=entity)
