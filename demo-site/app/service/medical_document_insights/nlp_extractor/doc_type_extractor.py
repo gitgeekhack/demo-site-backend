@@ -39,7 +39,6 @@ class DocTypeExtractor:
         self.titan_llm = BedrockChat(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
-
     async def __process_document_type(self, output_text, document):
         template_data = {"type": ""}
 
@@ -91,7 +90,6 @@ class DocTypeExtractor:
                 )
                 texts = text_splitter.split_text(raw_text)
                 break
-        # Create multiple documents
         docs = [Document(page_content=t) for t in texts]
         return docs
 
@@ -126,11 +124,10 @@ class DocTypeExtractor:
         logger.info(f"[Medical-Insights][Document-Type] Embedding Generation for Document Type is completed in {time.time() - t} seconds.")
 
         t = time.time()
-        patient_demographics = await self.__classify_document_type(embeddings, document)
+        document_type = await self.__classify_document_type(embeddings, document)
         logger.info(f"[Medical-Insights][Document-Type] Document Type Extraction is completed in {time.time() - t} seconds.")
 
-        # patient_info['patient_information'].update(patient_name_and_dob)
-        return patient_demographics
+        return document_type
 
 
 
