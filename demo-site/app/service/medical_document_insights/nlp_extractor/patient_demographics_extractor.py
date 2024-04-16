@@ -141,8 +141,7 @@ class PatientDemographicsExtractor:
 
     async def __data_formatter(self, text_lst):
         raw_text = ""
-        for document in text_lst:
-            raw_text += " ".join(document["page_wise_text"].values()) + ""
+        raw_text += " ".join(text_lst["page_wise_text"].values())
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=20000, chunk_overlap=200
         )
@@ -193,7 +192,5 @@ class PatientDemographicsExtractor:
         patient_demographics = await self.__extract_patient_demographics(embeddings)
         logger.info(f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
 
-        return patient_demographics
-
-
+        return {"patient_demographics": patient_demographics['patient_demographics'], "document_name": document_lst['name']}
 

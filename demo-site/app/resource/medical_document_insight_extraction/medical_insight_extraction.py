@@ -60,8 +60,8 @@ class MedicalInsightsExtractor:
 
                 if output_file['status_code'] == 200:
                     processed_documents = []
-                    for document in output_file['data']['documents']:
-                        processed_documents.append(os.path.join(project_path, document['name']))
+                    for document in output_file['data']:
+                        processed_documents.append(os.path.join(project_path, document['document_name']))
                     document_list = list(set(document_list) - set(processed_documents))
             if document_list:
                 asyncio.create_task(get_medical_insights(project_path, document_list))
@@ -134,10 +134,12 @@ class MedicalInsightsExtractor:
                 with open(project_response_file_path, 'r') as file:
                     res = json.loads(file.read())
                     if res["status_code"] == 200:
+                        logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")
                         return web.json_response(data=res['data'], headers=headers, status=200)
                     else:
                         raise Exception
             else:
+                logger.info("[Medical-Insights][GET] Output is still under process")
                 return web.json_response(headers=headers, status=102)
 
         except FolderPathNull as e:
