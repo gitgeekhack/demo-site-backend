@@ -2,6 +2,8 @@ import json
 import os
 import time
 import re
+import dateparser
+from datetime import datetime, timedelta
 
 from langchain.chains import RetrievalQA
 from langchain.docstore.document import Document
@@ -42,14 +44,14 @@ class PatientDemographicsExtractor:
 
     async def __parse_date(self, date):
         """ This method is used to parse the date into MM-DD-YYYY format """
-        import dateparser
-        from datetime import datetime, timedelta
+
         date = dateparser.parse(date, settings={'RELATIVE_BASE': datetime(1800, 1, 1)})
         if date and date.year != 1800:
             if date.year > datetime.now().year:
                 date = date - timedelta(days=36525)
-            date = date.strftime("%d/%m/%Y")
+            date = date.strftime("%m-%d-%Y")
             return date
+        return ""
 
     async def __extract_number(self, text):
         match = re.search(r'(\d+(\.\d+)?)', text)
@@ -154,7 +156,6 @@ class PatientDemographicsExtractor:
                 texts = text_splitter.split_text(raw_text)
                 break
 
-        # Create multiple documents
         docs = [Document(page_content=t) for t in texts]
         return docs
 
@@ -192,7 +193,6 @@ class PatientDemographicsExtractor:
         patient_demographics = await self.__extract_patient_demographics(embeddings)
         logger.info(f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
 
-        # patient_info['patient_information'].update(patient_name_and_dob)
         return patient_demographics
 
 

@@ -11,7 +11,7 @@ from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
 from app.service.medical_document_insights.nlp_extractor.medical_chronology_extractor import MedicalChronologyExtractor
-from app.service.medical_document_insights.nlp_extractor.phi_and_doc_type_extractor import PHIAndDocTypeExtractor
+from app.service.medical_document_insights.nlp_extractor.doc_type_extractor import DocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
 
@@ -66,20 +66,20 @@ def get_patient_demographics_handler(data):
     return x
 
 
-async def get_patient_information(data):
+async def get_document_type(data):
     """ This method is used to get phi dates from document """
 
     x = time.time()
-    logger.info("[Medical-Insights] Extraction of PHI and Document Type is started...")
-    phi_and_doc_type_extractor = PHIAndDocTypeExtractor()
-    patient_information = await phi_and_doc_type_extractor.get_patient_information(data)
-    logger.info(f"[Medical-Insights] Extraction of PHI and Document Type is completed in {time.time() - x} seconds.")
-    return patient_information
+    logger.info("[Medical-Insights] Extraction of Document Type is started...")
+    doc_type_extractor = DocTypeExtractor()
+    doc_type = await doc_type_extractor.extract_document_type(data)
+    logger.info(f"[Medical-Insights] Extraction of Document Type is completed in {time.time() - x} seconds.")
+    return doc_type
 
 
-def get_patient_information_handler(data):
+def get_document_type_handler(data):
     _loop = asyncio.new_event_loop()
-    x = _loop.run_until_complete(get_patient_information(data))
+    x = _loop.run_until_complete(get_document_type(data))
     return x
 
 
@@ -282,6 +282,7 @@ async def get_medical_insights(project_path, document_list):
                 task.append(executor.submit(get_entities_handler, data=document))
                 task.append(executor.submit(get_medical_chronology_handler, data=document))
                 task.append(executor.submit(get_history_handler, data=document))
+                task.append(executor.submit(get_document_type_handler, data=document))
             task.append(executor.submit(get_patient_demographics_handler, data=text_result))
 
             extracted_outputs = []
