@@ -139,8 +139,8 @@ class MedicalInsightsExtractor:
                     else:
                         raise Exception
             else:
-                logger.info("[Medical-Insights][GET] Output is still under process")
-                return web.json_response(headers=headers, status=102)
+                logger.info("[Medical-Insights][GET] Output is still under process, responding with status code 425")
+                return web.json_response(headers=headers, status=425)
 
         except FolderPathNull as e:
             response = {"message": f"{e}"}
