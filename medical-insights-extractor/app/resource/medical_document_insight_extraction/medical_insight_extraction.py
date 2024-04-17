@@ -6,13 +6,14 @@ import asyncio
 import traceback
 from aiohttp import web
 
-from app.constant import MedicalInsights
 from app import logger
-from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
+from app.constant import MedicalInsights
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
-from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull, FolderPathNull,
-                                         MultipleFileUploaded, MissingRequestBody, InvalidRequestBody, TotalPageExceeded)
+from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
+from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
+                                         FolderPathNull, MultipleFileUploaded, MissingRequestBody, InvalidRequestBody,
+                                         TotalPageExceeded)
 
 
 class MedicalInsightsExtractor:
@@ -52,7 +53,8 @@ class MedicalInsightsExtractor:
                 if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
                     raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
 
-            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                         MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
             if os.path.exists(project_response_file_path):
@@ -110,19 +112,20 @@ class MedicalInsightsExtractor:
             if not os.path.exists(project_path):
                 raise FileNotFoundError(project_path)
 
-            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                         MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
             if os.path.exists(project_response_file_path):
                 with open(project_response_file_path, 'r') as file:
                     res = json.loads(file.read())
                     if res["status_code"] == 200:
-                        logger.info("Process is completed and send status code 200.")
+                        logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")
                         return web.json_response(data=res['data'], headers=headers, status=200)
                     else:
                         raise Exception
             else:
-                logger.info("Processing status send with 425")
+                logger.info("[Medical-Insights][GET] Output is still under process, responding with status code 425")
                 return web.json_response(headers=headers, status=425)
 
         except FolderPathNull as e:

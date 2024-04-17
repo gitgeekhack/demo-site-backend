@@ -14,6 +14,17 @@ services:
     ports:
       - "8081:8081"
 
+  medical_insights_extractor:
+    build:
+      context: ../medical-insights-extractor
+      dockerfile: medical_insights.Dockerfile
+    volumes:
+      - "/mnt/user-data:/mnt/user-data:rw"
+    environment:
+      USER_DATA_PATH: "/mnt/user-data"
+    ports:
+      - "8083:8083"
+
   underwriting_automation:
     build:
       context: ../POCs/underwriting-automation
