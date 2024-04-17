@@ -3,6 +3,9 @@ import re
 import ast
 import time
 
+import dateparser
+from datetime import datetime
+
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.bedrock import Bedrock
@@ -170,6 +173,30 @@ class EncountersExtractor:
 
         return most_similar_page, filename
 
+    def __format_date(self, is_alpha, input_date):
+        """ This method is used to parse the date into MM-DD-YYYY format """
+
+        output_date = dateparser.parse(input_date, settings={'RELATIVE_BASE': datetime(2000, 1, 1)})
+        if output_date:
+            output_date = output_date.strftime("%m-%d-%Y")
+            if is_alpha:
+                return output_date
+            if len(input_date.split('/')) == 2:
+                parts = [int(part) for part in output_date.split('-')]
+                if 1 in parts:
+                    return output_date
+                else:
+                    return input_date.replace('/', '-')
+
+            if len(input_date.split('/')) == 1:
+                parts = [int(part) for part in output_date.split('-')]
+                if parts[0] == 1 and parts[1] == 1:
+                    return output_date
+                else:
+                    return input_date.replace('/', '-')
+            return output_date
+        return input_date.replace('/', '-')
+
     async def __post_processing(self, list_of_page_contents, response, relevant_chunks):
         """ This method is used to post-process the LLM response """
 
@@ -191,8 +218,15 @@ class EncountersExtractor:
             encounters = []
             for date, event in list_of_tuples:
                 date_with_event = date+" "+event
-                date = date.replace('/', '-')
-                date_parts = date.split('-')
+                ## Post-processing for date
+
+                # Validation of date by checking alphabet is present or not
+                alpha_pattern = r'[a-zA-Z]'
+                is_alpha = True if re.search(alpha_pattern, date) else False
+
+                # Formatting of date
+                formatted_date = self.__format_date(is_alpha, date)
+                date_parts = formatted_date.split('-')
                 if len(date_parts) == 3 and int(date_parts[0]) > 12:
                     date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
                 year = date_parts[-1]
@@ -201,7 +235,11 @@ class EncountersExtractor:
                     date_parts[-1] = year
                 date = '-'.join(date_parts)
                 date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
-
+                input_date_parts = date.split('-')
+                if len(input_date_parts[0]) == 1:
+                    input_date_parts[0] = '0' + input_date_parts[0]
+                if len(input_date_parts[1]) == 1:
+                    input_date_parts[1] = '0' + input_date_parts[1]
                 page, filename = await self.__get_page_number(date_with_event, list_of_page_contents, relevant_chunks)
                 encounters.append({'date': date, 'event': event, 'document_name': filename, 'page_no': page})
 
