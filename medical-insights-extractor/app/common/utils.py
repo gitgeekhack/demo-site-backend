@@ -1,8 +1,8 @@
 import os
 import sys
+import fitz
 import logging
 import aiofiles
-import fitz
 
 from app.constant import AllowedFileType
 
@@ -10,10 +10,10 @@ USER_DATA_PATH = os.getenv('USER_DATA_PATH')
 ds_path = os.path.join(USER_DATA_PATH, 'data-science')
 sw_path = os.path.join(USER_DATA_PATH, 'software')
 os.makedirs(ds_path, exist_ok=True)
-damage_detection_output_path = os.path.join(ds_path, 'damage-detection-output-images')
-os.makedirs(damage_detection_output_path, exist_ok=True)
 vector_data_path = os.path.join(ds_path, 'vector_database')
 os.makedirs(vector_data_path, exist_ok=True)
+medical_insights_output_path = os.path.join(ds_path, 'medical_insights_output_json')
+os.makedirs(medical_insights_output_path, exist_ok=True)
 
 
 def load_config(import_name):
