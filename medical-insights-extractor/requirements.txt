@@ -32,10 +32,7 @@ joblib==1.4.0
 jsonpatch==1.33
 jsonpointer==2.4
 langchain==0.0.338
-langchain-community==0.0.28
-langchain-core==0.1.32
-langchain-text-splitters==0.0.1
-langsmith==0.1.48
+langsmith==0.0.69
 Levenshtein==0.23.0
 MarkupSafe==2.1.5
 marshmallow==3.21.1
