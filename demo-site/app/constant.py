@@ -276,10 +276,14 @@ class MedicalInsights:
         Notes to keep in mind while extracting 'Doctor' :
         - Ensure that the 'Doctor' pertains to the relevant 'Encounter Date' and 'Event'.
         - In case, if 'Doctor' is found then provide the name of 'Doctor' in the json format as below :
+          Find the 'Institution' or 'Role' relevant to the 'Encounter Date' and 'Event'.
+          'Institution' and 'Role' are defined as below :
+          1. 'Institution' : In medical record, it is defined as the specific workplace of 'Doctor'.
+          2. 'Role' : In medical record, it is defined as the specific work role of 'Doctor'.
           {
             'Doctor' : "Doctor",
-            'Role' : "None",
-            'Institution' : "None"
+            'Role' : "Role",
+            'Institution' : "Institution"
           }
         - In case, if 'Doctor' is unknown then follow steps listed as below to find the 'Doctor' :
           Step-1 : Find the 'Institution' or 'Role' relevant to the 'Encounter Date' and 'Event'.

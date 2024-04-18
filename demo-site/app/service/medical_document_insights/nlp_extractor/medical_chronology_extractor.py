@@ -282,7 +282,7 @@ class MedicalChronologyExtractor:
                     date_doctor_event = date + " " + doctor + " " + event
 
                 page, filename = await self.__get_page_number(date_doctor_event, list_of_page_contents, relevant_chunks)
-                medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'page_no': page})
+                medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'hospital_name': doctor_inst, 'page_no': page})
 
             return medical_chronology
 
