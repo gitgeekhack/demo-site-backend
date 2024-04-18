@@ -289,6 +289,23 @@ class MedicalChronologyExtractor:
         except Exception:
             return []
 
+    def parse_date(self, date_str):
+        parts = date_str.split('-')
+        if len(parts) == 3:
+            month, day, year = map(int, parts)
+            return year, month, day
+        elif len(parts) == 2:
+            month, year = map(int, parts)
+            day = 1
+            return year, month, day
+        elif len(parts) == 1:
+            year = int(parts[0])
+            month = 1
+            day = 1
+            return year, month, day
+        else:
+            raise ValueError("Invalid date format: {}".format(date_str))
+
     async def get_medical_chronology(self, document):
         """ This method is used to generate the medical chronology """
         filename = os.path.basename(document['name'])
@@ -344,4 +361,5 @@ class MedicalChronologyExtractor:
             medical_chronology_list = await self.__post_processing(list_of_page_contents, response, relevant_chunks)
             medical_chronology.extend(medical_chronology_list)
 
-        return {'medical_chronology': medical_chronology}
+        medical_chronology = sorted(medical_chronology, key=lambda e: self.parse_date(e['date']))
+        return {'medical_chronology': medical_chronology, 'document_name': document['name']}

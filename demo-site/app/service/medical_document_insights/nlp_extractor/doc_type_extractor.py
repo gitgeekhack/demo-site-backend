@@ -50,7 +50,7 @@ class DocTypeExtractor:
             return template_data
 
         data = json.loads(json_str)
-        return {"type": data['document_type'], "document_name": document['name']}
+        return {"document_type": data['document_type'], "document_name": document['name']}
 
     async def __classify_document_type(self, vectorstore_faiss, document):
 
