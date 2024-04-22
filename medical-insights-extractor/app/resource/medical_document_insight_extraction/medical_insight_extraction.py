@@ -6,8 +6,8 @@ import asyncio
 import traceback
 from aiohttp import web
 
-from app.constant import MedicalInsights
 from app import logger
+from app.constant import MedicalInsights
 from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
@@ -17,6 +17,7 @@ from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, F
 
 class MedicalInsightsExtractor:
     async def post(self):
+        logger.info("Post request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
@@ -110,6 +111,7 @@ class MedicalInsightsExtractor:
             return web.json_response(response, headers=headers, status=500)
 
     async def get(self):
+        logger.info("GET request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
