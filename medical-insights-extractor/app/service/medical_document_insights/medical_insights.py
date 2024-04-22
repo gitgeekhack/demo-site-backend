@@ -4,9 +4,10 @@ import json
 import asyncio
 import traceback
 from concurrent import futures
+import aiofiles
 
 from app import logger
-from app.constant import MedicalInsights
+from app.constant import MedicalInsights, BotoClient
 from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
@@ -14,6 +15,7 @@ from app.service.medical_document_insights.nlp_extractor.medical_chronology_extr
 from app.service.medical_document_insights.nlp_extractor.doc_type_extractor import DocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
+from app.service.helper.S3_helper import S3HelperAsync
 
 
 async def get_summary(data):
@@ -156,14 +158,46 @@ def merge_outputs(formatted_output, project_path):
     if os.path.exists(project_response_file_path):
         with open(project_response_file_path, 'r') as file:
             processed_data = json.loads(file.read())
-
-        documents = processed_data['data']
-        documents.extend(formatted_output)
-
-        logger.info("[Medical-Insights] Merging of Responses ended...")
-        return documents
+        if processed_data['status_code'] == 200:
+            documents = processed_data['data']
+            documents.extend(formatted_output)
+            logger.info("[Medical-Insights] Merging of Responses ended...")
+            return documents
+        else:
+            return formatted_output
     else:
         return formatted_output
+
+
+async def process_document(keyword, path_parts, document, aws_folder_name, user_id, project_id, s3uploader, aws_bucket):
+    x = time.time()
+    logger.info("[Medical-Insights] Upload file to s3 bucket is started...")
+
+    keyword_index = path_parts.index(keyword)
+    sub_path = os.sep.join(path_parts[keyword_index:])
+    aws_key_path = os.path.join(aws_folder_name, user_id, project_id, sub_path)
+
+    async with aiofiles.open(document, 'rb') as f:
+        file_obj = await f.read()
+        await s3uploader.upload_object(aws_bucket, aws_key_path, file_obj)
+
+    logger.info(f"[Medical-Insights] Upload file to s3 bucket is completed in {time.time() - x} seconds.")
+
+
+async def upload_file_to_s3(document):
+    s3uploader = S3HelperAsync()
+    aws_bucket = BotoClient.AWS_BUCKET
+    aws_folder_name = BotoClient.AWS_KEY_PATH
+
+    path_parts = document.split(os.sep)
+
+    uploads_index = path_parts.index('uploads')
+    user_id = path_parts[uploads_index + 1]
+    project_id = path_parts[uploads_index + 2]
+
+    for keyword in ['request', 'response']:
+        if keyword in path_parts:
+            await process_document(keyword, path_parts, document, aws_folder_name, user_id, project_id, s3uploader, aws_bucket)
 
 
 async def get_medical_insights(project_path, document_list):
@@ -175,6 +209,9 @@ async def get_medical_insights(project_path, document_list):
             for document in document_list:
                 new_future = executor.submit(get_textract_text_handler, document=document)
                 document_task.append(new_future)
+
+        for document in document_list:
+            await upload_file_to_s3(document)
 
         document_results = futures.wait(document_task)
         for x in document_results.done:
@@ -220,6 +257,8 @@ async def get_medical_insights(project_path, document_list):
         if os.path.exists(project_vector_file_path):
             os.remove(project_vector_file_path)
             logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
+
+        await upload_file_to_s3(project_response_file_path)
 
     except Exception as e:
         res_obj = {

@@ -4,6 +4,8 @@ USER_DATA_PATH = os.getenv("USER_DATA_PATH")
 
 
 class BotoClient:
+    AWS_BUCKET = "medical-insights-extractor-ds"
+    AWS_KEY_PATH = "user-data/"
     AWS_DEFAULT_REGION = "us-east-1"
     read_timeout = 3600
     connect_timeout = 3600
