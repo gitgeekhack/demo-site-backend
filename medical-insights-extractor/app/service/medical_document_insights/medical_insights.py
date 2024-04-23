@@ -13,7 +13,8 @@ from app.service.medical_document_insights.nlp_extractor.document_summarizer imp
 from app.service.medical_document_insights.nlp_extractor.medical_chronology_extractor import MedicalChronologyExtractor
 from app.service.medical_document_insights.nlp_extractor.doc_type_extractor import DocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
-from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
+from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import \
+    PatientDemographicsExtractor
 
 
 async def get_summary(data):
@@ -107,7 +108,8 @@ async def get_history(data):
     logger.info("[Medical-Insights] History & Psychiatric Injury Extraction is started...")
     history_extractor = HistoryExtractor()
     history_info = await history_extractor.get_history(data)
-    logger.info(f"[Medical-Insights] History & Psychiatric Injury Extraction is completed in {time.time() - x} seconds.")
+    logger.info(
+        f"[Medical-Insights] History & Psychiatric Injury Extraction is completed in {time.time() - x} seconds.")
     return history_info
 
 
@@ -151,14 +153,18 @@ def format_output(extracted_outputs):
 
 def merge_outputs(formatted_output, project_path):
     logger.info("[Medical-Insights] Merging of Responses started...")
-    project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+    project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                 MedicalInsights.RESPONSE_FOLDER_NAME)
     project_response_file_path = os.path.join(project_response_path, 'output.json')
     if os.path.exists(project_response_file_path):
         with open(project_response_file_path, 'r') as file:
             processed_data = json.loads(file.read())
 
-        documents = processed_data['data']
-        documents.extend(formatted_output)
+        if processed_data['status_code'] == 200:
+            documents = processed_data['data']
+            documents.extend(formatted_output)
+        else:
+            documents = formatted_output
 
         logger.info("[Medical-Insights] Merging of Responses ended...")
         return documents
@@ -203,7 +209,8 @@ async def get_medical_insights(project_path, document_list):
             "message": "OK"
         }
 
-        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
 
@@ -228,7 +235,8 @@ async def get_medical_insights(project_path, document_list):
             "message": "Internal Server Error"
         }
         logger.error(f'{e} -> {traceback.format_exc()}')
-        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
         project_response_file_path = os.path.join(project_response_path, 'output.json')
         with open(project_response_file_path, 'w') as file:
