@@ -96,10 +96,19 @@ class MedicalInsights:
         - Ensure all 'Event' descriptions should include the key points, context, and any relevant supporting details.
         - Also ensure all 'Event' descriptions are more detailed, thorough and comprehensive yet a concise summary in medium-sized paragraph.
 
+        'Reference' : It is an exact reference text from the medical record which is most relevant to the extracted date and event.
+        Notes to keep in mind while extracting 'Reference' :
+        - Ensure to provide the exact reference text avoiding any deviations from the original text.
+        - Strictly ensure to restrict the length of 'Reference' to the medium-sized phrase.
+        - Ensure to provide the 'Reference' in the json format as below :
+        {
+          'Reference' : "Reference"
+        }
+
         You are required to present this output in a specific format using 'Tuple' and 'List'.
         Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
-        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date' and 'Event'. It is created using parentheses and should be formatted as (Encounter Date, Event).
-        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ (Encounter Date, Event) ].
+        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date' and 'Event'. It is created using parentheses and should be formatted as ("Encounter Date", "Event", "Reference").
+        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ ("Encounter Date", "Event", "Reference") ].
         Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
         Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
         """

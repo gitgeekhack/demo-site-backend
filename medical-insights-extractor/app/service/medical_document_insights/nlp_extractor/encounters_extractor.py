@@ -6,6 +6,8 @@ import time
 import dateparser
 from datetime import datetime
 
+from fuzzywuzzy import fuzz
+
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.bedrock import Bedrock
@@ -136,42 +138,42 @@ class EncountersExtractor:
 
         return stuff_calls
 
-    async def __get_page_number(self, date_with_event, list_of_page_contents, relevant_chunks):
-        cosine_similarities = []
+    async def __get_page_number(self, reference_text, list_of_page_contents, relevant_chunks):
+        most_similar_chunk = None
         for chunk in relevant_chunks:
-            all_text = [chunk.page_content]
-            all_text.append(date_with_event)
+            if reference_text.lower() in chunk.page_content.lower():
+                most_similar_chunk = chunk
+                break
+        if most_similar_chunk is None:
+            text_matching_ratios = []
+            for chunk in relevant_chunks:
+                text_matching_ratios.append(fuzz.token_set_ratio(reference_text, chunk.page_content))
 
-            vectorizer = CountVectorizer()
-            vectorized_text = vectorizer.fit_transform(all_text)
+            most_similar_chunk_index = text_matching_ratios.index(max(text_matching_ratios))
 
-            cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
-            all_text = []
+            most_similar_chunk = relevant_chunks[most_similar_chunk_index]
 
-        most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
-
-        most_similar_chunk = relevant_chunks[most_similar_chunk_index]
         filename = most_similar_chunk.metadata['source']
         start_page = most_similar_chunk.metadata['start_page']
         end_page = most_similar_chunk.metadata['end_page']
         relevant_pages = list_of_page_contents[start_page - 1: end_page]
 
-        cosine_similarities = []
+        most_similar_page = None
         for page in relevant_pages:
-            all_text = [page.page_content]
-            all_text.append(date_with_event)
+            if reference_text.lower() in page.page_content.lower():
+                most_similar_page = page
+                break
+        if most_similar_page is None:
+            text_matching_ratios = []
+            for page in relevant_pages:
+                text_matching_ratios.append(fuzz.token_set_ratio(reference_text, page.page_content))
 
-            vectorizer = CountVectorizer()
-            vectorized_text = vectorizer.fit_transform(all_text)
+            most_similar_page_index = text_matching_ratios.index(max(text_matching_ratios))
 
-            cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
-            all_text = []
+            most_similar_page = relevant_pages[most_similar_page_index]
+        page_number = most_similar_page.metadata['page']
 
-        most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
-
-        most_similar_page = [page.metadata['page'] for page in relevant_pages][most_similar_page_index]
-
-        return most_similar_page, filename
+        return page_number, filename
 
     def __format_date(self, is_alpha, input_date):
         """ This method is used to parse the date into MM-DD-YYYY format """
@@ -210,14 +212,14 @@ class EncountersExtractor:
 
             except Exception:
                 # Use a regular expression to match the dates and events
-                matches = re.findall(r'\(([^,]*), ([^\)]*)\)', string_of_tuples)
+                matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', string_of_tuples)
 
                 # Convert the matches to a list of tuples
-                list_of_tuples = [(date.strip(), event.strip()) for date, event in matches]
+                list_of_tuples = [(date.strip(), event.strip(), reference.strip()) for date, event, reference in matches]
 
             encounters = []
-            for date, event in list_of_tuples:
-                date_with_event = date+" "+event
+            for date, event, reference in list_of_tuples:
+                reference_text = reference['Reference']
                 ## Post-processing for date
 
                 # Validation of date by checking alphabet is present or not
@@ -240,7 +242,7 @@ class EncountersExtractor:
                     input_date_parts[0] = '0' + input_date_parts[0]
                 if len(input_date_parts[1]) == 1:
                     input_date_parts[1] = '0' + input_date_parts[1]
-                page, filename = await self.__get_page_number(date_with_event, list_of_page_contents, relevant_chunks)
+                page, filename = await self.__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
                 encounters.append({'date': date, 'event': event, 'document_name': filename, 'page_no': page})
 
             return encounters
