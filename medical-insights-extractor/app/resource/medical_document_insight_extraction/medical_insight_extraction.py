@@ -2,16 +2,16 @@ import os
 import uuid
 import json
 import glob
+import boto3
 import asyncio
 import traceback
 from aiohttp import web
-import boto3
-from app.constant import MedicalInsights, BotoClient
 
 from app import logger
 from app.constant import MedicalInsights
-from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, \
-    get_pdf_page_count
+from app.common.utils import (is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path,
+                              get_pdf_page_count)
+from app.common.s3_utils import s3_utils
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
 from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, FilePathNull, InputQueryNull,
@@ -19,11 +19,13 @@ from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, F
                                          MultipleFileUploaded, MissingRequestBody, InvalidRequestBody,
                                          TotalPageExceeded)
 
+AWS_BUCKET = MedicalInsights.AWS_BUCKET
+encrypted_key = b'\xfbu\xc3\xf83\xe1\xa6\xb8\x06\xa5\x8cdv\xd1\x83,\xd7L\xa8^\xae\xbd\xa9\x17P\x19\xb4\x88(|>\x9c'
+
 
 class MedicalInsightsExtractor:
+
     async def post(self):
-        aws_bucket = BotoClient.AWS_BUCKET
-        client = boto3.client('s3')
         logger.info("Post request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
@@ -47,58 +49,47 @@ class MedicalInsightsExtractor:
                 raise InvalidRequestBody()
 
             if project_path.startswith(MedicalInsights.PREFIX):
-                updated_path = project_path[len(MedicalInsights.PREFIX):]
+                key = project_path.replace(MedicalInsights.PREFIX, '')
             else:
-                raise Exception(project_path)
+                raise InvalidRequestBody()
 
-            response = client.list_objects_v2(Bucket=aws_bucket, Prefix=updated_path)
-            if 'Contents' not in response or not len(response['Contents']) > 0:
-                raise FileNotFoundError(response)
+            response = await s3_utils.check_s3_path_exists(aws_bucket=AWS_BUCKET, key=key)
 
-            documents = []
+            if not response:
+                raise FileNotFoundError(project_path)
+
+            download_path = key.replace('user-data', 'static')
+            if not os.path.exists(download_path):
+                os.makedirs(download_path, exist_ok=False)
+
+            page_count = 0
             for item in response['Contents']:
+
                 if item['Key'].endswith('.pdf'):
-                    documents.append(item['Key'])
+                    document_name = os.path.basename(item['Key'])
 
-            download_dir = MedicalInsights.DOWNLOAD_DIR
+                    x = os.path.join(download_path, document_name)
+                    await s3_utils.download_object(AWS_BUCKET, item['Key'], x)
+                    page_count += get_pdf_page_count(x)
 
-            if not os.path.exists(download_dir):
-                os.makedirs(download_dir)
+                    if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
+                        raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
+                else:
+                    raise InvalidFile(item['Key'])
 
-            for document in documents:
-                file_name = document.split('/')[-1]
-                s3_response = client.get_object(Bucket=aws_bucket, Key=document)
-                s3_object_body = s3_response.get('Body')
-                content = s3_object_body.read()
-                full_path = os.path.join(download_dir, file_name)
+            document_list = glob.glob(os.path.join(download_path, '*'))
 
-                with open(full_path, 'wb') as file:
-                    file.write(content)
-
-            document_list = glob.glob(os.path.join(download_dir, '*'))
-            for file_path in document_list:
-                if not is_pdf_file(file_path):
-                    raise InvalidFile(file_path)
-
-                page_count = 0
-                page_count += get_pdf_page_count(file_path)
-                if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
-                    raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
-
-            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
-                                                         MedicalInsights.RESPONSE_FOLDER_NAME)
+            project_response_path = key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
-            if project_response_file_path.startswith(MedicalInsights.PREFIX):
-                project_response_file_path = project_response_file_path[len(MedicalInsights.PREFIX):]
+            s3_response = await s3_utils.check_s3_path_exists(aws_bucket=AWS_BUCKET, key=project_response_file_path)
 
-            updated_project_response_file_path = client.put_object(Bucket=aws_bucket, Key=project_response_file_path,
-                                                                   SSECustomerKey=b'\xfbu\xc3\xf83\xe1\xa6\xb8\x06\xa5\x8cdv\xd1\x83,\xd7L\xa8^\xae\xbd\xa9\x17P\x19\xb4\x88(|>\x9c',
-                                                                   SSECustomerAlgorithm="AES256")
+            if s3_response:
+                local_file_path = project_response_file_path.replace(f'{MedicalInsights.PREFIX}/user-data', 'static')
+                await s3_utils.download_object(AWS_BUCKET, project_response_file_path, local_file_path)
 
-            if not os.path.exists(updated_project_response_file_path):
-                os.makedirs(updated_project_response_file_path)
-                with open(updated_project_response_file_path, 'r') as file:
+                with open(local_file_path, 'r') as file:
                     output_file = json.loads(file.read())
 
                 if output_file['status_code'] == 200:
@@ -107,17 +98,9 @@ class MedicalInsightsExtractor:
                         processed_documents.append(os.path.join(project_path, document['document_name']))
                     document_list = list(set(document_list) - set(processed_documents))
 
-            # if os.path.exists(project_response_file_path):
-            #     with open(project_response_file_path, 'r') as file:
-            #         output_file = json.loads(file.read())
-            #
-            #     if output_file['status_code'] == 200:
-            #         processed_documents = []
-            #         for document in output_file['data']:
-            #             processed_documents.append(os.path.join(project_path, document['document_name']))
-            #         document_list = list(set(document_list) - set(processed_documents))
             if document_list:
                 asyncio.create_task(get_medical_insights(project_path, document_list))
+
             return web.json_response(headers=headers, status=202)
 
         except TotalPageExceeded as e:

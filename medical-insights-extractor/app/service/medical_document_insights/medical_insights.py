@@ -17,7 +17,6 @@ from app.service.medical_document_insights.nlp_extractor.medical_chronology_extr
 from app.service.medical_document_insights.nlp_extractor.doc_type_extractor import DocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
-from app.service.helper.S3_helper import S3HelperAsync
 from app.common.utils import is_pdf_file
 
 
