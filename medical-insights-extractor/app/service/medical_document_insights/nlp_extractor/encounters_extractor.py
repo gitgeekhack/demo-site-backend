@@ -145,11 +145,11 @@ class EncountersExtractor:
                 most_similar_chunk = chunk
                 break
         if most_similar_chunk is None:
-            cosine_similarities = []
+            text_matching_ratios = []
             for chunk in relevant_chunks:
-                cosine_similarities.append(fuzz.token_set_ratio(reference_text, chunk.page_content))
+                text_matching_ratios.append(fuzz.token_set_ratio(reference_text, chunk.page_content))
 
-            most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
+            most_similar_chunk_index = text_matching_ratios.index(max(text_matching_ratios))
 
             most_similar_chunk = relevant_chunks[most_similar_chunk_index]
 
@@ -164,11 +164,11 @@ class EncountersExtractor:
                 most_similar_page = page
                 break
         if most_similar_page is None:
-            cosine_similarities = []
+            text_matching_ratios = []
             for page in relevant_pages:
-                cosine_similarities.append(fuzz.token_set_ratio(reference_text, page.page_content))
+                text_matching_ratios.append(fuzz.token_set_ratio(reference_text, page.page_content))
 
-            most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
+            most_similar_page_index = text_matching_ratios.index(max(text_matching_ratios))
 
             most_similar_page = relevant_pages[most_similar_page_index]
         page_number = most_similar_page.metadata['page']
