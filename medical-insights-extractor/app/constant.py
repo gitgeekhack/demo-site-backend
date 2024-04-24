@@ -36,6 +36,8 @@ class MedicalInsights:
     TOTAL_PAGES_THRESHOLD = 1000
     REQUEST_FOLDER_NAME = "request"
     RESPONSE_FOLDER_NAME = "response"
+    PREFIX = "s3://medical-insights-extractor-ds/"
+    DOWNLOAD_DIR = '/home/kashyap/Desktop/download_pdf/'
 
     class Prompts:
         PROMPT_TEMPLATE = """

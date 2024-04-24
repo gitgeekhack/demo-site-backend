@@ -1,8 +1,5 @@
 import io
-import os
 import boto3
-
-os.environ['AWS_PROFILE'] = "maruti-poc"
 
 
 class S3HelperAsync:
@@ -19,5 +16,3 @@ class S3HelperAsync:
         """
         file_object = io.BytesIO(file_object)
         self.client.upload_fileobj(file_object, bucket, key, ExtraArgs={"ServerSideEncryption": "AES256"})
-        url = f's3://{bucket}/{key}'
-        return url
