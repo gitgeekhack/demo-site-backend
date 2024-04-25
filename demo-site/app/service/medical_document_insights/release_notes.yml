@@ -1,13 +1,10 @@
 business_announcement:
- title: Streamlining Data Extraction and Processing
- highlights:
-   - Advanced date handling with dateparser and datetime libraries
-   - Separation of medical insights extractor web app for better scalability
-   - Optimized encounter extraction module for accurate data
-   - Codebase maintenance and naming convention fixes
- summary: >
-   Announcing enhancements to data extraction and processing capabilities,
-   including improved date handling, architectural changes for scalability,
-   optimizations for encounter extraction, and codebase maintenance.
-   These developments enable more accurate insights and efficient solutions
-   for our clients.
+  Medical Insights Extractor
+Existing POC updated to support below features:
+  - Supporting Project feature with facility to bulk upload documents allowing 1000 pages per project. 
+  - User can now create multiple projects as per total page limit set.
+  - Export PDF feature
+  - Hyperlink to page in PDF
+  - Date format updated to “MM-DD-YYYY”
+  - Separation of medical insights extractor web app for better scalability
+  - Optimized Medical Chronology encounter extraction module for accurate page linking.
