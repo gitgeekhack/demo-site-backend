@@ -112,7 +112,7 @@ class PHIAndDocTypeExtractor:
         if date and date.year != 1800:
             if date.year > datetime.now().year:
                 date = date - timedelta(days=36525)
-            date = date.strftime("%d/%m/%Y")
+            date = date.strftime("%m-%d-%Y")
             return date
         return "None"
 
@@ -176,6 +176,16 @@ class PHIAndDocTypeExtractor:
         doc_type_value = response['document_type']
         return doc_type_value
 
+    async def __parse_dates_in_phi_response(self, response):
+        parsed_response = {}
+        for key, dates in response.items():
+            parsed_dates = []
+            for date in dates:
+                parsed_date = await self.__parse_date(date)
+                parsed_dates.append(parsed_date)
+            parsed_response[key] = parsed_dates
+        return parsed_response
+
     async def __get_phi_dates(self, embeddings, document_type):
         """ This method is to provide the PHI dates from the document """
 
@@ -216,10 +226,12 @@ class PHIAndDocTypeExtractor:
             result_key = await self.__get_key(key)
             dates[result_key] = value if isinstance(value, list) else [value]
 
+        parsed_dates = await self.__parse_dates_in_phi_response(dates)
+
         if document_type == "Ambulance" or document_type == "Emergency":
             dates["injury_dates"] = dates["admission_dates"]
 
-        return {'patient_information': dates}
+        return {'patient_information': parsed_dates}
 
     async def __get_patient_name_and_dob(self, embeddings):
         """ This method is to provide the Patient Name and DOB from the document """

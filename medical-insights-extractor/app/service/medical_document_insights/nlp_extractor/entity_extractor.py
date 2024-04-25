@@ -64,8 +64,8 @@ async def get_valid_entity(entities):
         for entity in entity_list:
             processed_entity = await is_alpha(entity)
             if processed_entity and entity.strip():
-                valid_entities[key].append(entity)
-
+                x = entity[0].upper() + entity[1:]
+                valid_entities[key].append(x)
     return valid_entities
 
 
@@ -173,7 +173,7 @@ async def get_extracted_entities(json_data):
     entity = {}
 
     task = []
-    with futures.ThreadPoolExecutor(os.cpu_count() - 1) as executor:
+    with futures.ThreadPoolExecutor(1) as executor:
         for key, value in json_data.items():
             new_future = executor.submit(extract_entity_handler, key=key,
                                          value=value, page_wise_entities=entity)

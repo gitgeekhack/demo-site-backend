@@ -2,9 +2,9 @@ import os
 import time
 from fuzzywuzzy import fuzz
 
-from langchain.chains.question_answering import load_qa_chain
 from langchain.llms.bedrock import Bedrock
 from langchain.docstore.document import Document
+from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
