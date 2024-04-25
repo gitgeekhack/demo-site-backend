@@ -4,9 +4,6 @@ import json
 import asyncio
 import traceback
 from concurrent import futures
-import aiofiles
-import io
-import boto3
 
 from app import logger
 from app.constant import MedicalInsights, BotoClient
@@ -17,7 +14,10 @@ from app.service.medical_document_insights.nlp_extractor.medical_chronology_extr
 from app.service.medical_document_insights.nlp_extractor.doc_type_extractor import DocTypeExtractor
 from app.service.medical_document_insights.nlp_extractor.history_extractor import HistoryExtractor
 from app.service.medical_document_insights.nlp_extractor.patient_demographics_extractor import PatientDemographicsExtractor
-from app.common.utils import is_pdf_file
+from app.common.s3_utils import s3_utils
+
+AWS_BUCKET = MedicalInsights.AWS_BUCKET
+encrypted_key = b'\xfbu\xc3\xf83\xe1\xa6\xb8\x06\xa5\x8cdv\xd1\x83,\xd7L\xa8^\xae\xbd\xa9\x17P\x19\xb4\x88(|>\x9c'
 
 
 async def get_summary(data):
@@ -171,50 +171,16 @@ def merge_outputs(formatted_output, project_path):
         return formatted_output
 
 
-async def process_document(keyword, path_parts, document, user_id, project_id):
-    s3uploader = S3HelperAsync()
-    aws_bucket = BotoClient.AWS_BUCKET
-    aws_folder_name = BotoClient.AWS_KEY_PATH
-
-    x = time.time()
-    logger.info("[Medical-Insights] Upload file to s3 bucket is started...")
-
-    keyword_index = path_parts.index(keyword)
-    sub_path = os.sep.join(path_parts[keyword_index:])
-    aws_key_path = os.path.join(aws_folder_name, user_id, project_id, sub_path)
-
-    async with aiofiles.open(document, 'rb') as f:
-        file_obj = await f.read()
-        await s3uploader.upload_object(aws_bucket, aws_key_path, file_obj)
-
-    logger.info(f"[Medical-Insights] Upload file to s3 bucket is completed in {time.time() - x} seconds.")
-
-
-async def upload_file_to_s3(document):
-    path_parts = document.split(os.sep)
-
-    uploads_index = path_parts.index('uploads')
-    user_id = path_parts[uploads_index + 1]
-    project_id = path_parts[uploads_index + 2]
-
-    for keyword in [MedicalInsights.REQUEST_FOLDER_NAME, 'response']:
-        if keyword in path_parts:
-            await process_document(keyword, path_parts, document, user_id, project_id)
-
-
 async def get_medical_insights(project_path, document_list):
     """ This method is used to get the medical insights from the document """
-    client = boto3.client('s3')
     try:
         text_result = []
         document_task = []
         with futures.ThreadPoolExecutor(2) as executor:
             for document in document_list:
-                new_future = executor.submit(get_textract_text_handler, document=document)
-                document_task.append(new_future)
-
-        for document in document_list:
-            await upload_file_to_s3(document)
+                if document.endswith('.pdf'):
+                    new_future = executor.submit(get_textract_text_handler, document=document)
+                    document_task.append(new_future)
 
         document_results = futures.wait(document_task)
         for x in document_results.done:
@@ -245,46 +211,24 @@ async def get_medical_insights(project_path, document_list):
 
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         os.makedirs(project_response_path, exist_ok=True)
-        # project_response_file_path = os.path.join(project_response_path, 'output.json')
+        project_response_file_path = os.path.join(project_response_path, 'output.json')
 
-        # with open(project_response_file_path, 'w') as file:
-        #     file.write(json.dumps(res_obj))
-        path_parts = project_response_path.split(os.sep)
+        result = json.dumps(res_obj)
+        result = result.encode("utf-8")
+        x = project_response_file_path.replace("static/", 'user-data/')
 
-        uploads_index = path_parts.index('uploads')
-        user_id = path_parts[uploads_index + 1]
-        project_id = path_parts[uploads_index + 2]
-        aws_bucket = BotoClient.AWS_BUCKET
-        aws_folder_name = BotoClient.AWS_KEY_PATH
-        aws_key_path = f"{aws_folder_name} + {user_id} + {project_id} {MedicalInsights.RESPONSE_FOLDER_NAME} +  'output.json'"
-
-        json_str = json.dumps(res_obj)
-        json_bytes = json_str.encode('utf-8')
-        file_object = io.BytesIO(json_bytes)
-        client.upload_fileobj(file_object, aws_bucket, aws_key_path, ExtraArgs={"ServerSideEncryption": "AES256"})
-        # await upload_file_to_s3(json_bytes)
-        # s3uploader = S3HelperAsync()
-        # aws_bucket = BotoClient.AWS_BUCKET
-        # aws_folder_name = BotoClient.AWS_KEY_PATH
-        # aws_key_path = aws_folder_name + 'response'
-        # async with aiofiles.open(res_obj, 'rb') as f:
-        #     file_obj = await f.read()
-        #     await s3uploader.upload_object(file_obj, aws_bucket, aws_key_path)
-        # logger.info(f"[Medical-Insights] Output Stored in {project_response_file_path} !!!")
+        await s3_utils.upload_object(AWS_BUCKET, x, result, encrypted_key)
+        logger.info(f"[Medical-Insights] Output Stored in {project_response_file_path} !!!")
 
         project_embedding_file_path = os.path.join(project_response_path, 'embeddings.pkl')
-        await upload_file_to_s3(project_embedding_file_path)
-        # if os.path.exists(project_embedding_file_path):
-        #     os.remove(project_embedding_file_path)
-        #     logger.info(f"[Medical-Insights] embeddings.pkl removed from {project_embedding_file_path} !!!")
+        if os.path.exists(project_embedding_file_path):
+            os.remove(project_embedding_file_path)
+            logger.info(f"[Medical-Insights] embeddings.pkl removed from {project_embedding_file_path} !!!")
 
         project_vector_file_path = os.path.join(project_response_path, 'embeddings.faiss')
-        await upload_file_to_s3(project_vector_file_path)
-        # if os.path.exists(project_vector_file_path):
-        #     os.remove(project_vector_file_path)
-        #     logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
-
-        # await upload_file_to_s3(project_response_file_path)
+        if os.path.exists(project_vector_file_path):
+            os.remove(project_vector_file_path)
+            logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
 
     except Exception as e:
         res_obj = {

@@ -95,11 +95,11 @@ class MedicalInsightsExtractor:
                 if output_file['status_code'] == 200:
                     processed_documents = []
                     for document in output_file['data']:
-                        processed_documents.append(os.path.join(project_path, document['document_name']))
+                        processed_documents.append(os.path.join(download_path, document['document_name']))
                     document_list = list(set(document_list) - set(processed_documents))
 
             if document_list:
-                asyncio.create_task(get_medical_insights(project_path, document_list))
+                asyncio.create_task(get_medical_insights(download_path, document_list))
 
             return web.json_response(headers=headers, status=202)
 
@@ -161,16 +161,44 @@ class MedicalInsightsExtractor:
             if isinstance(project_path, int) or isinstance(project_path, dict) or isinstance(project_path, list):
                 raise InvalidRequestBody()
 
-            if not os.path.exists(project_path):
+            if project_path.startswith(MedicalInsights.PREFIX):
+                key = project_path.replace(MedicalInsights.PREFIX, '')
+            else:
+                raise InvalidRequestBody()
+
+            response = await s3_utils.check_s3_path_exists(aws_bucket=AWS_BUCKET, key=key)
+
+            if not response:
                 raise FileNotFoundError(project_path)
 
-            project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
-                                                         MedicalInsights.RESPONSE_FOLDER_NAME)
+            project_response_path = key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                MedicalInsights.RESPONSE_FOLDER_NAME)
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
-            if os.path.exists(project_response_file_path):
-                with open(project_response_file_path, 'r') as file:
+            s3_response = await s3_utils.check_s3_path_exists(aws_bucket=AWS_BUCKET, key=project_response_file_path)
+
+            download_path = project_response_file_path.replace('user-data', 'static')
+            if not os.path.exists(download_path):
+                os.makedirs(download_path, exist_ok=False)
+
+            for item in s3_response['Contents']:
+
+                if item['Key'].endswith('.json'):
+                    document_name = os.path.basename(item['Key'])
+
+                    x = os.path.join(download_path, document_name)
+                    await s3_utils.download_object(AWS_BUCKET, item['Key'], x)
+
+                else:
+                    raise InvalidFile(item['key'])
+
+            if s3_response:
+                local_file_path = project_response_file_path.replace(f'{MedicalInsights.PREFIX}/user-data', 'static')
+                await s3_utils.download_object(AWS_BUCKET, project_response_file_path, local_file_path)
+
+                with open(local_file_path, 'r') as file:
                     res = json.loads(file.read())
+
                     if res["status_code"] == 200:
                         logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")
                         return web.json_response(data=res['data'], headers=headers, status=200)
