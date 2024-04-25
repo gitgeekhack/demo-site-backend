@@ -3,11 +3,16 @@ import os
 USER_DATA_PATH = os.getenv("USER_DATA_PATH")
 
 
-class BotoClient:
-    AWS_KEY_PATH = "user-data/"
-    AWS_DEFAULT_REGION = "us-east-1"
-    read_timeout = 3600
-    connect_timeout = 3600
+class AWS:
+    class BotoClient:
+        AWS_KEY_PATH = "user-data/"
+        AWS_DEFAULT_REGION = "us-east-1"
+        read_timeout = 3600
+        connect_timeout = 3600
+
+    class S3:
+        MEDICAL_BUCKET_NAME = 'medical-insights-extractor-ds'
+        ENCRYPTION_KEY = b'\xfbu\xc3\xf83\xe1\xa6\xb8\x06\xa5\x8cdv\xd1\x83,\xd7L\xa8^\xae\xbd\xa9\x17P\x19\xb4\x88(|>\x9c'
 
 
 class AllowedFileType:

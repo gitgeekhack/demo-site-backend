@@ -6,16 +6,18 @@ class S3Utils:
     def __init__(self):
         self.client = boto3.client(service_name='s3', region_name='ap-south-1')
 
-    async def download_object(self, bucket, key, download_path):
+    async def download_object(self, bucket, key, download_path, encrypted_key):
 
         bytes_buffer = io.BytesIO()
-        self.client.download_fileobj(Bucket=bucket, Key=key, Fileobj=bytes_buffer)
+        self.client.download_fileobj(Bucket=bucket, Key=key, Fileobj=bytes_buffer,
+                                     ExtraArgs={
+                                         "SSECustomerAlgorithm": "AES256",
+                                         "SSECustomerKey": encrypted_key
+                                     })
         file_object = bytes_buffer.getvalue()
 
         with open(download_path, 'wb') as file:
             file.write(file_object)
-
-        return True
 
     async def upload_object(self, bucket, key, file_object, encrypted_key):
 
@@ -28,9 +30,12 @@ class S3Utils:
         url = f's3://{bucket}/{key}'
         return url
 
-    async def check_s3_path_exists(self, aws_bucket, key):
+    async def delete_object(self, bucket, key):
+        self.client.delete_object(Bucket=bucket, Key=key)
 
-        response = self.client.list_objects_v2(Bucket=aws_bucket, Prefix=key)
+    async def check_s3_path_exists(self, bucket, key):
+
+        response = self.client.list_objects_v2(Bucket=bucket, Prefix=key)
         if 'Contents' not in response or len(response['Contents']) < 1:
             return []
         else:

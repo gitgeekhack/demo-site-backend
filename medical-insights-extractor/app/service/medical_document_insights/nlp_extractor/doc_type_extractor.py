@@ -11,7 +11,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 from app import logger
-from app.constant import BotoClient
+from app.constant import AWS
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
@@ -19,7 +19,7 @@ from app.service.medical_document_insights.nlp_extractor import bedrock_client, 
 class DocTypeExtractor:
 
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
 
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
@@ -115,7 +115,6 @@ class DocTypeExtractor:
 
         return vector_embeddings
 
-
     async def extract_document_type(self, document):
         """ This is expose method of the class """
 
@@ -128,6 +127,3 @@ class DocTypeExtractor:
         logger.info(f"[Medical-Insights][Document-Type] Document Type Extraction is completed in {time.time() - t} seconds.")
 
         return document_type
-
-
-

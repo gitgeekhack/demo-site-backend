@@ -1,7 +1,7 @@
 import os
 import time
-import glob
 import json
+import aiofiles
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -12,15 +12,15 @@ from langchain_community.chat_models import BedrockChat
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
-from app.constant import BotoClient
+from app.constant import AWS
+from app.common.s3_utils import s3_utils
 from app.constant import MedicalInsights
-from app.common.utils import update_file_path
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
 class DocumentQnA:
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
@@ -62,20 +62,41 @@ class DocumentQnA:
         return prompt
 
     async def __prepare_data(self, project_path):
-        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-        project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
-        if os.path.exists(project_response_file_path):
-            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings',
+
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
+        embeddings_file_path = os.path.join(project_response_path, 'embeddings.pkl')
+
+        response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=embeddings_file_path)
+
+        local_embedding_path = embeddings_file_path.replace('user-data', 'static')
+
+        if response:
+            await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, embeddings_file_path, local_embedding_path,
+                                           AWS.S3.ENCRYPTION_KEY)
+            vectored_data = FAISS.load_local(local_embedding_path, self.bedrock_embeddings, index_name='embeddings',
                                              allow_dangerous_deserialization=True)
+
         else:
+
+            s3_textract_paths = project_response_path.replace(MedicalInsights.RESPONSE_FOLDER_NAME, 'textract_response')
+            local_textract_paths = s3_textract_paths.replace('user-data', 'static')
+            os.makedirs(local_textract_paths, exist_ok=True)
+
+            response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=s3_textract_paths)
+
             raw_text = ""
-            document_list = glob.glob(os.path.join(project_path, '*'))
-            for document in document_list:
-                pdf_name, output_dir = await update_file_path(document)
-                dir_name = os.path.join(output_dir, 'textract_response')
-                with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
-                    data = json.loads(file.read())
-                    raw_text = raw_text + "".join(data.values())
+            for item in response['Contents']:
+
+                if item['Key'].endswith('.json'):
+                    file_name = os.path.basename(item['Key'])
+                    local_textract_file_path = os.path.join(local_textract_paths, file_name)
+                    await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, item['Key'],
+                                                   local_textract_file_path, AWS.S3.ENCRYPTION_KEY)
+                    with open(local_textract_file_path, 'r') as file:
+                        data = json.loads(file.read())
+                        raw_text = raw_text + "".join(data.values())
+
             docs = await self.__data_formatter(raw_text)
             vectored_data = await self.__prepare_embeddings(docs, project_response_path)
         return vectored_data
@@ -114,7 +135,19 @@ class DocumentQnA:
             documents=docs,
             embedding=self.bedrock_embeddings,
         )
-        vector_embeddings.save_local(project_response_path, index_name='embeddings')
+
+        s3_embedding_path = project_response_path.replace("response", "embeddings")
+        local_embedding_path = s3_embedding_path.replace("user-data", "static")
+        os.makedirs(local_embedding_path, exist_ok=True)
+
+        vector_embeddings.save_local(local_embedding_path, index_name='embeddings')
+        s3_embedding_path = os.path.join(s3_embedding_path, 'embeddings.pkl')
+
+        async with aiofiles.open(os.path.join(local_embedding_path, 'embeddings.pkl'), 'rb') as f:
+            file_obj = await f.read()
+
+        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_embedding_path, file_obj, AWS.S3.ENCRYPTION_KEY)
+
         logger.info(
             f'[Medical-Insights][QnA-Embeddings][{self.model_embeddings}] Input embedding tokens: {emb_tokens}'
             f'and Generation time: {time.time() - y}')
