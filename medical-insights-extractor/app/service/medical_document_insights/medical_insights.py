@@ -1,14 +1,12 @@
 import os
 import time
 import json
-import shutil
 import asyncio
 import traceback
 from concurrent import futures
 
 from app import logger
-from app.common.s3_utils import s3_utils
-from app.constant import MedicalInsights, AWS
+from app.constant import MedicalInsights
 from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
@@ -131,7 +129,7 @@ def get_textract_text_handler(document):
     return res
 
 
-async def format_output(extracted_outputs):
+def format_output(extracted_outputs):
     logger.info("[Medical-Insights] Formatting of Response started...")
 
     document_wise_response = {}
@@ -153,25 +151,23 @@ async def format_output(extracted_outputs):
     return document_wise_response_list
 
 
-async def merge_outputs(formatted_output, project_path):
+def merge_outputs(formatted_output, project_path):
     logger.info("[Medical-Insights] Merging of Responses started...")
-
-    local_file_path = project_path.replace(os.path.join(MedicalInsights.PREFIX, MedicalInsights.S3_FOLDER_NAME),
-                                           MedicalInsights.LOCAL_FOLDER_NAME)
-    local_file_path = local_file_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-    local_file_path = os.path.join(local_file_path, MedicalInsights.OUTPUT_FILE_NAME)
-
-    if os.path.exists(local_file_path):
-        with open(local_file_path, 'r') as file:
+    project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                 MedicalInsights.RESPONSE_FOLDER_NAME)
+    project_response_file_path = os.path.join(project_response_path, 'output.json')
+    if os.path.exists(project_response_file_path):
+        with open(project_response_file_path, 'r') as file:
             processed_data = json.loads(file.read())
 
         if processed_data['status_code'] == 200:
             documents = processed_data['data']
             documents.extend(formatted_output)
-            logger.info("[Medical-Insights] Merging of Responses ended...")
-            return documents
         else:
-            return formatted_output
+            documents = formatted_output
+
+        logger.info("[Medical-Insights] Merging of Responses ended...")
+        return documents
     else:
         return formatted_output
 
@@ -183,9 +179,8 @@ async def get_medical_insights(project_path, document_list):
         document_task = []
         with futures.ThreadPoolExecutor(2) as executor:
             for document in document_list:
-                if document.endswith('.pdf'):
-                    new_future = executor.submit(get_textract_text_handler, document=document)
-                    document_task.append(new_future)
+                new_future = executor.submit(get_textract_text_handler, document=document)
+                document_task.append(new_future)
 
         document_results = futures.wait(document_task)
         for x in document_results.done:
@@ -206,8 +201,8 @@ async def get_medical_insights(project_path, document_list):
             for x in results.done:
                 extracted_outputs.append(x.result())
 
-        formatted_output = await format_output(extracted_outputs)
-        merged_output = await merge_outputs(formatted_output, project_path)
+        formatted_output = format_output(extracted_outputs)
+        merged_output = merge_outputs(formatted_output, project_path)
         res_obj = {
             "status_code": 200,
             "data": merged_output,
@@ -216,29 +211,22 @@ async def get_medical_insights(project_path, document_list):
 
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                      MedicalInsights.RESPONSE_FOLDER_NAME)
-        project_response_path = project_response_path.replace(MedicalInsights.LOCAL_FOLDER_NAME,
-                                                              MedicalInsights.S3_FOLDER_NAME)
-        s3_output_key = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
+        os.makedirs(project_response_path, exist_ok=True)
+        project_response_file_path = os.path.join(project_response_path, 'output.json')
 
-        result = json.dumps(res_obj)
-        result = result.encode("utf-8")
-        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_output_key, result, AWS.S3.ENCRYPTION_KEY)
-        logger.info(f"[Medical-Insights] Output Stored in {s3_output_key} !!!")
+        with open(project_response_file_path, 'w') as file:
+            file.write(json.dumps(res_obj))
+        logger.info(f"[Medical-Insights] Output Stored in {project_response_file_path} !!!")
 
-        s3_embedding_paths = project_response_path.replace(MedicalInsights.RESPONSE_FOLDER_NAME,
-                                                           MedicalInsights.EMBEDDING_FOLDER_NAME)
-        project_embedding_file_path = os.path.join(s3_embedding_paths, MedicalInsights.EMBEDDING_PICKLE_FILE_NAME)
-        project_vector_file_path = os.path.join(s3_embedding_paths, MedicalInsights.EMBEDDING_FAISS_FILE_NAME)
-        response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME,
-                                                       key=project_embedding_file_path)
-        if response:
-            await s3_utils.delete_object(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_embedding_file_path)
+        project_embedding_file_path = os.path.join(project_response_path, 'embeddings.pkl')
+        if os.path.exists(project_embedding_file_path):
+            os.remove(project_embedding_file_path)
             logger.info(f"[Medical-Insights] embeddings.pkl removed from {project_embedding_file_path} !!!")
 
-            await s3_utils.delete_object(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_vector_file_path)
+        project_vector_file_path = os.path.join(project_response_path, 'embeddings.faiss')
+        if os.path.exists(project_vector_file_path):
+            os.remove(project_vector_file_path)
             logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
-
-        shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
 
     except Exception as e:
         res_obj = {
@@ -247,13 +235,9 @@ async def get_medical_insights(project_path, document_list):
             "message": "Internal Server Error"
         }
         logger.error(f'{e} -> {traceback.format_exc()}')
-
-        s3_key = project_path.replace(MedicalInsights.PREFIX, '')
-        project_response_path = s3_key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
-                                               MedicalInsights.RESPONSE_FOLDER_NAME)
-        project_response_file_path = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
-
-        result = json.dumps(res_obj)
-        result = result.encode("utf-8")
-        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, project_response_file_path, result,
-                                     AWS.S3.ENCRYPTION_KEY)
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
+        os.makedirs(project_response_path, exist_ok=True)
+        project_response_file_path = os.path.join(project_response_path, 'output.json')
+        with open(project_response_file_path, 'w') as file:
+            file.write(json.dumps(res_obj))

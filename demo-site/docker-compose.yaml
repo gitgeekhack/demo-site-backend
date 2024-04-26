@@ -22,7 +22,6 @@ services:
       - "/mnt/user-data:/mnt/user-data:rw"
     environment:
       USER_DATA_PATH: "/mnt/user-data"
-      ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8083:8083"
 
