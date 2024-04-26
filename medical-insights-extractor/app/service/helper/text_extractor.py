@@ -6,8 +6,8 @@ import asyncio
 from concurrent import futures
 
 from app import logger
-from app.constant import AWS
 from app.common.s3_utils import s3_utils
+from app.constant import AWS, MedicalInsights
 from app.service.helper import textract_client
 
 os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
@@ -55,20 +55,6 @@ def convert_pdf_to_text_handler(pdf_output_dir, page_no, doc_path):
     return x
 
 
-async def save_textract_response(pdf_name, output_dir, page_wise_text):
-    """ This method is used to save the textract response in the storage """
-
-    json_output_dir = os.path.join(output_dir, "textract_response")
-
-    if not os.path.exists(json_output_dir):
-        os.makedirs(json_output_dir, exist_ok=True)
-
-    json_file_path = os.path.join(json_output_dir, f"{pdf_name}_text.json")
-
-    with open(json_file_path, 'w') as json_file:
-        json.dump(page_wise_text, json_file, indent=4)
-
-
 async def extract_pdf_text(file_path):
     """ This method is used to provide extracted get from pdf """
 
@@ -78,11 +64,11 @@ async def extract_pdf_text(file_path):
 
     pdf_name = os.path.basename(file_path)
     dir_path = "/".join(file_path.split('/')[:3])
-    textract_path = os.path.join(dir_path, 'textract_response')
-    local_textract_path = os.path.join(f'{textract_path}/{pdf_name}_text.json')
-    s3_textract_path = local_textract_path.replace('static', 'user-data')
+    local_textract_path = os.path.join(dir_path, MedicalInsights.TEXTRACT_FOLDER_NAME)
 
     os.makedirs(local_textract_path, exist_ok=True)
+    local_textract_path = os.path.join(os.path.join(local_textract_path, f'{pdf_name}_text.json'))
+    s3_textract_path = local_textract_path.replace(MedicalInsights.LOCAL_FOLDER_NAME, MedicalInsights.S3_FOLDER_NAME)
     response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=s3_textract_path)
 
     if response:

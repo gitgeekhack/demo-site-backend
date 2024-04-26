@@ -1,6 +1,7 @@
 import os
 import time
 import json
+import shutil
 import asyncio
 import traceback
 from concurrent import futures
@@ -109,7 +110,8 @@ async def get_history(data):
     logger.info("[Medical-Insights] History & Psychiatric Injury Extraction is started...")
     history_extractor = HistoryExtractor()
     history_info = await history_extractor.get_history(data)
-    logger.info(f"[Medical-Insights] History & Psychiatric Injury Extraction is completed in {time.time() - x} seconds.")
+    logger.info(
+        f"[Medical-Insights] History & Psychiatric Injury Extraction is completed in {time.time() - x} seconds.")
     return history_info
 
 
@@ -154,7 +156,8 @@ async def format_output(extracted_outputs):
 async def merge_outputs(formatted_output, project_path):
     logger.info("[Medical-Insights] Merging of Responses started...")
 
-    local_file_path = project_path.replace(os.path.join(MedicalInsights.PREFIX, 'user-data'), 'static')
+    local_file_path = project_path.replace(os.path.join(MedicalInsights.PREFIX, MedicalInsights.S3_FOLDER_NAME),
+                                           MedicalInsights.LOCAL_FOLDER_NAME)
     local_file_path = local_file_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
     local_file_path = os.path.join(local_file_path, 'output.json')
 
@@ -213,7 +216,8 @@ async def get_medical_insights(project_path, document_list):
 
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                      MedicalInsights.RESPONSE_FOLDER_NAME)
-        project_response_path = project_response_path.replace('static', 'user-data')
+        project_response_path = project_response_path.replace(MedicalInsights.LOCAL_FOLDER_NAME,
+                                                              MedicalInsights.S3_FOLDER_NAME)
         s3_output_key = os.path.join(project_response_path, 'output.json')
 
         result = json.dumps(res_obj)
@@ -221,13 +225,20 @@ async def get_medical_insights(project_path, document_list):
         await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_output_key, result, AWS.S3.ENCRYPTION_KEY)
         logger.info(f"[Medical-Insights] Output Stored in {s3_output_key} !!!")
 
-        s3_embedding_paths = project_response_path.replace(MedicalInsights.RESPONSE_FOLDER_NAME, 'embeddings')
-        project_embedding_file_path = os.path.join(s3_embedding_paths, 'embeddings.pkl')
-        response = await s3_utils.check_s3_path_exists(aws_bucket=AWS.S3.MEDICAL_BUCKET_NAME,
+        s3_embedding_paths = project_response_path.replace(MedicalInsights.RESPONSE_FOLDER_NAME,
+                                                           MedicalInsights.EMBEDDING_FOLDER_NAME)
+        project_embedding_file_path = os.path.join(s3_embedding_paths, MedicalInsights.EMBEDDING_PICKLE_FILE_NAME)
+        project_vector_file_path = os.path.join(s3_embedding_paths, MedicalInsights.EMBEDDING_FAISS_FILE_NAME)
+        response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME,
                                                        key=project_embedding_file_path)
         if response:
-            await s3_utils.delete_object(aws_bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_embedding_file_path)
+            await s3_utils.delete_object(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_embedding_file_path)
             logger.info(f"[Medical-Insights] embeddings.pkl removed from {project_embedding_file_path} !!!")
+
+            await s3_utils.delete_object(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_vector_file_path)
+            logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
+
+        shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
 
     except Exception as e:
         res_obj = {

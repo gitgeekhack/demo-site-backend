@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import glob
+import shutil
 import asyncio
 import traceback
 from aiohttp import web
@@ -53,9 +54,9 @@ class MedicalInsightsExtractor:
             if not response:
                 raise FileNotFoundError(project_path)
 
-            local_download_path = s3_key.replace('user-data', 'static')
+            local_download_path = s3_key.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
             if not os.path.exists(local_download_path):
-                os.makedirs(local_download_path, exist_ok=False)
+                os.makedirs(local_download_path, exist_ok=True)
 
             page_count = 0
             for item in response['Contents']:
@@ -82,7 +83,8 @@ class MedicalInsightsExtractor:
                                                               key=project_response_file_path)
 
             if s3_response:
-                local_file_path = project_response_file_path.replace(f'{MedicalInsights.PREFIX}/user-data', 'static')
+                local_file_path = project_response_file_path.replace(
+                    f'{MedicalInsights.PREFIX}/{MedicalInsights.S3_FOLDER_NAME}', MedicalInsights.LOCAL_FOLDER_NAME)
                 await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, project_response_file_path, local_file_path,
                                                AWS.S3.ENCRYPTION_KEY)
 
@@ -168,14 +170,14 @@ class MedicalInsightsExtractor:
             if not response:
                 raise FileNotFoundError(project_path)
 
-            local_download_path = s3_key.replace('user-data', 'static')
+            local_download_path = s3_key.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
             if not os.path.exists(local_download_path):
                 os.makedirs(local_download_path, exist_ok=False)
 
             project_response_path = s3_key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                    MedicalInsights.RESPONSE_FOLDER_NAME)
 
-            local_file_path = project_response_path.replace('user-data', 'static')
+            local_file_path = project_response_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
 
             if not os.path.exists(local_file_path):
                 os.makedirs(local_file_path, exist_ok=False)
@@ -194,6 +196,7 @@ class MedicalInsightsExtractor:
 
                 with open(local_file_path, 'r') as file:
                     res = json.loads(file.read())
+                    shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
 
                     if res["status_code"] == 200:
                         logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")

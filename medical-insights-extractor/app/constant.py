@@ -5,7 +5,7 @@ USER_DATA_PATH = os.getenv("USER_DATA_PATH")
 
 class AWS:
     class BotoClient:
-        AWS_KEY_PATH = "user-data/"
+        AWS_KEY_PATH = "user-data"
         AWS_DEFAULT_REGION = "us-east-1"
         read_timeout = 3600
         connect_timeout = 3600
@@ -41,8 +41,13 @@ class MedicalInsights:
     TOTAL_PAGES_THRESHOLD = 1000
     REQUEST_FOLDER_NAME = "request"
     RESPONSE_FOLDER_NAME = "response"
+    EMBEDDING_FOLDER_NAME = "embeddings"
+    TEXTRACT_FOLDER_NAME = "textract_response"
     PREFIX = "s3://medical-insights-extractor-ds/"
-    DOWNLOAD_DIR = 'static/'
+    EMBEDDING_PICKLE_FILE_NAME = "embeddings.pkl"
+    EMBEDDING_FAISS_FILE_NAME = "embeddings.faiss"
+    S3_FOLDER_NAME = 'user-data'
+    LOCAL_FOLDER_NAME = 'static'
 
     class Prompts:
         PROMPT_TEMPLATE = """
