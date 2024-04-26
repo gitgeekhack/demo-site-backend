@@ -83,8 +83,8 @@ class MedicalInsightsExtractor:
             s3_response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME,
                                                               key=project_response_file_path)
             if s3_response:
-                local_file_path = project_response_file_path.replace(
-                    f'{MedicalInsights.PREFIX}/{MedicalInsights.S3_FOLDER_NAME}', MedicalInsights.LOCAL_FOLDER_NAME)
+                local_file_path = project_response_file_path.replace(MedicalInsights.S3_FOLDER_NAME,
+                                                                     MedicalInsights.LOCAL_FOLDER_NAME)
                 os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
                 await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, project_response_file_path, local_file_path,
                                                AWS.S3.ENCRYPTION_KEY)
