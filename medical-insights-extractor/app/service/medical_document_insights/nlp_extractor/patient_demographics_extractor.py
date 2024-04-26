@@ -14,7 +14,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 from app import logger
-from app.constant import AWS
+from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
@@ -22,7 +22,7 @@ from app.service.medical_document_insights.nlp_extractor import bedrock_client, 
 class PatientDemographicsExtractor:
 
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
@@ -109,7 +109,7 @@ class PatientDemographicsExtractor:
         # Calculate BMI if height and weight are provided
         if final_data['height']['value'] and final_data['weight']['value']:
             bmi = round(703 * float(data['weight']['value']) / (
-                    float(data['height']['value']) * float(data['height']['value'])), 2)
+                        float(data['height']['value']) * float(data['height']['value'])), 2)
             final_data['bmi'] = str(bmi)
         else:
             final_data['bmi'] = ""
@@ -180,18 +180,17 @@ class PatientDemographicsExtractor:
 
         return vector_embeddings
 
+
     async def get_patient_demographics(self, document_lst):
         """ This is expose method of the class """
 
         t = time.time()
         embeddings = await self.__get_docs_embeddings(document_lst)
-        logger.info(
-            f"[Medical-Insights][Demographics] Embedding Generation for Patient Demographics is completed in {time.time() - t} seconds.")
+        logger.info(f"[Medical-Insights][Demographics] Embedding Generation for Patient Demographics is completed in {time.time() - t} seconds.")
 
         t = time.time()
         patient_demographics = await self.__extract_patient_demographics(embeddings)
-        logger.info(
-            f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
+        logger.info(f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
 
-        return {"patient_demographics": patient_demographics['patient_demographics'],
-                "document_name": document_lst['name']}
+        return {"patient_demographics": patient_demographics['patient_demographics'], "document_name": document_lst['name']}
+

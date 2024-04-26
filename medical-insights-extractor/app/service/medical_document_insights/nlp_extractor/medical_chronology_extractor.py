@@ -17,14 +17,14 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 from app import logger
-from app.constant import AWS
+from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
 class MedicalChronologyExtractor:
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-v2:1'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
@@ -71,6 +71,7 @@ class MedicalChronologyExtractor:
             page_indexes_dict[page] = [int(page_start_index), int(page_start_index) + len(content) - 1]
             page_start_index += len(content)
 
+
         text_splitter = RecursiveCharacterTextSplitter(
             chunk_size=20000, chunk_overlap=200
         )
@@ -106,11 +107,9 @@ class MedicalChronologyExtractor:
             previous_text = current_text
 
             chunk_length.append(self.anthropic_llm.get_num_tokens(text))
-            start_page, end_page, search_start_page = await self.__find_page_range(page_indexes_dict, chunk_indexes,
-                                                                                   search_start_page)
+            start_page, end_page, search_start_page = await self.__find_page_range(page_indexes_dict, chunk_indexes, search_start_page)
             # Create multiple documents
-            docs.append(Document(page_content=text,
-                                 metadata={'source': filename, 'start_page': start_page, 'end_page': end_page}))
+            docs.append(Document(page_content=text, metadata={'source': filename, 'start_page': start_page, 'end_page': end_page}))
         return docs, chunk_length, list_of_page_contents
 
     async def __get_stuff_calls(self, docs, chunk_length):
@@ -283,9 +282,7 @@ class MedicalChronologyExtractor:
                     date_doctor_event = date + " " + doctor + " " + event
 
                 page, filename = await self.__get_page_number(date_doctor_event, list_of_page_contents, relevant_chunks)
-                medical_chronology.append(
-                    {'date': date, 'event': event, 'doctor_name': doctor, 'hospital_name': doctor_inst,
-                     'page_no': page})
+                medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'hospital_name': doctor_inst, 'page_no': page})
 
             return medical_chronology
 
@@ -336,13 +333,11 @@ class MedicalChronologyExtractor:
                 embedding=self.bedrock_embeddings,
             )
             y = time.time()
-            logger.info(
-                f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
-                f'and Generation time: {y - z}')
+            logger.info(f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
+                        f'and Generation time: {y - z}')
 
-            logger.info(
-                f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Embedding tokens for LLM call: '
-                f'{self.titan_llm.get_num_tokens(query) + self.titan_llm.get_num_tokens(prompt_template)}')
+            logger.info(f'[Medical-Insights][Medical Chronology][{self.model_embeddings}] Embedding tokens for LLM call: '
+                        f'{self.titan_llm.get_num_tokens(query) + self.titan_llm.get_num_tokens(prompt_template)}')
 
             qa = RetrievalQA.from_chain_type(
                 llm=self.anthropic_llm,
@@ -357,8 +352,7 @@ class MedicalChronologyExtractor:
             answer = qa({"query": query})
             response = answer['result']
             relevant_chunks = answer['source_documents']
-            input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.anthropic_llm.get_num_tokens(
-                prompt_template)
+            input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.anthropic_llm.get_num_tokens(prompt_template)
             output_tokens = self.anthropic_llm.get_num_tokens(response)
 
             logger.info(f'[Medical-Insights][Medical Chronology][{self.model_id_llm}] Input tokens: {input_tokens} '

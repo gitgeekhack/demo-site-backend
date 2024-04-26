@@ -17,11 +17,11 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
-from app.constant import AWS
+from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
-os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
+os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
 
 model_id_llm = 'anthropic.claude-3-sonnet-20240229-v1:0'
 model_embeddings = 'amazon.titan-embed-text-v1'
