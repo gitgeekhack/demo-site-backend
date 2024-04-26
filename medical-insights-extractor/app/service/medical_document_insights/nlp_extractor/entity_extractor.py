@@ -61,7 +61,7 @@ async def parse_date(date):
     date = dateparser.parse(date, settings={'RELATIVE_BASE': datetime(1800, 1, 1)})
     if date:
         date = date.replace(tzinfo=pytz.UTC)
-        return date
+        return date.strftime('%m-%d-%Y')
     return None
 
 
