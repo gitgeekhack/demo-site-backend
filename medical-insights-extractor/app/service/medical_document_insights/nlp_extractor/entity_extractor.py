@@ -76,26 +76,41 @@ async def get_valid_entity(entities, page_number):
         "page_no": page_number
     }
 
-    async def validate_entity_field(e):
+    async def validate_entity_field(entity):
         """ Validates if alphabetic character is present or not """
-        return await is_alpha(e) and e.strip() if e else e
+
+        processed_entity = await is_alpha(entity)
+        if processed_entity and entity.strip():
+            return entity[0].upper() + entity[1:]
+        else:
+            return ""
 
     for category, subcategories in entities.items():
         for subcategory, entity_list in subcategories.items():
             for index, entity in enumerate(entity_list):
+
                 if category == "medications":
-                    is_valid_name = await validate_entity_field(entity.get("name", None))
-                    is_valid_dosage = await validate_entity_field(entity.get("dosage", None))
-                    if is_valid_name and is_valid_dosage:
+                    valid_name = await validate_entity_field(entity.get("name", None))
+                    valid_dosage = await validate_entity_field(entity.get("dosage", None))
+                    if valid_name:
+                        entity['name'] = valid_name
+                        if valid_dosage:
+                            entity['dosage'] = valid_dosage
                         valid_entities[category][subcategory].append(entity)
+
                 elif category == "procedures":
-                    is_valid_name = await validate_entity_field(entity.get("name", None))
-                    is_valid_date = await parse_date(entity.get("date", None))
-                    if is_valid_name and is_valid_date:
+                    valid_name = await validate_entity_field(entity.get("name", None))
+                    valid_date = await parse_date(entity.get("date", None))
+                    if valid_name:
+                        entity['name'] = valid_name
+                        if valid_date:
+                            entity['date'] = valid_date
                         valid_entities[category][subcategory].append(entity)
+
                 else:
-                    if await validate_entity_field(entity):
-                        valid_entities[category][subcategory].append(entity)
+                    valid_entity = await validate_entity_field(entity)
+                    if valid_entity:
+                        valid_entities[category][subcategory].append(valid_entity)
 
     return valid_entities
 
