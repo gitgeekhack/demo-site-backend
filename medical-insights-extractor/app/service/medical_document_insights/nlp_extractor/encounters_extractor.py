@@ -203,10 +203,8 @@ class EncountersExtractor:
         """ This method is used to post-process the LLM response """
 
         try:
-            # Find the list in the string
-            start_index = response.find('[')
-            end_index = response.rfind(']') + 1
-            string_of_tuples = response[start_index:end_index]
+            # Use a regular expression to find the list in the string
+            string_of_tuples = re.search(r'\[.*?\]', response, re.DOTALL).group()
 
             try:
                 # Convert the string of tuples into a list of tuples
@@ -221,11 +219,7 @@ class EncountersExtractor:
 
             encounters = []
             for date, event, reference in list_of_tuples:
-                if isinstance(reference, dict):
-                    reference_text = reference['Reference']
-                else:
-                    reference_text = eval(reference.strip('"').replace("'", "\""))['Reference']
-
+                reference_text = reference['Reference']
                 ## Post-processing for date
 
                 # Validation of date by checking alphabet is present or not
