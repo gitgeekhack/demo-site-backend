@@ -12,7 +12,7 @@ class AWS:
 
     class S3:
         MEDICAL_BUCKET_NAME = 'medical-insights-extractor-ds'
-        ENCRYPTION_KEY = b'\xfbu\xc3\xf83\xe1\xa6\xb8\x06\xa5\x8cdv\xd1\x83,\xd7L\xa8^\xae\xbd\xa9\x17P\x19\xb4\x88(|>\x9c'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
 
 
 class AllowedFileType:
@@ -48,6 +48,7 @@ class MedicalInsights:
     EMBEDDING_FAISS_FILE_NAME = "embeddings.faiss"
     S3_FOLDER_NAME = 'user-data'
     LOCAL_FOLDER_NAME = 'static'
+    OUTPUT_FILE_NAME = 'output.json'
 
     class Prompts:
         PROMPT_TEMPLATE = """

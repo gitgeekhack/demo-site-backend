@@ -64,9 +64,10 @@ class MedicalInsightsExtractor:
                 if item['Key'].endswith('.pdf'):
                     document_name = os.path.basename(item['Key'])
 
-                    x = os.path.join(local_download_path, document_name)
-                    await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, item['Key'], x, AWS.S3.ENCRYPTION_KEY)
-                    page_count += get_pdf_page_count(x)
+                    local_file_name = os.path.join(local_download_path, document_name)
+                    await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, item['Key'], local_file_name,
+                                                   AWS.S3.ENCRYPTION_KEY)
+                    page_count += get_pdf_page_count(local_file_name)
 
                     if page_count > MedicalInsights.TOTAL_PAGES_THRESHOLD:
                         raise TotalPageExceeded(MedicalInsights.TOTAL_PAGES_THRESHOLD)
@@ -77,14 +78,14 @@ class MedicalInsightsExtractor:
 
             project_response_path = s3_key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                    MedicalInsights.RESPONSE_FOLDER_NAME)
-            project_response_file_path = os.path.join(project_response_path, 'output.json')
+            project_response_file_path = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
 
             s3_response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME,
                                                               key=project_response_file_path)
-
             if s3_response:
                 local_file_path = project_response_file_path.replace(
                     f'{MedicalInsights.PREFIX}/{MedicalInsights.S3_FOLDER_NAME}', MedicalInsights.LOCAL_FOLDER_NAME)
+                os.makedirs(os.path.dirname(local_file_path), exist_ok=True)
                 await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, project_response_file_path, local_file_path,
                                                AWS.S3.ENCRYPTION_KEY)
 
@@ -177,13 +178,14 @@ class MedicalInsightsExtractor:
             project_response_path = s3_key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                    MedicalInsights.RESPONSE_FOLDER_NAME)
 
-            local_file_path = project_response_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
+            local_file_path = project_response_path.replace(MedicalInsights.S3_FOLDER_NAME,
+                                                            MedicalInsights.LOCAL_FOLDER_NAME)
 
             if not os.path.exists(local_file_path):
                 os.makedirs(local_file_path, exist_ok=False)
 
-            project_response_file_path = os.path.join(project_response_path, 'output.json')
-            local_file_path = os.path.join(local_file_path, 'output.json')
+            project_response_file_path = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
+            local_file_path = os.path.join(local_file_path, MedicalInsights.OUTPUT_FILE_NAME)
 
             s3_response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME,
                                                               key=project_response_file_path)

@@ -159,7 +159,7 @@ async def merge_outputs(formatted_output, project_path):
     local_file_path = project_path.replace(os.path.join(MedicalInsights.PREFIX, MedicalInsights.S3_FOLDER_NAME),
                                            MedicalInsights.LOCAL_FOLDER_NAME)
     local_file_path = local_file_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-    local_file_path = os.path.join(local_file_path, 'output.json')
+    local_file_path = os.path.join(local_file_path, MedicalInsights.OUTPUT_FILE_NAME)
 
     if os.path.exists(local_file_path):
         with open(local_file_path, 'r') as file:
@@ -218,7 +218,7 @@ async def get_medical_insights(project_path, document_list):
                                                      MedicalInsights.RESPONSE_FOLDER_NAME)
         project_response_path = project_response_path.replace(MedicalInsights.LOCAL_FOLDER_NAME,
                                                               MedicalInsights.S3_FOLDER_NAME)
-        s3_output_key = os.path.join(project_response_path, 'output.json')
+        s3_output_key = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
 
         result = json.dumps(res_obj)
         result = result.encode("utf-8")
@@ -251,7 +251,7 @@ async def get_medical_insights(project_path, document_list):
         s3_key = project_path.replace(MedicalInsights.PREFIX, '')
         project_response_path = s3_key.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                MedicalInsights.RESPONSE_FOLDER_NAME)
-        project_response_file_path = os.path.join(project_response_path, 'output.json')
+        project_response_file_path = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
 
         result = json.dumps(res_obj)
         result = result.encode("utf-8")

@@ -63,8 +63,9 @@ async def extract_pdf_text(file_path):
     logger.info("[Medical-Insights] Text Extraction from document is started...")
 
     pdf_name = os.path.basename(file_path)
-    dir_path = "/".join(file_path.split('/')[:3])
-    local_textract_path = os.path.join(dir_path, MedicalInsights.TEXTRACT_FOLDER_NAME)
+    request_path = os.path.dirname(file_path)
+    local_textract_path = request_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                               MedicalInsights.TEXTRACT_FOLDER_NAME)
 
     os.makedirs(local_textract_path, exist_ok=True)
     local_textract_path = os.path.join(os.path.join(local_textract_path, f'{pdf_name}_text.json'))
@@ -80,7 +81,7 @@ async def extract_pdf_text(file_path):
         logger.info("[Medical-Insights] Reading textract response from the cache...")
 
     else:
-        pdf_output_dir = os.path.join(dir_path, "pdf_images")
+        pdf_output_dir = request_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, "pdf_images")
         os.makedirs(pdf_output_dir, exist_ok=True)
 
         document = fitz.open(file_path)
