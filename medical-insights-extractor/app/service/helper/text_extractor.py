@@ -6,11 +6,11 @@ import asyncio
 from concurrent import futures
 
 from app import logger
-from app.common.utils import update_file_path
+from app.common.s3_utils import s3_utils
+from app.constant import AWS, MedicalInsights
 from app.service.helper import textract_client
-from app.constant import BotoClient
 
-os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
+os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
 pdf_folder_name = None
 textract = textract_client
 
@@ -55,32 +55,6 @@ def convert_pdf_to_text_handler(pdf_output_dir, page_no, doc_path):
     return x
 
 
-async def save_textract_response(pdf_name, output_dir, page_wise_text):
-    """ This method is used to save the textract response in the storage """
-
-    json_output_dir = os.path.join(output_dir, "textract_response")
-
-    if not os.path.exists(json_output_dir):
-        os.makedirs(json_output_dir, exist_ok=True)
-
-    json_file_path = os.path.join(json_output_dir, f"{pdf_name}_text.json")
-
-    with open(json_file_path, 'w') as json_file:
-        json.dump(page_wise_text, json_file, indent=4)
-
-
-async def is_textract_response_exists(file_path):
-
-    pdf_name, output_dir = await update_file_path(file_path)
-    dir_name = os.path.join(output_dir, 'textract_response')
-    os.makedirs(dir_name, exist_ok=True)
-
-    if os.path.exists(f'{dir_name}/{pdf_name}_text.json'):
-        return True
-    else:
-        return False
-
-
 async def extract_pdf_text(file_path):
     """ This method is used to provide extracted get from pdf """
 
@@ -88,22 +62,27 @@ async def extract_pdf_text(file_path):
 
     logger.info("[Medical-Insights] Text Extraction from document is started...")
 
-    if await is_textract_response_exists(file_path):
-        pdf_name, output_dir = await update_file_path(file_path)
-        dir_name = os.path.join(output_dir, 'textract_response')
+    pdf_name = os.path.basename(file_path)
+    request_path = os.path.dirname(file_path)
+    local_textract_path = request_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                               MedicalInsights.TEXTRACT_FOLDER_NAME)
 
-        with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
+    os.makedirs(local_textract_path, exist_ok=True)
+    local_textract_path = os.path.join(os.path.join(local_textract_path, f'{pdf_name}_text.json'))
+    s3_textract_path = local_textract_path.replace(MedicalInsights.LOCAL_FOLDER_NAME, MedicalInsights.S3_FOLDER_NAME)
+    response = await s3_utils.check_s3_path_exists(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=s3_textract_path)
+
+    if response:
+        await s3_utils.download_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_textract_path, local_textract_path,
+                                       AWS.S3.ENCRYPTION_KEY)
+        with open(local_textract_path, 'r') as file:
             json_data = json.loads(file.read())
-
-        logger.info("[Medical-Insights] Reading textract response from the cache...")
         page_wise_text = json_data
+        logger.info("[Medical-Insights] Reading textract response from the cache...")
 
     else:
-        pdf_name, output_dir = await update_file_path(file_path)
-        pdf_output_dir = os.path.join(output_dir, "pdf_images")
-
-        if not os.path.exists(pdf_output_dir):
-            os.makedirs(pdf_output_dir, exist_ok=True)
+        pdf_output_dir = request_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, "pdf_images")
+        os.makedirs(pdf_output_dir, exist_ok=True)
 
         document = fitz.open(file_path)
 
@@ -122,7 +101,9 @@ async def extract_pdf_text(file_path):
 
         page_wise_text = dict(sorted(texts.items(), key=lambda item: int(item[0].split('_')[1])))
 
-        await save_textract_response(pdf_name, output_dir, page_wise_text)
+        result = json.dumps(page_wise_text)
+        result = result.encode("utf-8")
+        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_textract_path, result, AWS.S3.ENCRYPTION_KEY)
 
     logger.info(f"[Medical-Insights] Text Extraction from document is completed in {time.time() - x} seconds.")
 
