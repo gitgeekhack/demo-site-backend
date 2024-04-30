@@ -72,6 +72,13 @@ class OCRConfig:
 
 
 class DrivingLicense:
+    class S3:
+        AWS_KEY_PATH = "user-data"
+        LOCAL_PATH = "static"
+        BUCKET_NAME = 'driver-license-ocr-ds'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+        PREFIX = "s3://driver-license-ocr-ds/"
+
     class ObjectDetection:
         DL_OBJECT_DETECTION_MODEL_PATH = './app/model/driving_license/DLObjectDetection.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
