@@ -157,6 +157,13 @@ class EyeHairColor:
 class CertificateOfTitle:
     VAL_SCORE = 0.6
 
+    class S3:
+        AWS_KEY_PATH = "user-data"
+        LOCAL_PATH = "static"
+        BUCKET_NAME = 'certificate-of-title-ocr-ds'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+        PREFIX = "s3://certificate-of-title-ocr-ds/"
+
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
@@ -224,4 +231,3 @@ class CarDamageDetection:
         YOLOV5 = 'ultralytics/yolov5:v6.0'
         MODEL_PATH = "./app/model/car_damage_detection/DamagePartDetection_04-03-2024.pt"
         FONT_PATH = "./app/static/damage_detection/font_file/arial.ttf"
-

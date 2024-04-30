@@ -75,6 +75,10 @@ class DLExtractor:
             response = {"message": f"{e}"}
             return web.json_response(response, headers=headers, status=400)
 
+        except InvalidRequestBody as e:
+            response = {"message": f"{e}"}
+            return web.json_response(response, headers=headers, status=400)
+
         except FileNotFoundError:
             response = {"message": "File Not Found"}
             return web.json_response(response, headers=headers, status=404)
