@@ -1,10 +1,12 @@
 import os
 import logging
+import shutil
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
 
 import warnings
+
 warnings.filterwarnings("ignore")
 
 import uuid
@@ -18,6 +20,7 @@ tf.executing_eagerly()
 from tensorflow.python.keras.models import load_model
 
 from app.constant import headers, S3
+from app.common.s3_utils import s3_utils
 from app.services.helper.authentication import BearerToken
 from app.services.helper.pre_processing_helper import PreProcessingPipeLine
 from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, \
@@ -30,6 +33,7 @@ pipe_line = PreProcessingPipeLine()
 MODEL = load_model(MODEL_PATH)
 
 from app.services.amd import BinaryPredictor
+
 binary_predictor = BinaryPredictor()
 logger = logging.getLogger('AMD')
 
@@ -60,24 +64,37 @@ async def amd(request):
             if file_path == '':
                 raise FilePathNull()
 
+            local_path = None
             if isinstance(file_path, str):
                 if file_path.startswith(S3.PREFIX):
                     s3_key = file_path.replace(S3.PREFIX, '')
                 else:
                     raise MissingRequestBody
 
+                response = await s3_utils.check_s3_path_exists(bucket=S3.BUCKET_NAME, key=s3_key)
+
+                if not response:
+                    raise FileNotFoundError
+
                 filename = os.path.basename(s3_key)
 
                 if not filename.lower().endswith('.ulaw'):
                     raise InvalidFile(filename)
 
-                file_size = os.path.getsize(file_path) / 1024 ** 2
+                local_path = s3_key.replace(S3.AWS_KEY_PATH, S3.LOCAL_PATH)
+                os.makedirs(os.path.dirname(local_path), exist_ok=True)
+                await s3_utils.download_object(S3.BUCKET_NAME, s3_key, local_path, S3.ENCRYPTION_KEY)
+
+                file_size = os.path.getsize(local_path) / 1024 ** 2
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
             else:
                 raise MultipleFileUploaded()
 
-            audio_file = open(file_path, 'rb')
+            if not local_path:
+                raise Exception
+
+            audio_file = open(local_path, 'rb')
             result, audio_length = await binary_predictor.predict(audio_file.read())
             if result == 0:
                 is_human_answer = True
@@ -85,6 +102,9 @@ async def amd(request):
                 is_human_answer = False
             res = {"is_human_answer": is_human_answer, 'input_audio_length': f'{audio_length} seconds'}
             logger.info(f'[{filename}] => is_human_answer: {is_human_answer}]')
+
+            shutil.rmtree(S3.LOCAL_PATH)
+
             return web.json_response(res, headers=headers, status=200)
         else:
             return web.json_response({"message": 'Unauthorized'}, headers=headers, status=401)
