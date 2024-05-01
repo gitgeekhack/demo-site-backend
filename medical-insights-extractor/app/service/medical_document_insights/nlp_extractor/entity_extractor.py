@@ -30,9 +30,9 @@ anthropic_llm = BedrockChat(
     model_id=model_id_llm,
     model_kwargs={
         "max_tokens": 10000,
-        "temperature": 0.0,
-        "top_p": 1,
-        "top_k": 250
+        "temperature": 0,
+        "top_p": 0.01,
+        "top_k": 1
     },
     client=bedrock_client,
 )
@@ -71,7 +71,7 @@ async def get_valid_entity(entities, page_number):
     valid_entities = {
         "diagnosis": {"allergies": [], "pmh": [], "others": []},
         "treatments": {"pmh": [], "others": []},
-        "procedures": {"test": [], "lab_test": [], "reports": []},
+        "tests": [],
         "medications": {"pmh": [], "others": []},
         "page_no": page_number
     }
@@ -86,10 +86,9 @@ async def get_valid_entity(entities, page_number):
             return ""
 
     for category, subcategories in entities.items():
-        for subcategory, entity_list in subcategories.items():
-            for index, entity in enumerate(entity_list):
-
-                if category == "medications":
+        if category == "medications":
+            for subcategory, entity_list in subcategories.items():
+                for index, entity in enumerate(entity_list):
                     valid_name = await validate_entity_field(entity.get("name", None))
                     valid_dosage = await validate_entity_field(entity.get("dosage", None))
                     if valid_name:
@@ -98,16 +97,19 @@ async def get_valid_entity(entities, page_number):
                             entity['dosage'] = valid_dosage
                         valid_entities[category][subcategory].append(entity)
 
-                elif category == "procedures":
-                    valid_name = await validate_entity_field(entity.get("name", None))
-                    valid_date = await parse_date(entity.get("date", None))
-                    if valid_name:
-                        entity['name'] = valid_name
-                        if valid_date:
-                            entity['date'] = valid_date
-                        valid_entities[category][subcategory].append(entity)
+        elif category == "tests":
+            for entity_dic in subcategories:
+                valid_name = await validate_entity_field(entity_dic.get("name", None))
+                valid_date = await parse_date(entity_dic.get("date", None))
+                if valid_name:
+                    entity_dic['name'] = valid_name
+                    if valid_date:
+                        entity_dic['date'] = valid_date
+                    valid_entities[category].append(entity_dic)
 
-                else:
+        elif category in ['diagnosis', 'treatments']:
+            for subcategory, entity_list in subcategories.items():
+                for index, entity in enumerate(entity_list):
                     valid_entity = await validate_entity_field(entity)
                     if valid_entity:
                         valid_entities[category][subcategory].append(valid_entity)
@@ -125,7 +127,7 @@ async def convert_str_into_json(text, page_number):
     final_data = {
         "diagnosis": {"allergies": [], "pmh": [], "others": []},
         "treatments": {"pmh": [], "others": []},
-        "procedures": {"test": [], "lab_test": [], "reports": []},
+        "tests": [],
         "medications": {"pmh": [], "others": []},
         "page_no": page_number
     }
@@ -181,27 +183,27 @@ async def get_medical_entities(key, value):
         return {
             "diagnosis": {"allergies": [], "pmh": [], "others": []},
             "treatments": {"pmh": [], "others": []},
-            "procedures": {"test": [], "lab_test": [], "reports": []},
+            "tests": [],
             "medications": {"pmh": [], "others": []},
             "page_no": page_number
         }
 
     diagnosis_treatment_query = MedicalInsights.Prompts.DIAGNOSIS_TREATMENT_ENTITY_PROMPT
-    procedure_medication_query = MedicalInsights.Prompts.PROCEDURE_MEDICATION_ENTITY_PROMPT
+    tests_medication_query = MedicalInsights.Prompts.TESTS_MEDICATION_ENTITY_PROMPT
 
     chain_qa = load_qa_chain(anthropic_llm, chain_type="stuff")
     diagnosis_treatment_result = chain_qa.run(input_documents=docs, question=diagnosis_treatment_query)
-    procedure_medication_result = chain_qa.run(input_documents=docs, question=procedure_medication_query)
+    tests_medication_result = chain_qa.run(input_documents=docs, question=tests_medication_query)
 
     input_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_query) + anthropic_llm.get_num_tokens(
-        procedure_medication_query) + 2 * total_tokens)
+        tests_medication_query) + 2 * total_tokens)
     output_tokens.append(anthropic_llm.get_num_tokens(diagnosis_treatment_result) + anthropic_llm.get_num_tokens(
-        procedure_medication_result))
+        tests_medication_result))
 
     page_entities = await convert_str_into_json(diagnosis_treatment_result, page_number)
-    procedure_medication_entities = await convert_str_into_json(procedure_medication_result, page_number)
-    page_entities['procedures'] = procedure_medication_entities['procedures']
-    page_entities['medications'] = procedure_medication_entities['medications']
+    tests_medication_entities = await convert_str_into_json(tests_medication_result, page_number)
+    page_entities['tests'] = tests_medication_entities['tests']
+    page_entities['medications'] = tests_medication_entities['medications']
 
     page_entities['page_no'] = page_number
     return page_entities
