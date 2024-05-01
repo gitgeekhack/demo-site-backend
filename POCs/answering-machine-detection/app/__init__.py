@@ -1,37 +1,35 @@
-import logging
 import os
+import logging
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-import warnings
 
+import warnings
 warnings.filterwarnings("ignore")
 
-from aiohttp import web
 import uuid
-import traceback
 import json
+import traceback
+from aiohttp import web
+
 import tensorflow as tf
 
 tf.executing_eagerly()
 from tensorflow.python.keras.models import load_model
 
-MODEL_PATH = "./app/model/2s_model.h5"
-
-MODEL = load_model(MODEL_PATH)
-
-from app import config
+from app.constant import headers, S3
 from app.services.helper.authentication import BearerToken
-
 from app.services.helper.pre_processing_helper import PreProcessingPipeLine
 from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, \
     MissingRequestBody, MissingRequiredParameter, ShortAudioLengthException
-from app.constant import headers
+
+MODEL_PATH = "./app/model/2s_model.h5"
 
 pipe_line = PreProcessingPipeLine()
 
-from app.services.amd import BinaryPredictor
+MODEL = load_model(MODEL_PATH)
 
+from app.services.amd import BinaryPredictor
 binary_predictor = BinaryPredictor()
 logger = logging.getLogger('AMD')
 
@@ -45,23 +43,35 @@ async def amd(request):
     try:
         token = request.headers.get('Authorization')
         token = token.split(' ')[-1]
+
         if BearerToken.validate(token):
+
             data_bytes = await request.content.read()
             if not data_bytes:
                 raise MissingRequestBody
+
             data = json.loads(data_bytes)
+
             if 'file_path' not in data.keys():
                 raise MissingRequiredParameter(message='Missing required parameter file_path')
+
             file_path = data['file_path']
+
             if file_path == '':
                 raise FilePathNull()
+
             if isinstance(file_path, str):
-                if not os.path.exists(file_path):
-                    raise FileNotFoundError
-                filename = os.path.basename(file_path)
+                if file_path.startswith(S3.PREFIX):
+                    s3_key = file_path.replace(S3.PREFIX, '')
+                else:
+                    raise MissingRequestBody
+
+                filename = os.path.basename(s3_key)
+
                 if not filename.lower().endswith('.ulaw'):
                     raise InvalidFile(filename)
-                file_size = os.path.getsize(file_path) / 1024**2
+
+                file_size = os.path.getsize(file_path) / 1024 ** 2
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
             else:
@@ -123,5 +133,5 @@ logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                'Module: %(module)s - '
                                                'Function: %(funcName)s - '
                                                '%(message)s')
-app = web.Application(client_max_size=1024*1024*25)
+app = web.Application(client_max_size=1024 * 1024 * 25)
 app.add_routes([web.options('/api/v1/amd', options_request), web.post('/api/v1/amd', amd)])
