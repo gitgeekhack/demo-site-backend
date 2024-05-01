@@ -1,10 +1,13 @@
 import os
 import json
 import uuid
+import shutil
 import traceback
 from aiohttp import web
 
 from app import logger
+from app.common.s3_utils import s3_utils
+from app.constant import CarDamageDetection
 from app.service.car_damage_detection.damage_detect import DamageDetector
 from app.common.utils import is_image_file, get_file_from_path, get_file_size, get_response_headers
 from app.business_rule_exception import (InvalidFile, FileLimitExceeded, FilePathNull, FileUploadLimitReached,
@@ -33,24 +36,47 @@ class DamageExtractor:
             if isinstance(file_paths, str) or isinstance(file_paths, int):
                 raise InvalidRequestBody()
 
+            if file_paths[0].startswith(CarDamageDetection.S3.PREFIX):
+                temp_s3_key = file_paths[0].replace(CarDamageDetection.S3.PREFIX, '')
+            else:
+                raise InvalidRequestBody()
+
+            local_path = temp_s3_key.replace(CarDamageDetection.S3.AWS_KEY_PATH, CarDamageDetection.S3.LOCAL_PATH)
+            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+
             for file_path in file_paths:
+
+                if file_path.startswith(CarDamageDetection.S3.PREFIX):
+                    s3_key = file_path.replace(CarDamageDetection.S3.PREFIX, '')
+                else:
+                    raise InvalidRequestBody()
+
                 if isinstance(file_path, str):
-                    if not os.path.exists(file_path):
+                    response = await s3_utils.check_s3_path_exists(CarDamageDetection.S3.BUCKET_NAME, s3_key)
+                    if not response:
                         raise FileNotFoundError
+
                     filename = os.path.basename(file_path)
+
                     if not is_image_file(filename):
                         raise InvalidFile(filename)
 
-                    file_size = get_file_size(file_path)
+                    local_path = s3_key.replace(CarDamageDetection.S3.AWS_KEY_PATH, CarDamageDetection.S3.LOCAL_PATH)
+
+                    await s3_utils.download_object(CarDamageDetection.S3.BUCKET_NAME, s3_key,
+                                                   local_path, CarDamageDetection.S3.ENCRYPTION_KEY)
+
+                    file_size = get_file_size(local_path)
                     if file_size > 25:
                         raise FileLimitExceeded(file_path)
 
                     logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-                    files.append(file_path)
+                    files.append(local_path)
 
             detector = DamageDetector(x_uuid)
             results = await detector.detect(image_data=files)
 
+            shutil.rmtree(CarDamageDetection.S3.LOCAL_PATH)
             return web.json_response({'data': results}, headers=headers, status=200)
 
         except FilePathNull as e:
