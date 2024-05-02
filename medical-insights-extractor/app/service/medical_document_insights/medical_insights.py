@@ -238,7 +238,8 @@ async def get_medical_insights(project_path, document_list):
             await s3_utils.delete_object(bucket=AWS.S3.MEDICAL_BUCKET_NAME, key=project_vector_file_path)
             logger.info(f"[Medical-Insights] embeddings.faiss removed from {project_vector_file_path} !!!")
 
-        shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
+        project_id = os.path.dirname(project_path[:-1])
+        shutil.rmtree(project_id)
 
     except Exception as e:
         res_obj = {

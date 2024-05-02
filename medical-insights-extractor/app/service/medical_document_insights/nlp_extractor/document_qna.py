@@ -206,7 +206,9 @@ class DocumentQnA:
         input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
         output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
 
-        shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
+        local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
+        project_id = os.path.dirname(local_path[:-1])
+        shutil.rmtree(project_id)
 
         logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
                     f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')

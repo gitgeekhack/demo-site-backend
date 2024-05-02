@@ -198,7 +198,9 @@ class MedicalInsightsExtractor:
 
                 with open(local_file_path, 'r') as file:
                     res = json.loads(file.read())
-                    shutil.rmtree(MedicalInsights.LOCAL_FOLDER_NAME)
+
+                    project_id = os.path.dirname(local_download_path[:-1])
+                    shutil.rmtree(project_id)
 
                     if res["status_code"] == 200:
                         logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")
