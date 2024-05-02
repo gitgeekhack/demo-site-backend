@@ -73,7 +73,8 @@ class DamageDetector(MonoState):
 
         for file_path in image_data:
             filename = os.path.basename(file_path)
-            output_file_path = os.path.join(os.path.dirname(file_path), 'predicted_' + filename)
+            project_name = os.path.dirname(file_path)
+            output_file_path = os.path.join(os.path.dirname(project_name), 'predicted_' + filename)
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
             detection, uploaded_s3_path = await self.__predict_labels(file_path, output_file_path)
             results.append({'results': detection, 'file_path': uploaded_s3_path})
