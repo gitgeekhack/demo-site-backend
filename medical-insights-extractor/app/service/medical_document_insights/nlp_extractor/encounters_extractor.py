@@ -265,18 +265,14 @@ class EncountersExtractor:
         except Exception:
             return []
 
-    async def __fallback_post_processing(self, response):
+    async def __fallback_post_processing(self, mis_formatted_response):
         """ This method is used to post-process the LLM response by using fallback in case the post-processing step fails"""
         try:
             parser = PydanticOutputParser(pydantic_object=Encounter)
             new_parser = OutputFixingParser.from_llm(parser=parser, llm=self.anthropic_llm)
-            mis_formatted = response
 
-            formatted = new_parser.parse(mis_formatted)
-            enc = formatted.encounter_dates
-            evt = formatted.events
-            ref = formatted.references
-            list_of_tuples = zip(enc, evt, ref)
+            formatted = new_parser.parse(mis_formatted_response)
+            list_of_tuples = zip(formatted.encounter_dates, formatted.events, formatted.references)
             return list_of_tuples
 
         except:
