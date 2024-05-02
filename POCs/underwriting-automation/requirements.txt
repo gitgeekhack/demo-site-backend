@@ -7,6 +7,8 @@ astunparse==1.6.3
 async-timeout==3.0.1
 atomicwrites==1.4.0
 attrs==21.2.0
+boto3==1.28.75
+botocore==1.31.75
 cachetools==4.2.2
 caio==0.9.5
 certifi==2021.5.30
