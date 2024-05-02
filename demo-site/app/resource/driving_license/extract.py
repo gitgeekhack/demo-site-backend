@@ -32,8 +32,10 @@ class DLExtractor:
             else:
                 raise InvalidRequestBody()
 
-            local_path = s3_key.replace(DrivingLicense.S3.AWS_KEY_PATH, DrivingLicense.S3.LOCAL_PATH)
-            os.makedirs(os.path.dirname(local_path), exist_ok=True)
+            s3_dir_name = os.path.dirname(s3_key)
+            local_path = os.path.join(s3_dir_name.replace(DrivingLicense.S3.AWS_KEY_PATH, DrivingLicense.S3.LOCAL_PATH),
+                                      DrivingLicense.PROJECT_NAME)
+            os.makedirs(local_path, exist_ok=True)
 
             if isinstance(file_path, str):
                 response = await s3_utils.check_s3_path_exists(DrivingLicense.S3.BUCKET_NAME, s3_key)
@@ -42,25 +44,26 @@ class DLExtractor:
 
                 filename = os.path.basename(file_path)
 
+                local_file_name = os.path.join(local_path, filename)
                 if not is_image_file(filename):
                     raise InvalidFile(filename)
 
                 await s3_utils.download_object(DrivingLicense.S3.BUCKET_NAME, s3_key,
-                                               local_path, DrivingLicense.S3.ENCRYPTION_KEY)
-                file_size = get_file_size(local_path)
+                                               local_file_name, DrivingLicense.S3.ENCRYPTION_KEY)
+                file_size = get_file_size(local_file_name)
 
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
 
                 logger.info(f'Request ID: [{x_uuid}] FileName: [{filename}]')
-                files.append(local_path)
+                files.append(local_file_name)
             else:
                 raise MultipleFileUploaded()
 
             extractor = DLDataPointExtractorV1(x_uuid)
             data = await extractor.extract(image_data=files)
 
-            shutil.rmtree(DrivingLicense.S3.LOCAL_PATH)
+            shutil.rmtree(local_path)
 
             if isinstance(data, int):
                 raise Exception

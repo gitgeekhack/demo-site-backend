@@ -72,6 +72,8 @@ class OCRConfig:
 
 
 class DrivingLicense:
+    PROJECT_NAME = "driving-license"
+
     class S3:
         AWS_KEY_PATH = "user-data"
         LOCAL_PATH = "static"
@@ -155,6 +157,7 @@ class EyeHairColor:
 
 
 class CertificateOfTitle:
+    PROJECT_NAME = "certificate_of_title"
     VAL_SCORE = 0.6
 
     class S3:
@@ -214,6 +217,8 @@ class CertificateOfTitle:
 
 
 class CarDamageDetection:
+    PROJECT_NAME = "car_damage_detection"
+
     class S3:
         AWS_KEY_PATH = "user-data"
         LOCAL_PATH = "static"

@@ -19,8 +19,8 @@ import tensorflow as tf
 tf.executing_eagerly()
 from tensorflow.python.keras.models import load_model
 
-from app.constant import headers, S3
 from app.common.s3_utils import s3_utils
+from app.constant import headers, S3, PROJECT_NAME
 from app.services.helper.authentication import BearerToken
 from app.services.helper.pre_processing_helper import PreProcessingPipeLine
 from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, \
@@ -81,11 +81,13 @@ async def amd(request):
                 if not filename.lower().endswith('.ulaw'):
                     raise InvalidFile(filename)
 
-                local_path = s3_key.replace(S3.AWS_KEY_PATH, S3.LOCAL_PATH)
-                os.makedirs(os.path.dirname(local_path), exist_ok=True)
-                await s3_utils.download_object(S3.BUCKET_NAME, s3_key, local_path, S3.ENCRYPTION_KEY)
+                s3_dir_name = os.path.dirname(s3_key)
+                local_path = os.path.join(s3_dir_name.replace(S3.AWS_KEY_PATH, S3.LOCAL_PATH), PROJECT_NAME)
+                os.makedirs(local_path, exist_ok=True)
+                local_file_path = os.path.join(local_path, filename)
+                await s3_utils.download_object(S3.BUCKET_NAME, s3_key, local_file_path, S3.ENCRYPTION_KEY)
 
-                file_size = os.path.getsize(local_path) / 1024 ** 2
+                file_size = os.path.getsize(local_file_path) / 1024 ** 2
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
             else:
@@ -94,7 +96,7 @@ async def amd(request):
             if not local_path:
                 raise Exception
 
-            audio_file = open(local_path, 'rb')
+            audio_file = open(local_file_path, 'rb')
             result, audio_length = await binary_predictor.predict(audio_file.read())
             if result == 0:
                 is_human_answer = True
@@ -103,7 +105,7 @@ async def amd(request):
             res = {"is_human_answer": is_human_answer, 'input_audio_length': f'{audio_length} seconds'}
             logger.info(f'[{filename}] => is_human_answer: {is_human_answer}]')
 
-            shutil.rmtree(S3.LOCAL_PATH)
+            shutil.rmtree(local_path)
 
             return web.json_response(res, headers=headers, status=200)
         else:

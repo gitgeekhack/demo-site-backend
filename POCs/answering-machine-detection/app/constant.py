@@ -1,5 +1,6 @@
 import os
 
+PROJECT_NAME = "answering_machine_detection"
 
 class ExceptionMessage:
     INVALID_FILE_EXCEPTION_MESSAGE = 'Input file is invalid'
