@@ -146,90 +146,86 @@ class MedicalInsights:
         """
 
         DIAGNOSIS_TREATMENT_ENTITY_PROMPT = """
-            Task: Identify diagnoses and treatments from provided text without extra information.
-            
-            The definition of a valid diagnosis, valid treatment and valid medications is given below:
-            Diagnosis: It is a process of identifying a patient's medical condition based on the evaluation of symptoms, history, and clinical evidence.
-            Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
-            PMH (Past Medical History): It is a record of a patient's health information regarding previous illnesses, surgeries, injuries, treatments, and other relevant medical events in life.
-                    
-            Guidelines for Extraction:
-            1. Exclude negated diagnosis and treatment information.
-            2. Categorize diagnoses as allergy, PMH, or current condition.
-            3. Include signs, injuries, chronic pain, and medical conditions as diagnoses.
-            4. Avoid repetition of PMH, allergies, and clear diagnoses.
-            5. Extract only therapeutic procedures, surgeries, or interventions as treatments. Include past medical procedures under treatments.
-            6. Exclude specific medication names and dosages from treatments.
-            7. Avoid misinterpreting symptoms as diagnoses or treatments.
-            8. Include system organs and direction of organs with medical entities.
-            9. Exclude hypothetical and conditional statements.
-            10. Categorize entities under appropriate PMH based on identification, ensuring treatments are not included in diagnosis and vice versa.
-            
-            Output Response Format:
-            1. Clear distinction between diagnosis and treatment entities.
-            2. Exclude tests from diagnoses.
-            3. Exclude medication from treatments.
-            4. Exclude clinical findings, physical exam findings, and observations.
-            5. Exclude doctor and patient names.
-            6. Avoid repeating diagnoses and treatments if referring to the same condition or treatment.
-            
-            Please provide a JSON response strictly using the format below. Use this response as an example, but do not include the entity if it is not present, and include empty string values for missing keys:
-            {
-              "diagnosis":{
-                "allergies":["Peanuts"],
-                "pmh":["Type 2 Diabetes"],
-                "others":["Hypertension"]
-              },
-              "treatments":{
-                "pmh":["NORCO"],
-                "others":["REST"]
-              }
-            } 
+        Task: Identify diagnoses and treatments from provided text without extra information.
+
+        The definition of a valid diagnosis, valid treatment and valid medications is given below:
+        Diagnosis: It is a process of identifying a patient's medical condition based on the evaluation of symptoms, history, and clinical evidence.
+        Treatment: A medical intervention or series of actions conducted by healthcare professionals aimed at alleviating, managing, or curing symptoms and diseases, as well as improving a patient's overall health and well-being. This can include medication, surgery, therapy, lifestyle modifications, and other forms of care.
+        PMH (Past Medical History): It is a record of a patient's health information regarding previous illnesses, surgeries, injuries, treatments, and other relevant medical events in life.
+
+        Guidelines for Extraction:
+        1. Exclude negated diagnosis and treatment information.
+        2. Categorize diagnoses as allergy, PMH, or current condition.
+        3. If an allergy is mentioned in the context of Past Medical History, it should be STRICTLY included in both the Allergy and PMH categories to reflect its ongoing relevance to the patient's medical history.
+        4. Include signs, injuries, chronic pain, and medical conditions as diagnoses.
+        5. Avoid repetition of PMH, allergies, and clear diagnoses.
+        6. Extract only therapeutic procedures, surgeries, or interventions as treatments, including manual and physical therapies, as well as recommended exercises. Exclude past medical procedures that are not therapeutic interventions.
+        7. Don't include specific medication names and dosages in treatments.
+        8. Avoid misinterpreting symptoms as diagnoses or treatments.
+        9. Include system organs and direction of organs with medical entities.
+        10. Exclude hypothetical and conditional statements.
+        11. Categorize entities under appropriate PMH based on identification, ensuring treatments are not included in diagnosis and vice versa.
+        12. Exclude general advice or non-specific interventions from the treatments category.
+        13. Exclude diagnostic procedures such as blocks or imaging tests from the treatments category.
+
+        Output Response Format:
+        1. Clear distinction between diagnosis and treatment entities.
+        2. Exclude tests from diagnoses.
+        3. Exclude medication from treatments.
+        4. Exclude clinical findings, physical exam findings, and observations.
+        5. Exclude doctor and patient names.
+        6. Avoid repeating diagnoses and treatments if referring to the same condition or treatment.
+
+        Please provide a JSON response strictly using the format below. Use this response as an example, but do not include the entity if it is not present, and include empty string values for missing keys:
+        {
+          "diagnosis":{
+            "allergies":["Peanuts"],
+            "pmh":["Type 2 Diabetes"],
+            "others":["Hypertension"]
+          },
+          "treatments":{
+            "pmh":["NORCO"],
+            "others":["REST"]
+          }
+        }
         """
 
-        PROCEDURE_MEDICATION_ENTITY_PROMPT = """
+        TESTS_MEDICATION_ENTITY_PROMPT = """
         Your task is to identify valid procedures and valid medications from the user-provided text without including additional information, notes, and context.
         
-        The definition of the medical terms are given below:
+        The definitions of the medical terms are given below:
         PMH (Past Medical History): It is a record of a patient's health information regarding previous illnesses, surgeries, injuries, treatments, and other relevant events in life.
-        Procedures: It refers to a method used to conduct tests and analyze laboratory data for health assessment.
-        Medication: It refers to drugs or substances used to treat, prevent, or diagnose diseases, relieve symptoms, or improve health.
         Treatment: It is a proven, safe, and effective therapeutic intervention aligned with medical standards, to manage or cure a diagnosed health condition.
-        Tests: It is a medical procedure to determine the presence or extent of a health condition.
-        Laboratory Tests: It is a specific analysis performed on clinical samples to diagnose or monitor diseases.
+        Tests: It refers to a comprehensive array of standardized methods and procedures designed to assess a patient's health. These tests cover the evaluation of the musculoskeletal system's integrity, neurological function, and overall physical condition. They include clinical assessments such as hands-on physical techniques—like palpation and range of motion exercises—and specialized tests that elicit responses indicative of medical conditions, including orthopedic and neurological examinations. Furthermore, tests incorporate laboratory analyses that investigate biological samples to diagnose diseases, monitor the course of an illness, and evaluate the success of treatments.
+        Medications: It refers to drugs or substances used to treat, prevent, or diagnose diseases, relieve symptoms, or improve health.
         Dosage: It refers to the specific amount of a drug to be taken at one time or within a certain period, as prescribed by a healthcare professional.
         
         Please follow the below guidelines:
         1. Identify and categorize medications as past medical history (PMH) or current medications, including dosage.
         2. Exclude 'Medication' entity from the medication category.
-        3. Extract all the procedures from the document and categorize them as tests or laboratory tests.
-        4. Only include diagnostic imaging, blood tests, or other standard medical tests in the test category.
-        5. Ensure that every procedure is linked with the relevant date.
-        6. Ensure treatments are not mistaken as medications.
-        7. Avoid repeating entities across all categories and sub-categories. For instance, if an entity is listed under procedures, do not include it in medications.
+        3. Extract all procedures from the document, ensuring each is linked with the relevant date.
+        4. Include both tests and lab tests under the procedure category without differentiating between them.
+        5. Ensure treatments are not mistaken as medications.
+        6. Avoid repeating entities across all categories and sub-categories.
+        7. Don't consider vitals information such as Height, weight, temperature, Blood pressure etc as Tests or Lab Tests.
+        8. Don't include therapeutic procedures and treatments in Tests and Lab Tests.
         
-        Please provide a JSON response strictly using the format below. Use this response as an example, but do not include the entity if it is not present, and include empty string values for missing keys:
+        Please provide a JSON response strictly using the format below. Strictly use this response as an example. Strictly include empty string values for missing keys:
         {
-          "procedures":{
-            "test":[
-              {
-                "date":"2023-03-25",
-                "name":"Electrocardiogram (ECG)"
-              }
-            ],
-            "lab_test":[
-              {
-                "date":"2023-03-30",
-                "name":"Hemoglobin A1c"
-              }
-            ],
-            "reports":[
-              {
-                "date":"2023-03-31",
-                "name":"MRI scan report of the brain"
-              }
-            ]
-          },
+          "tests":[
+            {
+              "date":"2023-03-25",
+              "name":"Electrocardiogram (ECG)"
+            },
+            {
+              "date":"2023-03-30",
+              "name":"Hemoglobin A1c"
+            },
+            {
+              "date":"2023-03-31",
+              "name":"MRI scan of the brain"
+            }
+          ],
           "medications":{
             "pmh":[
               {
