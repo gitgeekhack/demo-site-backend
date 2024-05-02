@@ -2,6 +2,7 @@ import os
 import re
 import ast
 import time
+import traceback
 
 import dateparser
 from datetime import datetime
@@ -31,7 +32,7 @@ from app.service.medical_document_insights.nlp_extractor import bedrock_client, 
 class Encounter(BaseModel):
     encounter_dates: List[str] = Field(description="Date of the encounter")
     events: List[str] = Field(description="Description of the encounter")
-    references: List[str] = Field(description="Reference from the actual text")
+    references: List[dict] = Field(description="Reference from the actual text")
 
 class EncountersExtractor:
     def __init__(self):
@@ -214,6 +215,8 @@ class EncountersExtractor:
         try:
             # Find the list in the string
             start_index = response.find('[')
+            if start_index == -1:
+                raise Exception("Missing Response List Error")
             end_index = response.rfind(']') + 1
             string_of_tuples = response[start_index:end_index]
 
@@ -231,8 +234,8 @@ class EncountersExtractor:
                     list_of_tuples = await self.__fallback_post_processing(response)
 
             encounters = []
-            for date, event, reference_text in list_of_tuples:
-
+            for date, event, reference in list_of_tuples:
+                reference_text = " ".join(reference.values())
                 ## Post-processing for date
 
                 # Validation of date by checking alphabet is present or not
@@ -262,7 +265,8 @@ class EncountersExtractor:
 
             return encounters
 
-        except Exception:
+        except Exception as e:
+            logger.error(f'%s -> %s', e, traceback.format_exc())
             return []
 
     async def __fallback_post_processing(self, mis_formatted_response):
@@ -275,7 +279,8 @@ class EncountersExtractor:
             list_of_tuples = zip(formatted.encounter_dates, formatted.events, formatted.references)
             return list_of_tuples
 
-        except:
+        except Exception as e:
+            logger.error(f'%s -> %s', e, traceback.format_exc())
             return []
 
     async def get_encounters(self, document):
