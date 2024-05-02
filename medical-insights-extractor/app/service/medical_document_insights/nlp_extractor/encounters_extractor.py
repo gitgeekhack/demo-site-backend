@@ -8,6 +8,11 @@ from datetime import datetime
 
 from fuzzywuzzy import fuzz
 
+from typing import List
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain.output_parsers import OutputFixingParser
+
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
 from langchain.llms.bedrock import Bedrock
@@ -23,6 +28,10 @@ from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
+class Encounter(BaseModel):
+    encounter_dates: List[str] = Field(description="Date of the encounter")
+    events: List[str] = Field(description="Description of the encounter")
+    references: List[str] = Field(description="Reference from the actual text")
 
 class EncountersExtractor:
     def __init__(self):
@@ -218,13 +227,11 @@ class EncountersExtractor:
 
                 # Convert the matches to a list of tuples
                 list_of_tuples = [(date.strip(), event.strip(), reference.strip()) for date, event, reference in matches]
+                if len(list_of_tuples) == 0:
+                    list_of_tuples = await self.__fallback_post_processing(response)
 
             encounters = []
-            for date, event, reference in list_of_tuples:
-                if isinstance(reference, dict):
-                    reference_text = reference['Reference']
-                else:
-                    reference_text = eval(reference.strip('"').replace("'", "\""))['Reference']
+            for date, event, reference_text in list_of_tuples:
 
                 ## Post-processing for date
 
@@ -234,26 +241,45 @@ class EncountersExtractor:
 
                 # Formatting of date
                 formatted_date = self.__format_date(is_alpha, date)
-                date_parts = formatted_date.split('-')
-                if len(date_parts) == 3 and int(date_parts[0]) > 12:
-                    date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
-                year = date_parts[-1]
-                if len(year) < 4:
-                    year = str(2000 + int(year))
-                    date_parts[-1] = year
-                date = '-'.join(date_parts)
-                date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
-                input_date_parts = date.split('-')
-                if len(input_date_parts[0]) == 1:
-                    input_date_parts[0] = '0' + input_date_parts[0]
-                if len(input_date_parts[1]) == 1:
-                    input_date_parts[1] = '0' + input_date_parts[1]
-                page, filename = await self.__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
-                encounters.append({'date': date, 'event': event, 'document_name': filename, 'page_no': page})
+                is_alpha = True if re.search(alpha_pattern, formatted_date) else False
+                if not is_alpha:
+                    date_parts = formatted_date.split('-')
+                    if len(date_parts) == 3 and int(date_parts[0]) > 12:
+                        date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
+                    year = date_parts[-1]
+                    if len(year) < 4:
+                        year = str(2000 + int(year))
+                        date_parts[-1] = year
+                    date = '-'.join(date_parts)
+                    date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
+                    input_date_parts = date.split('-')
+                    if len(input_date_parts[0]) == 1:
+                        input_date_parts[0] = '0' + input_date_parts[0]
+                    if len(input_date_parts[1]) == 1:
+                        input_date_parts[1] = '0' + input_date_parts[1]
+                    page, filename = await self.__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
+                    encounters.append({'date': date, 'event': event, 'document_name': filename, 'page_no': page})
 
             return encounters
 
         except Exception:
+            return []
+
+    async def __fallback_post_processing(self, response):
+        """ This method is used to post-process the LLM response by using fallback in case the post-processing step fails"""
+        try:
+            parser = PydanticOutputParser(pydantic_object=Encounter)
+            new_parser = OutputFixingParser.from_llm(parser=parser, llm=self.anthropic_llm)
+            mis_formatted = response
+
+            formatted = new_parser.parse(mis_formatted)
+            enc = formatted.encounter_dates
+            evt = formatted.events
+            ref = formatted.references
+            list_of_tuples = zip(enc, evt, ref)
+            return list_of_tuples
+
+        except:
             return []
 
     async def get_encounters(self, document):

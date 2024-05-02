@@ -100,10 +100,6 @@ class MedicalInsights:
         Notes to keep in mind while extracting 'Reference' :
         - Ensure to provide the exact reference text avoiding any deviations from the original text.
         - Strictly ensure to restrict the length of 'Reference' to the medium-sized phrase.
-        - Ensure to provide the 'Reference' in the json format as below :
-        {
-          'Reference' : "Reference"
-        }
 
         You are required to present this output in a specific format using 'Tuple' and 'List'.
         Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
