@@ -65,7 +65,8 @@ class DocumentQnA:
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
         if os.path.exists(project_response_file_path):
-            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings')
+            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings',
+                                             allow_dangerous_deserialization=True)
         else:
             raw_text = ""
             document_list = glob.glob(os.path.join(project_path, '*'))
