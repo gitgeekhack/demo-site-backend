@@ -31,9 +31,9 @@ jmespath==1.0.1
 joblib==1.4.0
 jsonpatch==1.33
 jsonpointer==2.4
-langchain==0.0.338
-langchain_core==0.1.50
-langsmith==0.0.69
+langchain==0.1.12
+langchain-core==0.1.44
+langsmith==0.1.17
 Levenshtein==0.23.0
 MarkupSafe==2.1.5
 marshmallow==3.21.1
