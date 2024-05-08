@@ -289,7 +289,7 @@ class MedicalChronologyExtractor:
             logger.error(f'%s -> %s', e, traceback.format_exc())
             return []
 
-    def parse_date(self, date_str):
+    def __parse_date(self, date_str):
         parts = date_str.split('-')
         if len(parts) == 3:
             month, day, year = map(int, parts)
@@ -362,7 +362,7 @@ class MedicalChronologyExtractor:
             medical_chronology.extend(medical_chronology_list)
 
         try:
-            medical_chronology = sorted(medical_chronology, key=lambda e: self.parse_date(e['date']))
+            medical_chronology = sorted(medical_chronology, key=lambda e: self.__parse_date(e['date']))
         except ValueError as ve:
             logger.error(f'%s -> %s', ve, traceback.format_exc())
 
