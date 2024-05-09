@@ -26,6 +26,7 @@ from app import logger
 from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.business_rule_exception import MissingResponseListException
 
 
 class MedicalChronologyFormat(BaseModel):
@@ -224,7 +225,7 @@ class MedicalChronologyExtractor:
             # Find the list in the string
             start_index = response.find('[')
             if start_index == -1:
-                raise Exception("Missing Response List Error")
+                raise MissingResponseListException
             end_index = response.rfind(']') + 1
             string_of_tuples = response[start_index:end_index]
 
@@ -234,7 +235,7 @@ class MedicalChronologyExtractor:
 
             except Exception:
                 # Use a regular expression to match the dates, events, doctors, institutions, and references
-                matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', string_of_tuples)
+                matches = re.findall(MedicalInsights.RegExpression.DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE, string_of_tuples)
 
                 # Convert the matches to a list of tuples
                 list_of_tuples = [(date.strip(), event.strip(), doctor.strip(), institution.strip(), reference.strip()) for date, event, doctor, institution, reference in matches]
@@ -260,7 +261,7 @@ class MedicalChronologyExtractor:
                         year = str(2000 + int(year))
                         date_parts[-1] = year
                     date = '-'.join(date_parts)
-                    date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
+                    date = re.findall(MedicalInsights.RegExpression.DATE, date)[0]
                     input_date_parts = date.split('-')
                     if len(input_date_parts[0]) == 1:
                         input_date_parts[0] = '0' + input_date_parts[0]

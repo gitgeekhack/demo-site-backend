@@ -28,6 +28,7 @@ class ExceptionMessage:
     FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
     TOTAL_PAGE_EXCEEDED_EXCEPTION_MESSAGE = "Combined document pages must not exceed {page_count_threshold}. Please upload fewer pages."
     FOLDER_PATH_NULL_EXCEPTION_MESSAGE = "Project not uploaded"
+    MISSING_RESPONSE_LIST_EXCEPTION_MESSAGE = "Missing Response List Error"
 
 
 class MedicalInsights:
@@ -300,3 +301,33 @@ class MedicalInsights:
             'Based on the information provided',
             'Here is the',
             'In summary,']
+
+    class RegExpression:
+        """
+        The DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE regex pattern matches the date, event, doctor, institution, and reference
+        Example:
+            str = "[("01/11/2013", "event-1", "Mr. abc", "inst-1", "ref-1"),
+                      ("05/17/2012","event-2","Mr. xyz","inst-2","ref-2")]"
+
+            matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', str)
+
+            matches = [('"01/11/2013"', 'event-1', 'Mr. abc', 'inst-1', 'ref-1'),
+                        ('"05/17/2012"', 'event-2', 'Mr. xyz', 'inst-2', 'ref-2')]
+
+            If no matches are found, an empty list is returned:
+            matches = []
+
+
+        The DATE regex pattern matches the date for variable lengths
+        Example:
+            str = "10-20-2016 to 16-2020"
+
+            matches = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', str)
+
+            matches = ['10-20-2016', '16-2020']
+
+            If no matches are found, an empty list is returned:
+            matches = []
+        """
+        DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE = r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"'
+        DATE = r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})'
