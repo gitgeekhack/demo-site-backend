@@ -2,9 +2,17 @@ import os
 import re
 import ast
 import time
+import traceback
 
 import dateparser
 from datetime import datetime
+
+from fuzzywuzzy import fuzz
+
+from typing import List
+from langchain.output_parsers import PydanticOutputParser
+from langchain_core.pydantic_v1 import BaseModel, Field
+from langchain.output_parsers import OutputFixingParser
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -13,13 +21,20 @@ from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
 
 from app import logger
 from app.constant import BotoClient
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.business_rule_exception import MissingResponseListException
+
+
+class MedicalChronologyFormat(BaseModel):
+    encounter_dates: List[str] = Field(description="Date of the encounter")
+    events: List[str] = Field(description="Description of the encounter")
+    doctors: List[str] = Field(description="Doctor relevant to the encounter")
+    institutions: List[str] = Field(description="Institution relevant to the doctor")
+    references: List[str] = Field(description="Reference from the actual text")
 
 
 class MedicalChronologyExtractor:
@@ -136,50 +151,48 @@ class MedicalChronologyExtractor:
 
         return stuff_calls
 
-    async def __get_page_number(self, date_doctor_event, list_of_page_contents, relevant_chunks):
+    async def __get_page_number(self, reference_text, list_of_page_contents, relevant_chunks):
+        most_similar_chunk = None
         if len(relevant_chunks) == 1:
-            most_similar_chunk_index = 0
+            most_similar_chunk = relevant_chunks[0]
         else:
-            cosine_similarities = []
-            all_text = []
             for chunk in relevant_chunks:
-                all_text.append(chunk.page_content)
-                all_text.append(date_doctor_event)
+                if reference_text.lower() in chunk.page_content.lower():
+                    most_similar_chunk = chunk
+                    break
+            if most_similar_chunk is None:
+                text_matching_ratios = []
+                for chunk in relevant_chunks:
+                    text_matching_ratios.append(fuzz.token_set_ratio(reference_text, chunk.page_content))
 
-                vectorizer = CountVectorizer()
-                vectorized_text = vectorizer.fit_transform(all_text)
+                most_similar_chunk_index = text_matching_ratios.index(max(text_matching_ratios))
 
-                cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
-                all_text = []
+                most_similar_chunk = relevant_chunks[most_similar_chunk_index]
 
-            most_similar_chunk_index = cosine_similarities.index(max(cosine_similarities))
-
-        most_similar_chunk = relevant_chunks[most_similar_chunk_index]
         filename = most_similar_chunk.metadata['source']
         start_page = most_similar_chunk.metadata['start_page']
         end_page = most_similar_chunk.metadata['end_page']
         relevant_pages = list_of_page_contents[start_page - 1: end_page]
 
+        most_similar_page = None
         if len(relevant_pages) == 1:
-            most_similar_page_index = 0
+            most_similar_page = relevant_pages[0]
         else:
-            cosine_similarities = []
-            all_text = []
             for page in relevant_pages:
-                all_text.append(page.page_content)
-                all_text.append(date_doctor_event)
+                if reference_text.lower() in page.page_content.lower():
+                    most_similar_page = page
+                    break
+            if most_similar_page is None:
+                text_matching_ratios = []
+                for page in relevant_pages:
+                    text_matching_ratios.append(fuzz.token_set_ratio(reference_text, page.page_content))
 
-                vectorizer = CountVectorizer()
-                vectorized_text = vectorizer.fit_transform(all_text)
+                most_similar_page_index = text_matching_ratios.index(max(text_matching_ratios))
 
-                cosine_similarities.append(cosine_similarity(vectorized_text[-1], vectorized_text[:-1]).flatten())
-                all_text = []
+                most_similar_page = relevant_pages[most_similar_page_index]
+        page_number = most_similar_page.metadata['page']
 
-            most_similar_page_index = cosine_similarities.index(max(cosine_similarities))
-
-        most_similar_page = [page.metadata['page'] for page in relevant_pages][most_similar_page_index]
-
-        return most_similar_page, filename
+        return page_number, filename
 
     def __format_date(self, is_alpha, input_date):
         """ This method is used to parse the date into MM-DD-YYYY format """
@@ -209,87 +222,75 @@ class MedicalChronologyExtractor:
         """ This method is used to post-process the LLM response """
 
         try:
-            # Use a regular expression to find the list in the string
-            string_of_tuples = re.search(r'\[.*?\]', response, re.DOTALL).group()
+            # Find the list in the string
+            start_index = response.find('[')
+            if start_index == -1:
+                raise MissingResponseListException
+            end_index = response.rfind(']') + 1
+            string_of_tuples = response[start_index:end_index]
 
             try:
                 # Convert the string of tuples into a list of tuples
                 list_of_tuples = ast.literal_eval(string_of_tuples.replace('“', '"').replace('”', '"'))
 
             except Exception:
-                # Use a regular expression to match the dates, events and doctor
-                matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', string_of_tuples)
+                # Use a regular expression to match the dates, events, doctors, institutions, and references
+                matches = re.findall(MedicalInsights.RegExpression.DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE, string_of_tuples)
 
                 # Convert the matches to a list of tuples
-                list_of_tuples = [(date.strip(), event.strip(), doctor.strip()) for date, event, doctor in matches]
+                list_of_tuples = [(date.strip(), event.strip(), doctor.strip(), institution.strip(), reference.strip()) for date, event, doctor, institution, reference in matches]
+                if len(list_of_tuples) == 0:
+                    list_of_tuples = await self.__fallback_post_processing(response)
 
             medical_chronology = []
-            for date, event, doctor in list_of_tuples:
+            for date, event, doctor, institution, reference in list_of_tuples:
                 ## Post-processing for date
-
                 # Validation of date by checking alphabet is present or not
                 alpha_pattern = r'[a-zA-Z]'
                 is_alpha = True if re.search(alpha_pattern, date) else False
 
                 # Formatting of date
                 formatted_date = self.__format_date(is_alpha, date)
-                date_parts = formatted_date.split('-')
-                if len(date_parts) == 3 and int(date_parts[0]) > 12:
-                    date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
-                year = date_parts[-1]
-                if len(year) < 4:
-                    year = str(2000 + int(year))
-                    date_parts[-1] = year
-                date = '-'.join(date_parts)
-                date = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', date)[0]
-                input_date_parts = date.split('-')
-                if len(input_date_parts[0]) == 1:
-                    input_date_parts[0] = '0' + input_date_parts[0]
-                if len(input_date_parts[1]) == 1:
-                    input_date_parts[1] = '0' + input_date_parts[1]
-
-                # Post-processing for doctor name
-                doctor_json = doctor
-                doctor_name = doctor_json['Doctor']
-                doctor_role = doctor_json['Role']
-                doctor_inst = doctor_json['Institution']
-                if doctor_name == 'None':
-                    if doctor_role == 'None':
-                        if doctor_inst == 'None':
-                            doctor = 'Medical Professional'
-                        else:
-                            doctor = 'Medical Professional at ' + doctor_inst
-                    else:
-                        if doctor_inst == 'None':
-                            doctor = doctor_role
-                        else:
-                            doctor = doctor_role + ' at ' + doctor_inst
-                else:
-                    if doctor_role == 'None':
-                        if doctor_inst == 'None':
-                            doctor = doctor_name
-                        else:
-                            doctor = doctor_name + ' from ' + doctor_inst
-                    else:
-                        if doctor_inst == 'None':
-                            doctor = doctor_name + '; ' + doctor_role
-                        else:
-                            doctor = doctor_name + '; ' + doctor_role + ' at ' + doctor_inst
-
-                if doctor == 'Medical Professional':
-                    date_doctor_event = date + " " + event
-                else:
-                    date_doctor_event = date + " " + doctor + " " + event
-
-                page, filename = await self.__get_page_number(date_doctor_event, list_of_page_contents, relevant_chunks)
-                medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'hospital_name': doctor_inst, 'page_no': page})
+                is_alpha = True if re.search(alpha_pattern, formatted_date) else False
+                if not is_alpha:
+                    date_parts = formatted_date.split('-')
+                    if len(date_parts) == 3 and int(date_parts[0]) > 12:
+                        date_parts[0], date_parts[1] = date_parts[1], date_parts[0]
+                    year = date_parts[-1]
+                    if len(year) < 4:
+                        year = str(2000 + int(year))
+                        date_parts[-1] = year
+                    date = '-'.join(date_parts)
+                    date = re.findall(MedicalInsights.RegExpression.DATE, date)[0]
+                    input_date_parts = date.split('-')
+                    if len(input_date_parts[0]) == 1:
+                        input_date_parts[0] = '0' + input_date_parts[0]
+                    if len(input_date_parts[1]) == 1:
+                        input_date_parts[1] = '0' + input_date_parts[1]
+                    page_number, filename = await self.__get_page_number(reference, list_of_page_contents, relevant_chunks)
+                    medical_chronology.append({'date': date, 'event': event, 'doctor_name': doctor, 'hospital_name': institution, 'document_name': filename, 'page_no': page_number})
 
             return medical_chronology
 
-        except Exception:
+        except Exception as e:
+            logger.error(f'%s -> %s', e, traceback.format_exc())
             return []
 
-    def parse_date(self, date_str):
+    async def __fallback_post_processing(self, mis_formatted_response):
+        """ This method is used to post-process the LLM response by using fallback in case the post-processing step fails"""
+        try:
+            parser = PydanticOutputParser(pydantic_object=MedicalChronologyFormat)
+            new_parser = OutputFixingParser.from_llm(parser=parser, llm=self.anthropic_llm)
+
+            formatted = new_parser.parse(mis_formatted_response)
+            list_of_tuples = zip(formatted.encounter_dates, formatted.events, formatted.doctors, formatted.institutions, formatted.references)
+            return list_of_tuples
+
+        except Exception as e:
+            logger.error(f'%s -> %s', e, traceback.format_exc())
+            return []
+
+    def __parse_date(self, date_str):
         parts = date_str.split('-')
         if len(parts) == 3:
             month, day, year = map(int, parts)
@@ -304,7 +305,7 @@ class MedicalChronologyExtractor:
             day = 1
             return year, month, day
         else:
-            raise ValueError("Invalid date format: {}".format(date_str))
+            raise ValueError("Invalid date format: {} obtained while parsing the date for sorting".format(date_str))
 
     async def get_medical_chronology(self, document):
         """ This method is used to generate the medical chronology """
@@ -361,5 +362,9 @@ class MedicalChronologyExtractor:
             medical_chronology_list = await self.__post_processing(list_of_page_contents, response, relevant_chunks)
             medical_chronology.extend(medical_chronology_list)
 
-        medical_chronology = sorted(medical_chronology, key=lambda e: self.parse_date(e['date']))
+        try:
+            medical_chronology = sorted(medical_chronology, key=lambda e: self.__parse_date(e['date']))
+        except ValueError as ve:
+            logger.error(f'%s -> %s', ve, traceback.format_exc())
+
         return {'medical_chronology': medical_chronology, 'document_name': document['name']}

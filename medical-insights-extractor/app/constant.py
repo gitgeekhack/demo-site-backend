@@ -28,6 +28,7 @@ class ExceptionMessage:
     FILE_UPLOAD_LIMIT_REACHED_EXCEPTION_MESSAGE = "Uploaded more than {x} files"
     TOTAL_PAGE_EXCEEDED_EXCEPTION_MESSAGE = "Combined document pages must not exceed {page_count_threshold}. Please upload fewer pages."
     FOLDER_PATH_NULL_EXCEPTION_MESSAGE = "Project not uploaded"
+    MISSING_RESPONSE_LIST_EXCEPTION_MESSAGE = "Missing Response List Error"
 
 
 class MedicalInsights:
@@ -62,87 +63,50 @@ class MedicalInsights:
         """
 
         MEDICAL_CHRONOLOGY_PROMPT = """
-        Above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' along with 'Doctor' from medical records.
+        The above text is obtained from medical records. Based on the information provided, you are tasked with extracting the 'Encounter Date' and corresponding 'Event' along with 'Doctor', 'Institution', and 'Reference' from medical records.
 
-        'Encounter Date' : In medical record, it is defined as the specific date when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service.
+        'Encounter Date': In medical records, it is defined as the specific date when a patient had an interaction with a healthcare provider. This could be a visit to a clinic, a hospital admission, a telemedicine consultation, or any other form of medical service.
         Notes to keep in mind while extracting 'Encounter Date' :
         - Ensure 'Encounter Date' should also include other types of Protected Health Information dates which are listed below :
-          1. 'Injury date' : In medical record, it is defined as the specific date when a patient sustained any type of injury.
-          2. 'Admission date' : In medical record, it is defined as the specific date when a patient is officially admitted to a healthcare facility, such as a hospital or clinic, for inpatient care.
-          3. 'Discharge date' : In medical record, it is defined as the specific date when a patient is discharged or released from a healthcare facility after receiving treatment or completing a course of care.
-        - Extract only actual 'Encounter Date' and avoid giving any other types of dates which are listed below :
-          1. 'Birth date' : In medical record, it is defined as the specific date when a patient is born. It is typically recorded and used for identification, legal, and administrative purposes. It is also used to calculate a person's age.
-          2. 'Received date' : In medical record, it is defined as the specific date when a lab, hospital, or clinic received the test result.
-          3. 'Printed date' : In medical record, it is defined as the specific date when the document was created, updated, or reviewed.
-          4. 'Resulted date' : In medical record, it is defined as the specific date when the results of certain tests, procedures or treatments are made available or reported.
+          1. 'Injury date': In medical records, it is defined as the specific date when a patient sustained any type of injury.
+          2. 'Admission date': In medical records, it is defined as the specific date when a patient is officially admitted to a healthcare facility, such as a hospital or clinic, for inpatient care.
+          3. 'Discharge date': In medical records, it is defined as the specific date when a patient is discharged or released from a healthcare facility after receiving treatment or completing a course of care.
+        - Ensure 'Encounter Date' should also include other types of dates which are listed below :
+          1. 'E-Signature date': In medical records, it is defined as the specific date when the record is electronically signed by or verified/reviewed by the practitioner having a professional designation.
+          2. 'Expected date': In medical records, it is defined as the specific expected date of delivery and AUA.
+        - Avoid giving any other types of dates like 'Birth date', 'Received date', 'Printed date', and 'Resulted date' :
+          1. 'Birth date': In medical records, it is defined as the specific date when a patient is born. It is typically recorded and used for identification, legal, and administrative purposes. It is also used to calculate a person's age.
+          2. 'Received date': In medical records, it is defined as the specific date when a lab, hospital, or clinic received the test result.
+          3. 'Printed date': In medical records, it is defined as the specific date when the document was created, updated, or reviewed.
+          4. 'Resulted date': In medical records, it is defined as the specific date when the results of certain tests, procedures, or treatments are made available or reported.
         - Ensure all the actual 'Encounter Date' are strictly converted to the same format of 'MM/DD/YYYY'.
-        - Ensure none of the actual 'Encounter Date' is left behind. Ensure dates from Past Medical History / Past Surgical History are also included.
+        - Strictly provide all the actual 'Encounter Date' starting from oldest to newest. Ensure none of the actual 'Encounter Date' is left behind. Ensure dates from Past Medical History / Past Surgical History are also included.
 
-        'Event' : It is associated with the corresponding 'Encounter Date'. It is described as the summary of all activities that occurred on that particular 'Encounter Date'.
+        'Event': It is associated with the corresponding 'Encounter Date'. It is described as the summary of all activities that occurred on that particular 'Encounter Date'.
         Notes to keep in mind while extracting 'Event' :
         - Ensure all 'Event' descriptions should include the key points, context, and any relevant supporting details.
-        - Also ensure all 'Event' descriptions are more detailed, thorough and comprehensive yet a concise summary in medium-sized paragraph.
+        - Also ensure all 'Event' descriptions are more detailed, thorough, and comprehensive yet a concise summary in medium-sized paragraphs.
 
-        'Doctor' : In medical record, a 'Doctor' is typically defined as the name of a licensed medical professional. A 'Doctor' is responsible for attending, diagnosing, and treating illnesses, injuries, and other health conditions. A 'Doctor' often provides preventive care and health education to patients during the encounter.
+        'Doctor': In medical records, a 'Doctor' is typically defined as the name of a licensed medical professional. A 'Doctor' is responsible for attending, diagnosing, and treating illnesses, injuries, and other health conditions. A 'Doctor' often provides preventive care, and health education to patients during the encounter.
         Notes to keep in mind while extracting 'Doctor' :
         - Ensure that the 'Doctor' pertains to the relevant 'Encounter Date' and 'Event'.
-        - In case, if 'Doctor' is found then provide the name of 'Doctor' in the json format as below :
-          Find the 'Institution' or 'Role' relevant to the 'Encounter Date' and 'Event'.
-          'Institution' and 'Role' are defined as below :
-          1. 'Institution' : In medical record, it is defined as the specific workplace of 'Doctor'.
-          2. 'Role' : In medical record, it is defined as the specific work role of 'Doctor'.
-          {
-            'Doctor' : "Doctor",
-            'Role' : "Role",
-            'Institution' : "Institution"
-          }
-        - In case, if 'Doctor' is unknown then follow steps listed as below to find the 'Doctor' :
-          Step-1 : Find the 'Institution' or 'Role' relevant to the 'Encounter Date' and 'Event'.
-                   'Institution' and 'Role' are defined as below :
-                   1. 'Institution' : In medical record, it is defined as the specific workplace of 'Doctor'.
-                       If 'Institution' is found then go to Step-2.
-                   2. 'Role' : In medical record, it is defined as the specific work role of 'Doctor'.
-                       If 'Role' is found then go to Step-2.
-          Step-2 : Find the name of 'Doctor' working at or related to that specific found 'Institution' or bearing that specific or similar found 'Role'.
-          Step-3 : If the 'Doctor' is still not found then provide the name of 'Doctor' in one of the most suitable format out of four formats described below :
-                   1. If 'Role' and 'Institution' are both found then provide the name of 'Doctor' in the json format as below :
-                      {
-                        'Doctor' : "None",
-                        'Role' : "Role",
-                        'Institution' : "Institution"
-                      }
-                   2. If 'Institution' is not found but 'Role' is found then provide the name of 'Doctor' in the json format as below :
-                      {
-                        'Doctor' : "None",
-                        'Role' : "Role",
-                        'Institution' : "None"
-                      }
-                   3. If 'Role' is not found but 'Institution' is found then provide the name of 'Doctor' in the json format as below :
-                      {
-                        'Doctor' : "None",
-                        'Role' : "None",
-                        'Institution' : "Institution"
-                      }
-                   4. If 'Role' and 'Institution' are both not found then find the 'Doctor' who is most relevant to the context of encounter.
-                      If 'Doctor' is still not found then provide the name of 'Doctor' in the json format as below :
-                      {
-                        'Doctor' : "None",
-                        'Role' : "None",
-                        'Institution' : "None"
-                      }
-          Step-4 : If the 'Doctor' is found then provide the name of 'Doctor' in the json format as below :
-                    {
-                      'Doctor' : "Doctor",
-                      'Role' : "None",
-                      'Institution' : "None"
-                    }
+        - In case, if 'Doctor' is not found then find the name of 'Doctor' working at or related to the specific place which is most relevant to the extracted 'Encounter Date' and 'Event'.
+        - In case, if 'Doctor' is still not found then keep the value of 'Doctor' as "None".
 
-        You are required to present this output in a specific format using 'Tuple' and 'List'.
-        Strictly adhere to the format explained as below and strictly avoid giving output in any other format.
-        'Tuple' : It is used to store multiple items - in this case, the 'Encounter Date', 'Event' and 'Doctor'. It is created using parentheses and should be formatted as ("Encounter Date", "Event", "Doctor").
-        'List' : It is used to store multiple items - in this case, the 'Tuple'. It is created using square brackets and should be formatted as [ ("Encounter Date", "Event", "Doctor") ].
-        Additionally, arrange all tuples in the list in ascending or chronological order based on the 'Encounter Date'.
+        'Institution': In medical records, it is defined as the specific workplace of a 'Doctor'. It should also include the name of the hospital.
+        Notes to keep in mind while extracting 'Institution' :
+        - Ensure that the 'Institution' pertains to the relevant 'Encounter Date', 'Event', and 'Doctor'.
+        - In case, if 'Institution' is not found then keep the value of 'Institution' as "None".
+
+        'Reference': It is an exact reference text from the medical record that is most relevant to the extracted 'Encounter Date' and 'Event'.
+        Notes to keep in mind while extracting 'Reference' :
+        - Ensure to provide the exact reference text avoiding any deviations from the original text.
+        - Strictly ensure to restrict the length of 'Reference' to the medium-sized phrase.
+
         Note: This extraction process is crucial for various aspects of healthcare, including patient care tracking, scheduling follow-up appointments, billing, and medical research. Your attention to detail and accuracy in this task is greatly appreciated.
+
+        Please ensure that you strictly provide a result in the below specified format of a list of tuples that includes 'Encounter Date', 'Event', 'Doctor', 'Institution', and 'Reference' :
+        [ ("Encounter Date", "Event", "Doctor", "Institution", "Reference") ]
         """
 
         DIAGNOSIS_TREATMENT_ENTITY_PROMPT = """
@@ -337,3 +301,33 @@ class MedicalInsights:
             'Based on the information provided',
             'Here is the',
             'In summary,']
+
+    class RegExpression:
+        """
+        The DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE regex pattern matches the date, event, doctor, institution, and reference
+        Example:
+            str = "[("01/11/2013", "event-1", "Mr. abc", "inst-1", "ref-1"),
+                      ("05/17/2012","event-2","Mr. xyz","inst-2","ref-2")]"
+
+            matches = re.findall(r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"', str)
+
+            matches = [('"01/11/2013"', 'event-1', 'Mr. abc', 'inst-1', 'ref-1'),
+                        ('"05/17/2012"', 'event-2', 'Mr. xyz', 'inst-2', 'ref-2')]
+
+            If no matches are found, an empty list is returned:
+            matches = []
+
+
+        The DATE regex pattern matches the date for variable lengths
+        Example:
+            str = "10-20-2016 to 16-2020"
+
+            matches = re.findall(r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})', str)
+
+            matches = ['10-20-2016', '16-2020']
+
+            If no matches are found, an empty list is returned:
+            matches = []
+        """
+        DATE_EVENT_DOCTOR_INSTITUTION_REFERENCE = r'\((\"[\d\/]+\")\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"\s*,\s*\"([^\"]+)\"'
+        DATE = r'(?:\d{1,2}-\d{1,2}-\d{1,4})|(?:\d{1,2}-\d{1,4})|(?:\d{1,4})'
