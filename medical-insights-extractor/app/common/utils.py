@@ -52,7 +52,7 @@ def is_image_file(file):
 def is_pdf_file(file):
     file_type = os.path.basename(file)
     ext = file_type.split('.')[-1]
-    return ext in AllowedFileType.PDF
+    return ext.lower() in AllowedFileType.PDF
 
 
 def get_pdf_page_count(file_path):
