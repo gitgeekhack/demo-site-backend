@@ -60,15 +60,14 @@ class PatientDemographicsExtractor:
         return ""
 
     async def __process_patient_demographics(self, output_text):
-        template_data = {"patient_name": "", "date_of_birth": "", "age": "", "gender": "",
-                         "height": {"value": "", "date": ""}, "weight": {"value": "", "date": ""}, "bmi": ""}
+        template_data = MedicalInsights.TemplateResponse.DEMOGRAPHICS_TEMPLATE_RESPONSE
 
         start_index = output_text.find('{')
         end_index = output_text.rfind('}') + 1
         json_str = output_text[start_index:end_index]
 
         if len(json_str) == 0:
-            return template_data
+            return {"patient_demographics": template_data}
 
         data = json.loads(json_str)
 
@@ -184,13 +183,22 @@ class PatientDemographicsExtractor:
     async def get_patient_demographics(self, document_lst):
         """ This is expose method of the class """
 
-        t = time.time()
-        embeddings = await self.__get_docs_embeddings(document_lst)
-        logger.info(f"[Medical-Insights][Demographics] Embedding Generation for Patient Demographics is completed in {time.time() - t} seconds.")
+        pdf_text = "".join(document_lst['page_wise_text'].values()).strip()
+        if not pdf_text:
+            template_data = MedicalInsights.TemplateResponse.DEMOGRAPHICS_TEMPLATE_RESPONSE
+            return {"patient_demographics": template_data, "document_name": document_lst['name']}
+        else:
+            t = time.time()
+            embeddings = await self.__get_docs_embeddings(document_lst)
+            logger.info(
+                f"[Medical-Insights][Demographics] Embedding Generation for Patient Demographics is completed in {time.time() - t} seconds.")
 
-        t = time.time()
-        patient_demographics = await self.__extract_patient_demographics(embeddings)
-        logger.info(f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
+            t = time.time()
+            patient_demographics = await self.__extract_patient_demographics(embeddings)
+            logger.info(
+                f"[Medical-Insights][Demographics] Patient Demographics Extraction is completed in {time.time() - t} seconds.")
 
-        return {"patient_demographics": patient_demographics['patient_demographics'], "document_name": document_lst['name']}
+            return {"patient_demographics": patient_demographics['patient_demographics'],
+                    "document_name": document_lst['name']}
+
 

@@ -40,17 +40,16 @@ class DocTypeExtractor:
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
     async def __process_document_type(self, output_text, document):
-        template_data = {"type": ""}
 
         start_index = output_text.find('{')
         end_index = output_text.rfind('}') + 1
         json_str = output_text[start_index:end_index]
 
         if len(json_str) == 0:
-            return template_data
+            return {"document_type": ""}
 
         data = json.loads(json_str)
-        return {"document_type": data['document_type'], "document_name": document['name']}
+        return {"document_type": data.get("document_type", ''), "document_name": document['name']}
 
     async def __classify_document_type(self, vectorstore_faiss, document):
 
@@ -119,15 +118,19 @@ class DocTypeExtractor:
     async def extract_document_type(self, document):
         """ This is expose method of the class """
 
-        t = time.time()
-        embeddings = await self.__get_docs_embeddings(document)
-        logger.info(f"[Medical-Insights][Document-Type] Embedding Generation for Document Type is completed in {time.time() - t} seconds.")
+        pdf_text = "".join(document['page_wise_text'].values()).strip()
+        if not pdf_text:
+            return {"document_type": "", "document_name": document['name']}
+        else:
+            t = time.time()
+            embeddings = await self.__get_docs_embeddings(document)
+            logger.info(f"[Medical-Insights][Document-Type] Embedding Generation for Document Type is completed in {time.time() - t} seconds.")
 
-        t = time.time()
-        document_type = await self.__classify_document_type(embeddings, document)
-        logger.info(f"[Medical-Insights][Document-Type] Document Type Extraction is completed in {time.time() - t} seconds.")
+            t = time.time()
+            document_type = await self.__classify_document_type(embeddings, document)
+            logger.info(f"[Medical-Insights][Document-Type] Document Type Extraction is completed in {time.time() - t} seconds.")
 
-        return document_type
+            return document_type
 
 
 

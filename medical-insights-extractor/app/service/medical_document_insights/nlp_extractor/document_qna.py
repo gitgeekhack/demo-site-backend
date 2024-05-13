@@ -76,8 +76,11 @@ class DocumentQnA:
                 with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
                     data = json.loads(file.read())
                     raw_text = raw_text + "".join(data.values())
-            docs = await self.__data_formatter(raw_text)
-            vectored_data = await self.__prepare_embeddings(docs, project_response_path)
+            if len(raw_text.strip()) != 0:
+                docs = await self.__data_formatter(raw_text)
+                vectored_data = await self.__prepare_embeddings(docs, project_response_path)
+            else:
+                vectored_data = None
         return vectored_data
 
     async def __data_formatter(self, raw_text):
@@ -140,19 +143,28 @@ class DocumentQnA:
         vectored_data = await self.__prepare_data(project_path)
         logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
-        x = time.time()
-        conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
-        answer = conversation_chain({'query': query})
+        if vectored_data is None:
+            logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
+            response = MedicalInsights.TemplateResponse.QNA_EMPTY_DOC_RESPONSE
+            if 'source_documents' not in list(response.keys()):
+                response['source_documents'] = []
+            response['query'] = query
+            return response
 
-        input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
-        output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+        else:
+            x = time.time()
+            conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
+            answer = conversation_chain({'query': query})
 
-        logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
-                    f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
+            input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
+            output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
 
-        logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
-                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
+            logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
+                        f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
 
-        logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+            logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
+                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
 
-        return answer
+            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+
+            return answer
