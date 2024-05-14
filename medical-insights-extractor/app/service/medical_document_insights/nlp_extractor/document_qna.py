@@ -2,6 +2,7 @@ import os
 import time
 import glob
 import json
+import copy
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
@@ -145,9 +146,7 @@ class DocumentQnA:
 
         if vectored_data is None:
             logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
-            response = MedicalInsights.TemplateResponse.QNA_EMPTY_DOC_RESPONSE
-            if 'source_documents' not in list(response.keys()):
-                response['source_documents'] = []
+            response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_EMPTY_DOC_RESPONSE)
             response['query'] = query
             return response
 
