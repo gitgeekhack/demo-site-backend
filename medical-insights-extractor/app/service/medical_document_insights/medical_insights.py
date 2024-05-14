@@ -6,7 +6,8 @@ import traceback
 from concurrent import futures
 
 from app import logger
-from app.constant import MedicalInsights
+from app.common.s3_utils import s3_utils
+from app.constant import MedicalInsights, AWS
 from app.service.helper.text_extractor import extract_pdf_text
 from app.service.medical_document_insights.nlp_extractor.entity_extractor import get_extracted_entities
 from app.service.medical_document_insights.nlp_extractor.document_summarizer import DocumentSummarizer
@@ -180,13 +181,13 @@ async def get_medical_insights(project_path, document_list):
             "data": res,
             "message": "OK"
         }
+        result = json.dumps(res_obj)
+        result = result.encode("utf-8")
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
+        s3_output_key = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
 
-        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-        os.makedirs(project_response_path, exist_ok=True)
-        project_response_file_path = os.path.join(project_response_path, 'output.json')
-
-        with open(project_response_file_path, 'w') as file:
-            file.write(json.dumps(res_obj))
+        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_output_key, result, AWS.S3.ENCRYPTION_KEY)
 
     except Exception as e:
         res_obj = {
@@ -195,8 +196,10 @@ async def get_medical_insights(project_path, document_list):
             "message": "Internal Server Error"
         }
         logger.error(f'{e} -> {traceback.format_exc()}')
-        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
-        os.makedirs(project_response_path, exist_ok=True)
-        project_response_file_path = os.path.join(project_response_path, 'output.json')
-        with open(project_response_file_path, 'w') as file:
-            file.write(json.dumps(res_obj))
+        result = json.dumps(res_obj)
+        result = result.encode("utf-8")
+        project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
+                                                     MedicalInsights.RESPONSE_FOLDER_NAME)
+        s3_output_key = os.path.join(project_response_path, MedicalInsights.OUTPUT_FILE_NAME)
+
+        await s3_utils.upload_object(AWS.S3.MEDICAL_BUCKET_NAME, s3_output_key, result, AWS.S3.ENCRYPTION_KEY)
