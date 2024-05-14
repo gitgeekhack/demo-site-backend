@@ -72,6 +72,15 @@ class OCRConfig:
 
 
 class DrivingLicense:
+    PROJECT_NAME = "driving-license"
+
+    class S3:
+        AWS_KEY_PATH = "user-data"
+        LOCAL_PATH = "static"
+        BUCKET_NAME = 'driver-license-ocr-ds'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+        PREFIX = "s3://driver-license-ocr-ds/"
+
     class ObjectDetection:
         DL_OBJECT_DETECTION_MODEL_PATH = './app/model/driving_license/DLObjectDetection.pt'
         YOLOV5 = 'ultralytics/yolov5:v6.0'
@@ -148,7 +157,15 @@ class EyeHairColor:
 
 
 class CertificateOfTitle:
+    PROJECT_NAME = "certificate_of_title"
     VAL_SCORE = 0.6
+
+    class S3:
+        AWS_KEY_PATH = "user-data"
+        LOCAL_PATH = "static"
+        BUCKET_NAME = 'certificate-of-title-ocr-ds'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+        PREFIX = "s3://certificate-of-title-ocr-ds/"
 
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
@@ -200,11 +217,20 @@ class CertificateOfTitle:
 
 
 class CarDamageDetection:
+    PROJECT_NAME = "car_damage_detection"
+
+    class S3:
+        AWS_KEY_PATH = "user-data"
+        LOCAL_PATH = "static"
+        BUCKET_NAME = 'car-damage-identification-ds'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+        PREFIX = "s3://car-damage-identification-ds/"
+
     class ColorLabels:
         CAR_DAMAGE = {"headlights": (95, 202, 255), "hood": (159, 247, 17), "front_bumper": (0, 234, 254),
                       "rear_bumper": (99, 247, 220), "front_windshield": (228, 161, 0),
                       "rear_windshield": (60, 128, 240),
-                      "flat_tyre": (245, 252, 3), "missing_mirror": (196, 221, 88), "missing_wheel": (158, 210, 250),
+                      "flat_tyre": (245, 252, 3), "damaged_mirror": (196, 221, 88), "missing_wheel": (158, 210, 250),
                       "taillights": (110, 92, 242), "trunk": (0, 183, 245), "window": (216, 102, 255),
                       "door": (41, 255, 94),
                       "fender": (245, 122, 206), "interior_damage": (133, 37, 247)}
