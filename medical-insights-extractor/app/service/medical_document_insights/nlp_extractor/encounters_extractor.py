@@ -235,7 +235,16 @@ class EncountersExtractor:
 
             encounters = []
             for date, event, reference in list_of_tuples:
-                reference_text = " ".join(reference.values())
+                if isinstance(reference, dict):       
+                    reference_text = " ".join(reference.values())
+                else:
+                    try:
+                        reference = ast.literal_eval(reference)
+                        if isinstance(reference, dict):    
+                            reference_text = " ".join(reference.values())
+                    except:
+                        reference_text = reference
+
                 ## Post-processing for date
 
                 # Validation of date by checking alphabet is present or not
