@@ -26,6 +26,7 @@ class DamageDetector(MonoState):
         annotator = Annotator(image, co_ordinates)
         annotator.annotate_and_save_image(save_path, CarDamageDetection.Path.FONT_PATH)
         s3_path = save_path.replace(CarDamageDetection.S3.LOCAL_PATH, CarDamageDetection.S3.AWS_KEY_PATH)
+        s3_path = s3_path.replace(f'{CarDamageDetection.S3.REQUEST_FOLDER_NAME}/{CarDamageDetection.PROJECT_NAME}/', '')
 
         with open(save_path, 'rb') as f:
             file_object = f.read()
@@ -72,7 +73,7 @@ class DamageDetector(MonoState):
         results = []
 
         project_name = os.path.dirname(image_data[0])
-        output_dir_path = os.path.join(os.path.dirname(project_name), 'predicted_images')
+        output_dir_path = os.path.join(project_name, CarDamageDetection.S3.RESPONSE_FOLDER_NAME)
         os.makedirs(output_dir_path, exist_ok=True)
 
         for file_path in image_data:

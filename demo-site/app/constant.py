@@ -225,6 +225,8 @@ class CarDamageDetection:
         BUCKET_NAME = 'car-damage-identification-ds'
         ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
         PREFIX = "s3://car-damage-identification-ds/"
+        REQUEST_FOLDER_NAME = "request"
+        RESPONSE_FOLDER_NAME = "response"
 
     class ColorLabels:
         CAR_DAMAGE = {"headlights": (95, 202, 255), "hood": (159, 247, 17), "front_bumper": (0, 234, 254),
