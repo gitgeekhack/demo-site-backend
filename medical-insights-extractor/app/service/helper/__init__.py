@@ -1,5 +1,6 @@
 import boto3
 from botocore.config import Config
-from app.constant import BotoClient
+from app.constant import AWS
 
-textract_client = boto3.client(service_name='textract', region_name=BotoClient.AWS_DEFAULT_REGION, config=Config(BotoClient.read_timeout))
+textract_client = boto3.client(service_name='textract', region_name=AWS.BotoClient.AWS_DEFAULT_REGION,
+                               config=Config(AWS.BotoClient.read_timeout))

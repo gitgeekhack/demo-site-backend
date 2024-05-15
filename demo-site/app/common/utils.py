@@ -1,8 +1,9 @@
 import os
+import re
 import sys
+import fitz
 import logging
 import aiofiles
-import fitz
 
 from app.constant import AllowedFileType
 
@@ -144,3 +145,15 @@ def get_file_from_path(filepath):
 
     except Exception as e:
         return e
+
+
+async def get_user_id(request_url):
+    pattern = r'_([a-zA-Z0-9]+)_\d+\.'
+
+    match = re.search(pattern, request_url)
+
+    if match:
+        user_id = match.group(1)
+        return user_id
+    else:
+        return None
