@@ -290,6 +290,13 @@ class MedicalInsights:
         Note: If any of the value is not found, fill the value with an empty string.
         """
 
+    class TemplateResponse:
+        DEMOGRAPHICS_TEMPLATE_RESPONSE = {"patient_name": "", "date_of_birth": "", "age": "", "gender": "",
+                            "height": {"value": "", "date": ""}, "weight": {"value": "", "date": ""}, "bmi": ""}
+
+        HISTORY_TEMPLATE_RESPONSE = {'social_history': {'page_no': None, 'values': {'Smoking': 'No', 'Alcohol': 'No', 'Tobacco': 'No'}}, 'family_history': {'page_no': None, 'values': {}}, 'psychiatric_injury': {'page_no': None, 'values': []}}
+
+        QNA_EMPTY_DOC_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty", 'source_documents': []}
     class LineRemove:
         SUMMARY_FIRST_LAST_LINE_REMOVE = [
             'Based on the provided',

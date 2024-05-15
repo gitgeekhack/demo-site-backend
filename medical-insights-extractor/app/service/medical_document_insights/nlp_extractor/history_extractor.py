@@ -250,28 +250,34 @@ class HistoryExtractor:
         """ This method is used to generate the encounters """
 
         data = document['page_wise_text']
-        output = {}
-        t1 = time.time()
-        docs, list_of_page_contents = await self.__data_formatter(data)
+        pdf_text = "".join(data.values()).strip()
 
-        emb_tokens = 0
-        for i in docs:
-            emb_tokens += self.titan_llm.get_num_tokens(i.page_content)
+        if not pdf_text:
+            template_data = MedicalInsights.TemplateResponse.HISTORY_TEMPLATE_RESPONSE
+            return {"general_history": template_data, "document_name": document['name']}
+        else:
+            output = {}
+            t1 = time.time()
+            docs, list_of_page_contents = await self.__data_formatter(data)
 
-        t2 = time.time()
-        logger.info(f'[Medical-Insights][History] Chunk Preparation Time: {t2 - t1}')
+            emb_tokens = 0
+            for i in docs:
+                emb_tokens += self.titan_llm.get_num_tokens(i.page_content)
 
-        vectorstore_faiss = FAISS.from_documents(
-            documents=docs,
-            embedding=self.bedrock_embeddings,
-        )
-        logger.info(f'[Medical-Insights][History][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
-                    f'and Generation time: {time.time() - t2}')
+            t2 = time.time()
+            logger.info(f'[Medical-Insights][History] Chunk Preparation Time: {t2 - t1}')
 
-        history_output = await self.get_social_and_family_history(vectorstore_faiss, list_of_page_contents)
-        output.update(history_output)
+            vectorstore_faiss = FAISS.from_documents(
+                documents=docs,
+                embedding=self.bedrock_embeddings,
+            )
+            logger.info(f'[Medical-Insights][History][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
+                        f'and Generation time: {time.time() - t2}')
 
-        injury_output = await self.get_psychiatric_injury(vectorstore_faiss, list_of_page_contents)
-        output.update(injury_output)
+            history_output = await self.get_social_and_family_history(vectorstore_faiss, list_of_page_contents)
+            output.update(history_output)
 
-        return {"general_history": output, "document_name": document['name']}
+            injury_output = await self.get_psychiatric_injury(vectorstore_faiss, list_of_page_contents)
+            output.update(injury_output)
+
+            return {"general_history": output, "document_name": document['name']}
