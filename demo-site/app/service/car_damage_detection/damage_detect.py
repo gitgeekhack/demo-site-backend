@@ -71,10 +71,13 @@ class DamageDetector(MonoState):
     async def detect(self, image_data):
         results = []
 
+        project_name = os.path.dirname(image_data[0])
+        output_dir_path = os.path.join(os.path.dirname(project_name), 'predicted_images')
+        os.makedirs(output_dir_path, exist_ok=True)
+
         for file_path in image_data:
             filename = os.path.basename(file_path)
-            project_name = os.path.dirname(file_path)
-            output_file_path = os.path.join(os.path.dirname(project_name), 'predicted_images', filename)
+            output_file_path = os.path.join(output_dir_path, filename)
             logger.info(f"Request ID: [{self.uuid}]Input image/s received...")
             detection, uploaded_s3_path = await self.__predict_labels(file_path, output_file_path)
             results.append({'results': detection, 'file_path': uploaded_s3_path})
