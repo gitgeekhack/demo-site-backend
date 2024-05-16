@@ -1,3 +1,4 @@
+import copy
 import os
 import time
 import json
@@ -114,8 +115,12 @@ class DocumentQnA:
                         data = json.loads(file.read())
                         raw_text = raw_text + "".join(data.values())
 
-            docs = await self.__data_formatter(raw_text)
-            vectored_data = await self.__prepare_embeddings(docs, s3_embedding_path)
+            if len(raw_text.strip()) != 0:
+                docs = await self.__data_formatter(raw_text)
+                vectored_data = await self.__prepare_embeddings(docs, s3_embedding_path)
+            else:
+                vectored_data = None
+
         return vectored_data
 
     async def __data_formatter(self, raw_text):
@@ -198,6 +203,12 @@ class DocumentQnA:
         x = time.time()
         vectored_data = await self.__prepare_data(project_path)
         logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
+
+        if vectored_data is None:
+            logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
+            response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_RESPONSE)
+            response['query'] = query
+            return response
 
         x = time.time()
         conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
