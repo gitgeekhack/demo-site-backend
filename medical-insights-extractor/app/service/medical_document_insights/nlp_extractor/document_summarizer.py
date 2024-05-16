@@ -101,6 +101,10 @@ class DocumentSummarizer:
     async def get_summary(self, json_data):
         """ This method is used to get the summary of document """
 
+        raw_text = "".join(json_data.values()).strip()
+        if not raw_text:
+            return {"summary": MedicalInsights.TemplateResponse.SUMMARY_RESPONSE}
+
         x = time.time()
         docs, chunk_length = await self.__data_formatter(json_data)
         logger.info(f'[Medical-Insights][Summary] Chunk Preparation Time: {time.time() - x}')
@@ -111,7 +115,6 @@ class DocumentSummarizer:
         concatenate_query = MedicalInsights.Prompts.CONCATENATE_SUMMARY
 
         y = time.time()
-        summary = ''
 
         if len(stuff_calls) <= 1:
             if stuff_calls:
@@ -124,9 +127,6 @@ class DocumentSummarizer:
 
         logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] LLM execution time: {time.time() - y}')
 
-        if not summary:
-            return {"summary": MedicalInsights.TemplateResponse.SUMMARY_RESPONSE}
-
-        summary = await self.__post_processing(summary)
-        return {"summary": summary}
+        final_summary = await self.__post_processing(summary)
+        return {"summary": final_summary}
 
