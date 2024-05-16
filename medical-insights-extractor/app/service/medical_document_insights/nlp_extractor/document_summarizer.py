@@ -111,7 +111,7 @@ class DocumentSummarizer:
         concatenate_query = MedicalInsights.Prompts.CONCATENATE_SUMMARY
 
         y = time.time()
-        summary = []
+        summary = ''
 
         if len(stuff_calls) <= 1:
             if stuff_calls:
@@ -124,5 +124,9 @@ class DocumentSummarizer:
 
         logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] LLM execution time: {time.time() - y}')
 
+        if not summary:
+            return {"summary": MedicalInsights.TemplateResponse.SUMMARY_RESPONSE}
+
         summary = await self.__post_processing(summary)
         return {"summary": summary}
+
