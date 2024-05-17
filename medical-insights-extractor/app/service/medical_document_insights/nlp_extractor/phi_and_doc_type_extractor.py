@@ -270,6 +270,10 @@ class PHIAndDocTypeExtractor:
     async def get_patient_information(self, data):
         """ This is expose method of the class """
 
+        raw_text = "".join(data.values()).strip()
+        if not raw_text:
+            return MedicalInsights.TemplateResponse.PHI_RESPONSE
+
         t = time.time()
         embeddings = await self.__get_docs_embeddings(data)
         logger.info(f"[Medical-Insights][PHI] Embedding Generation for PHI and Document Type is completed in {time.time() - t} seconds.")

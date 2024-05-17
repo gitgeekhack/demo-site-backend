@@ -164,3 +164,10 @@ class MedicalInsights:
         SUMMARY_PROMPT = """Generate a detailed and accurate summary based on the user's input. Specifically, concentrate on identifying key medical diagnoses, outlining treatment plans, and highlighting pertinent aspects of the medical history. Strive for precision and conciseness to deliver a focused and insightful summary."""
 
         CONCATENATE_SUMMARY = "Concatenate the summaries and remove the duplicate information from the summaries and make one summary without losing any information."
+
+    class TemplateResponse:
+        SUMMARY_RESPONSE = "It seems that the PDF you provided is blank. Unfortunately, I can't generate a summary from empty content. Please upload a PDF with readable text."
+        PHI_RESPONSE = {'patient_information': {'admission_dates': ['None'], 'date_of_birth': 'None',
+                                                'discharge_dates': ['None'], 'injury_dates': ['None'],
+                                                'patient_name': 'None'}}
+        QNA_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty", 'source_documents': []}
