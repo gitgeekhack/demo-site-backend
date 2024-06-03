@@ -12,36 +12,36 @@ class TestEntityExtractor:
         assert await entity_extractor.is_alpha(entity)
 
     @pytest.mark.asyncio
-    async def test_is_alpha_invalid_parameter_1(self):
+    async def test_is_alpha_with_integer_input(self):
         entity = "123"
         try:
             await entity_extractor.is_alpha(entity)
-        except TypeError as e:
-            assert e
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
-    async def test_is_alpha_invalid_parameter_2(self):
+    async def test_is_alpha_with_empty_string(self):
         entity = ""
         try:
             await entity_extractor.is_alpha(entity)
-        except TypeError as e:
-            assert e
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
-    async def test_is_alpha_invalid_parameter_3(self):
+    async def test_is_alpha_with_none_input(self):
         entity = None
         try:
             await entity_extractor.is_alpha(entity)
-        except TypeError as e:
-            assert e
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
-    async def test_is_alpha_invalid_parameter_4(self):
+    async def test_is_alpha_with_special_characters(self):
         entity = "!@#$%"
         try:
             await entity_extractor.is_alpha(entity)
-        except TypeError as e:
-            assert e
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_get_valid_entity_with_valid_parameter(self):
@@ -49,86 +49,81 @@ class TestEntityExtractor:
             "keys1": ["hello", "world"],
             "keys2": ["python", "pytest"]
         }
-        expected_output = {
+        assert await entity_extractor.get_valid_entity(entities) == {
             "keys1": ["Hello", "World"],
             "keys2": ["Python", "Pytest"]
         }
-        assert await entity_extractor.get_valid_entity(entities) == expected_output
 
     @pytest.mark.asyncio
-    async def test_get_valid_entity_with_invalid_parameter_1(self):
+    async def test_get_valid_entity_with_special_characters(self):
         entities = {
             "keys1": ["123", "456"],
             "keys2": ["!@#", "$%^"]
         }
-        expected_output = {
+        assert await entity_extractor.get_valid_entity(entities) == {
             "keys1": [],
             "keys2": []
         }
-        assert await entity_extractor.get_valid_entity(entities) == expected_output
 
     @pytest.mark.asyncio
-    async def test_get_valid_entity_with_invalid_parameter_2(self):
+    async def test_get_valid_entity_with_empty_string(self):
         entities = {
             "keys1": ["", "world"],
             "keys2": ["python", ""]
         }
-        expected_output = {
+        assert await entity_extractor.get_valid_entity(entities) == {
             "keys1": ["World"],
             "keys2": ["Python"]
         }
-        assert await entity_extractor.get_valid_entity(entities) == expected_output
 
     @pytest.mark.asyncio
-    async def test_get_valid_entity_with_invalid_parameter_3(self):
+    async def test_get_valid_entity_with_none_input(self):
         entities = {
             "keys1": [None, "world"],
             "keys2": ["python", None]
         }
         try:
             await entity_extractor.get_valid_entity(entities)
-        except TypeError as e:
-            assert e
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_convert_str_into_json_with_valid_parameter(self):
         text = '{"diagnosis": ["flu", "cold"], "treatments": ["rest", "fluids"], "medications": ["ibuprofen", "acetaminophen"]}'
-        expected_output = {
+        assert await entity_extractor.convert_str_into_json(text) == {
             "diagnosis": ["Flu", "Cold"],
             "treatments": ["Rest", "Fluids"],
             "medications": ["Ibuprofen", "Acetaminophen"]
         }
-        assert await entity_extractor.convert_str_into_json(text) == expected_output
 
     @pytest.mark.asyncio
-    async def test_convert_str_into_json_with_invalid_parameter_1(self):
+    async def test_convert_str_into_json_with_invalid_comma_input(self):
         text = '{"diagnosis": ["flu", "cold"], "treatments": ["rest", "fluids",], "medications": ["ibuprofen", "acetaminophen"]}'
         assert await entity_extractor.convert_str_into_json(text) == {'diagnosis': [], 'treatments': [],
                                                                       'medications': []}
 
     @pytest.mark.asyncio
-    async def test_convert_str_into_json_with_invalid_parameter_2(self):
+    async def test_convert_str_into_json_with_empty_string(self):
         text = ''
         assert await entity_extractor.convert_str_into_json(text) == {'diagnosis': [], 'treatments': [],
                                                                       'medications': []}
 
     @pytest.mark.asyncio
-    async def test_convert_str_into_json_with_invalid_parameter_3(self):
+    async def test_convert_str_into_json_with_none_input(self):
         text = None
         try:
             await entity_extractor.convert_str_into_json(text)
-        except AttributeError as e:
-            assert e
+        except AttributeError:
+            assert True
 
     @pytest.mark.asyncio
-    async def test_convert_str_into_json_with_invalid_parameter_4(self):
+    async def test_convert_str_into_json_with_only_diagnosis(self):
         text = '{"diagnosis": ["flu", "cold"]}'
-        expected_output = {
+        assert await entity_extractor.convert_str_into_json(text) == {
             "diagnosis": ["Flu", "Cold"],
             "treatments": [],
             "medications": []
         }
-        assert await entity_extractor.convert_str_into_json(text) == expected_output
 
     @pytest.mark.asyncio
     async def test_get_extracted_entities_with_valid_parameter(self):
@@ -141,9 +136,9 @@ class TestEntityExtractor:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_get_extracted_entities_with_invalid_parameter(self):
+    async def test_get_extracted_entities_with_invalid_string_parameter(self):
         json_data = "My name is Kashyap and I've fever since 4 days and doctor suggested me to take medicine of Dolo365."
         try:
             await entity_extractor.get_extracted_entities(json_data)
-        except AttributeError as e:
-            assert e
+        except AttributeError:
+            assert True

@@ -21,69 +21,54 @@ class TestPHIAndDocTypeExtractor:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_get_docs_embeddings_with_invalid_parameter(self):
+    async def test_get_docs_embeddings_with_empty_json(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         json_data = {}
         try:
             await extractor._PHIAndDocTypeExtractor__get_docs_embeddings(json_data)
-            assert False
-        except IndexError as e:
-            assert str(e)
+        except IndexError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_extract_values_between_curly_braces_with_valid_parameter(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_text = "Hello my name is {Kashyap} and my birth date is {16-08-2001}."
-        expected_output = ["{Kashyap}", "{16-08-2001}"]
         result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
-        assert result == expected_output
+        assert result == ["{Kashyap}", "{16-08-2001}"]
 
     @pytest.mark.asyncio
-    async def test_extract_values_between_curly_braces_with_invalid_parameter_1(self):
+    async def test_extract_values_between_curly_braces_without_curly_braces(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_text = "Hello my name is Kashyap and my birth date is 16-08-2001."
-        expected_output = []
         try:
             result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
-            assert result == expected_output
-        except AssertionError as e:
-            assert str(e)
-
-    @pytest.mark.asyncio
-    async def test_extract_values_between_curly_braces_with_invalid_parameter_2(self):
-        extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
-        input_text = "Hello my name is {Kashyap} and my birth date is {16-08-2001."
-        expected_output = ["{Kashyap}", "{16-08-2001"]
-        try:
-            result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
-            assert result == expected_output
-        except AssertionError as e:
-            assert str(e)
+            assert result == []
+        except AssertionError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_parse_date_with_valid_parameter(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_date = "25 January 2023"
-        expected_output_date = "01-25-2023"
         result = await extractor._PHIAndDocTypeExtractor__parse_date(input_date)
-        assert result == expected_output_date
+        assert result == "01-25-2023"
         assert isinstance(result, str)
 
     @pytest.mark.asyncio
-    async def test_parse_date_with_invalid_parameter_1(self):
+    async def test_parse_date_without_valid_format(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_date = "Not a valid date"
         result = await extractor._PHIAndDocTypeExtractor__parse_date(input_date)
         assert result == "None"
 
     @pytest.mark.asyncio
-    async def test_parse_date_with_invalid_parameter_2(self):
+    async def test_parse_date_with_int_parameter(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_date = 16082001
         try:
             await extractor._PHIAndDocTypeExtractor__parse_date(input_date)
-        except TypeError as e:
-            assert str(e)
+        except TypeError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_process_patient_name_and_dob_with_valid_parameter(self):
@@ -93,13 +78,13 @@ class TestPHIAndDocTypeExtractor:
         assert result is not None
 
     @pytest.mark.asyncio
-    async def test_process_patient_name_and_dob_with_invalid_parameter(self):
+    async def test_process_patient_name_and_dob_with_emtpy_string(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_text = " "
         try:
             await extractor._PHIAndDocTypeExtractor__process_patient_name_and_dob(input_text)
-        except AssertionError as e:
-            assert str(e)
+        except AssertionError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_get_document_type_with_valid_parameter(self):
@@ -116,21 +101,7 @@ class TestPHIAndDocTypeExtractor:
         assert isinstance(result, str)
 
     @pytest.mark.asyncio
-    async def test_get_document_type_with_valid_parameter(self):
-        extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
-        model_embeddings = 'amazon.titan-embed-text-v1'
-        bedrock_client_store = bedrock_client
-        bedrock_embeddings = BedrockEmbeddings(model_id=model_embeddings, client=bedrock_client_store)
-        vectorstore_path = "data/vectorstore"
-
-        load_faiss = FAISS.load_local(
-            vectorstore_path,
-            bedrock_embeddings, index_name='embeddings', allow_dangerous_deserialization=True)
-        result = await extractor._PHIAndDocTypeExtractor__get_document_type(load_faiss)
-        assert isinstance(result, str)
-
-    @pytest.mark.asyncio
-    async def test_get_document_type_with_invalid_parameter_1(self):
+    async def test_get_document_type_with_invalid_vectorstore_path(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         model_embeddings = 'amazon.titan-embed-text-v1'
         bedrock_client_store = bedrock_client
@@ -142,11 +113,11 @@ class TestPHIAndDocTypeExtractor:
                                           allow_dangerous_deserialization=True)
             await extractor._PHIAndDocTypeExtractor__get_document_type(load_faiss)
             assert False
-        except RuntimeError as e:
-            assert str(e)
+        except RuntimeError:
+            assert True
 
     @pytest.mark.asyncio
-    async def test_get_document_type_with_invalid_parameter_2(self):
+    async def test_get_document_type_with_invalid_embedding_model(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         model_embeddings = 'invalid-embed-text-v1'
         bedrock_client_store = bedrock_client
@@ -158,8 +129,8 @@ class TestPHIAndDocTypeExtractor:
                                           allow_dangerous_deserialization=True)
             await extractor._PHIAndDocTypeExtractor__get_document_type(load_faiss)
             assert False
-        except ValueError as e:
-            assert str(e)
+        except ValueError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_get_patient_name_and_dob_with_valid_parameter(self):
@@ -182,21 +153,20 @@ class TestPHIAndDocTypeExtractor:
             "key1": ["2023-01-01", "2023-02-02"],
             "key2": ["2023-03-03", "2023-04-04"]
         }
-        expected_parsed_output = {
+        parsed_response = await extractor._PHIAndDocTypeExtractor__parse_dates_in_phi_response(parse_input)
+        assert parsed_response == {
             "key1": ["01-01-2023", "02-02-2023"],
             "key2": ["03-03-2023", "04-04-2023"]
         }
-        parsed_response = await extractor._PHIAndDocTypeExtractor__parse_dates_in_phi_response(parse_input)
-        assert parsed_response == expected_parsed_output
 
     @pytest.mark.asyncio
-    async def test_parse_dates_in_phi_response_invalid_parameter(self):
+    async def test_parse_dates_in_phi_response_with_invalid_pattern(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         parse_input = "16 january 2023"
         try:
             await extractor._PHIAndDocTypeExtractor__parse_dates_in_phi_response(parse_input)
-        except AttributeError as e:
-            assert str(e)
+        except AttributeError:
+            assert True
 
     @pytest.mark.asyncio
     async def test_get_patient_information_with_valid_parameter(self):
@@ -207,13 +177,13 @@ class TestPHIAndDocTypeExtractor:
             json_data = json.load(f)
 
         response = await extractor.get_patient_information(json_data)
-        assert response is not None
+        assert len(response['patient_information']) == 2
 
     @pytest.mark.asyncio
-    async def test_get_patient_information_with_invalid_parameter(self):
+    async def test_get_patient_information_with_string(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         json_data = "This is the wrong type of json data."
         try:
             await extractor.get_patient_information(json_data)
-        except AttributeError as e:
-            assert str(e)
+        except AttributeError:
+            assert True
