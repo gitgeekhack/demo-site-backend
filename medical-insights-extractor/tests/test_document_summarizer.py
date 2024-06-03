@@ -17,7 +17,7 @@ class TestDocumentSummarizer:
     async def test_is_summary_line_with_invalid_first_line(self):
         summary_extractor = document_summarizer.DocumentSummarizer()
         generated_summary_first_line = "This is a completely different line."
-        await summary_extractor._DocumentSummarizer__is_summary_line_similar(generated_summary_first_line)
+        assert not await summary_extractor._DocumentSummarizer__is_summary_line_similar(generated_summary_first_line)
 
     @pytest.mark.asyncio
     async def test_get_stuff_calls_with_valid_parameter(self):
@@ -83,7 +83,7 @@ class TestDocumentSummarizer:
         summary_extractor = document_summarizer.DocumentSummarizer()
         input_summary = ""
         result = await summary_extractor._DocumentSummarizer__post_processing(input_summary)
-        assert isinstance(result, str)
+        assert len(result) == 0
 
     @pytest.mark.asyncio
     async def test_get_summary_with_valid_parameter(self):
