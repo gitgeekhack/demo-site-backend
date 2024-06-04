@@ -79,10 +79,8 @@ class TestEncountersExtractor:
         ]
 
         page_number, filename = await enc._EncountersExtractor__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
-        try:
-            assert page_number == 2 and filename == "sample_file"
-        except AssertionError:
-            assert True
+
+        assert page_number != 2 and filename == "sample_file"
 
     @pytest.mark.asyncio
     async def test_get_page_number_with_invalid_page_contents(self):
@@ -101,10 +99,8 @@ class TestEncountersExtractor:
         ]
 
         page_number, filename = await enc._EncountersExtractor__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
-        try:
-            assert page_number == 2 and filename == "sample_file"
-        except AssertionError:
-            assert True
+
+        assert page_number != 2 and filename == "sample_file"
 
     @pytest.mark.asyncio
     async def test_get_page_number_with_reference_text_from_different_pages(self):
