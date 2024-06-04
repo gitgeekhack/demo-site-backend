@@ -34,25 +34,13 @@ class TestDocumentSummarizer:
         ]
 
     @pytest.mark.asyncio
-    async def test_get_stuff_calls_with_string_input(self):
-        summary_extractor = document_summarizer.DocumentSummarizer()
-        docs = "This is invalid parameter of string"
-        chunk_length = [10000, 20000, 30000, 15000]
-        try:
-            await summary_extractor._DocumentSummarizer__get_stuff_calls(docs, chunk_length)
-        except AssertionError:
-            assert True
-
-    @pytest.mark.asyncio
     async def test_get_stuff_calls_with_invalid_size_of_chunk_length(self):
         summary_extractor = document_summarizer.DocumentSummarizer()
         docs = [Document(page_content="This is a first line"),
                 Document(page_content="This is a second line")]
-        chunk_length = [100000]
-        try:
-            await summary_extractor._DocumentSummarizer__get_stuff_calls(docs, chunk_length)
-        except AssertionError:
-            assert True
+        chunk_length = []
+        result = await summary_extractor._DocumentSummarizer__get_stuff_calls(docs, chunk_length)
+        assert result == []
 
     @pytest.mark.asyncio
     async def test_get_stuff_calls_with_invalid_parameter_of_empty_list(self):

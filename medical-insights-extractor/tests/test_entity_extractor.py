@@ -137,7 +137,7 @@ class TestEntityExtractor:
 
     @pytest.mark.asyncio
     async def test_get_extracted_entities_with_invalid_string_parameter(self):
-        json_data = "My name is Kashyap and I've fever since 4 days and doctor suggested me to take medicine of Dolo365."
+        json_data = "My name is Umaima and I've fever since 4 days and doctor suggested me to take medicine of Dolo365."
         try:
             await entity_extractor.get_extracted_entities(json_data)
         except AttributeError:

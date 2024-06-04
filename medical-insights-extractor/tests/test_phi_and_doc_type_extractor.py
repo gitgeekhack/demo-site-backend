@@ -32,19 +32,16 @@ class TestPHIAndDocTypeExtractor:
     @pytest.mark.asyncio
     async def test_extract_values_between_curly_braces_with_valid_parameter(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
-        input_text = "Hello my name is {Kashyap} and my birth date is {16-08-2001}."
+        input_text = "The appointment for {Umaima} is scheduled for {15-07-2023}."
         result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
-        assert result == ["{Kashyap}", "{16-08-2001}"]
+        assert result == ["{Umaima}", "{15-07-2023}"]
 
     @pytest.mark.asyncio
     async def test_extract_values_between_curly_braces_without_curly_braces(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
-        input_text = "Hello my name is Kashyap and my birth date is 16-08-2001."
-        try:
-            result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
-            assert result == []
-        except AssertionError:
-            assert True
+        input_text = "Hello my name is Umaima and my birth date is 15-07-2023."
+        result = await extractor._PHIAndDocTypeExtractor__extract_values_between_curly_braces(input_text)
+        assert result == []
 
     @pytest.mark.asyncio
     async def test_parse_date_with_valid_parameter(self):
@@ -73,7 +70,7 @@ class TestPHIAndDocTypeExtractor:
     @pytest.mark.asyncio
     async def test_process_patient_name_and_dob_with_valid_parameter(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
-        input_text = "Hello my name is Kashyap and I am 23 years old."
+        input_text = "Hello my name is Umaima and He is 23 years old."
         result = await extractor._PHIAndDocTypeExtractor__process_patient_name_and_dob(input_text)
         assert result is not None
 
@@ -81,10 +78,8 @@ class TestPHIAndDocTypeExtractor:
     async def test_process_patient_name_and_dob_with_emtpy_string(self):
         extractor = phi_and_doc_type_extractor.PHIAndDocTypeExtractor()
         input_text = " "
-        try:
-            await extractor._PHIAndDocTypeExtractor__process_patient_name_and_dob(input_text)
-        except AssertionError:
-            assert True
+        result = await extractor._PHIAndDocTypeExtractor__process_patient_name_and_dob(input_text)
+        assert result == {'patient_name': 'None', 'date_of_birth': 'None'}
 
     @pytest.mark.asyncio
     async def test_get_document_type_with_valid_parameter(self):
