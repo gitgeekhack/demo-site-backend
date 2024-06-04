@@ -125,14 +125,14 @@ class TestEncountersExtractor:
         page_number, filename = await enc._EncountersExtractor__get_page_number(reference_text, list_of_page_contents, relevant_chunks)
         assert page_number == 3 and filename == "sample_file"
 
-    def test_format_date_with_valid_parameters_1(self):
+    def test_format_date_with_valid_alpha_numeric_input_date(self):
         enc = EncountersExtractor()
         is_alpha = True
         input_date = "31 May, 2024"
         formatted_date = enc._EncountersExtractor__format_date(is_alpha, input_date)
         assert formatted_date == '05-31-2024'
 
-    def test_format_date_with_valid_parameters_2(self):
+    def test_format_date_with_valid_numeric_input_date(self):
         enc = EncountersExtractor()
         is_alpha = False
         input_date = "05-31-2024"

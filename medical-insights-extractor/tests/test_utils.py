@@ -6,8 +6,12 @@ pytest_plugins = ('pytest_asyncio',)
 
 class TestUtils:
     def test_is_image_file_with_valid_file(self):
-        file = "data/image/sample_image1.jpeg"
-        assert is_image_file(file)
+        jpeg_file = "data/image/sample_image1.jpeg"
+        jpg_file = "data/image/sample_image1.jpg"
+        png_file = "data/image/sample_image1.png"
+        assert is_image_file(jpeg_file)
+        assert is_image_file(jpg_file)
+        assert is_image_file(png_file)
 
     def test_is_image_file_with_invalid_file(self):
         file = "data/pdf/Sample1.pdf"
@@ -18,8 +22,12 @@ class TestUtils:
         assert is_pdf_file(file)
 
     def test_is_pdf_file_with_invalid_file(self):
-        file = "data/image/sample_image1.jpeg"
-        assert not is_pdf_file(file)
+        jpeg_file = "data/image/sample_image1.jpeg"
+        jpg_file = "data/image/sample_image1.jpg"
+        png_file = "data/image/sample_image1.png"
+        assert not is_pdf_file(jpeg_file)
+        assert not is_pdf_file(jpg_file)
+        assert not is_pdf_file(png_file)
 
     def test_get_pdf_page_count_with_pdf_file(self):
         file_path = "data/pdf/Sample1.pdf"
