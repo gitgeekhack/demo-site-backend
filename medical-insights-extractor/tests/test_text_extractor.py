@@ -58,7 +58,7 @@ class TestTextExtractor:
     @pytest.mark.asyncio
     async def test_extract_pdf_text_with_valid_pdf(self, tmp_path):
         s3 = S3Utils()
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
 
         file_path = tmp_path / "This is a Dummy PDF.pdf"
         local_path = "data/pdf/This is a Dummy PDF.pdf"
@@ -73,7 +73,7 @@ class TestTextExtractor:
     @pytest.mark.asyncio
     async def test_extract_pdf_text_with_image(self, tmp_path):
         s3 = S3Utils()
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
 
         file_path = tmp_path / "image-with-text.png"
         local_path = "data/image/image-with-text.png"

@@ -77,9 +77,9 @@ class DrivingLicense:
     class S3:
         AWS_KEY_PATH = "user-data"
         LOCAL_PATH = "static"
-        BUCKET_NAME = 'driver-license-ocr-ds'
+        BUCKET_NAME = 'ds-driver-license-ocr'
         ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
-        PREFIX = "s3://driver-license-ocr-ds/"
+        PREFIX = "s3://ds-driver-license-ocr/"
 
     class ObjectDetection:
         DL_OBJECT_DETECTION_MODEL_PATH = './app/model/driving_license/DLObjectDetection.pt'
@@ -163,9 +163,9 @@ class CertificateOfTitle:
     class S3:
         AWS_KEY_PATH = "user-data"
         LOCAL_PATH = "static"
-        BUCKET_NAME = 'certificate-of-title-ocr-ds'
+        BUCKET_NAME = 'ds-certificate-of-title-ocr'
         ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
-        PREFIX = "s3://certificate-of-title-ocr-ds/"
+        PREFIX = "s3://ds-certificate-of-title-ocr/"
 
     class ObjectDetection:
         COT_OBJECT_DETECTION_MODEL_PATH = './app/model/certificate_of_title/cot-20220427-1426.pt'
@@ -222,9 +222,9 @@ class CarDamageDetection:
     class S3:
         AWS_KEY_PATH = "user-data"
         LOCAL_PATH = "static"
-        BUCKET_NAME = 'car-damage-identification-ds'
+        BUCKET_NAME = 'ds-car-damage-identification'
         ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
-        PREFIX = "s3://car-damage-identification-ds/"
+        PREFIX = "s3://ds-car-damage-identification/"
         REQUEST_FOLDER_NAME = "request"
         RESPONSE_FOLDER_NAME = "response"
 
