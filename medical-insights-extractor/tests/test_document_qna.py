@@ -35,7 +35,7 @@ class TestDocumentQnA:
         with open(textract_response_path, mode='rb') as file:
             textract_bytes_buffer.write(file.read())
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         file_key = str(tmp_path / "tests-data/sample/request/sample_patient_report.pdf")
         textract_response_key = str(tmp_path / "tests-data/sample/textract_response/sample_textract_response.json")
         file_object = file_bytes_buffer.getvalue()
@@ -67,7 +67,7 @@ class TestDocumentQnA:
         with open(textract_response_path, mode='rb') as file:
             textract_bytes_buffer.write(file.read())
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         file_key = str(tmp_path / "tests-data/sample/request/sample_patient_report.pdf")
         textract_response_key = str(tmp_path / "tests-data/sample/textract_response/sample_textract_response.json")
         file_object = file_bytes_buffer.getvalue()
