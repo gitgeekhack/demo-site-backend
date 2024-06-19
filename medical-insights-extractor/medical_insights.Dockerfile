@@ -9,6 +9,7 @@ ADD ./app ./app
 RUN pip install gunicorn
 ADD run.py ./run.py
 ADD ./conf.py ./conf.py
+ADD ./tests ./tests
 
 EXPOSE 8083
-CMD gunicorn -c conf.py app:app
+CMD ["python", "conf.py"]
