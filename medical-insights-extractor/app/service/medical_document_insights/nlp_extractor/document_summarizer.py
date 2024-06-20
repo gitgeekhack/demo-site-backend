@@ -8,8 +8,7 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
-from app.constant import AWS
-from app.constant import MedicalInsights
+from app.constant import AWS, MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
@@ -30,11 +29,7 @@ class DocumentSummarizer:
             },
             client=self.bedrock_client,
         )
-        self.reference_summary_first_lines = [
-            'Based on the provided medical report, here is a summary of the key information:',
-            'Here is a detailed and accurate summary based on the provided medical notes:',
-            'Here is a consolidated summary without duplicate information:',
-            'Based on the consultation note, the key points are:']
+        self.reference_summary_first_lines = MedicalInsights.LineRemove.SUMMARY_FIRST_LINE_REMOVE
         self.matching_threshold = 60
 
     async def __generate_summary(self, docs, query):
@@ -107,6 +102,7 @@ class DocumentSummarizer:
 
         x = time.time()
         docs, chunk_length = await self.__data_formatter(json_data)
+        input_tokens = sum(chunk_length)
         logger.info(f'[Medical-Insights][Summary] Chunk Preparation Time: {time.time() - x}')
 
         stuff_calls = await self.__get_stuff_calls(docs, chunk_length)
@@ -125,8 +121,11 @@ class DocumentSummarizer:
             final_response_summary = [Document(page_content=response) for response in response_summary]
             summary = await self.__generate_summary(final_response_summary, concatenate_query)
 
-        logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] LLM execution time: {time.time() - y}')
-
         final_summary = await self.__post_processing(summary)
+        output_tokens = self.anthropic_llm.get_num_tokens(final_summary)
+
+        logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
+
         return {"summary": final_summary}
 

@@ -171,3 +171,10 @@ class MedicalInsights:
                                                 'discharge_dates': ['None'], 'injury_dates': ['None'],
                                                 'patient_name': 'None'}}
         QNA_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty", 'source_documents': []}
+
+    class LineRemove:
+        SUMMARY_FIRST_LINE_REMOVE = [
+            'Based on the provided medical report, here is a summary of the key information:',
+            'Here is a detailed and accurate summary based on the provided medical notes:',
+            'Here is a consolidated summary without duplicate information:',
+            'Based on the consultation note, the key points are:']
