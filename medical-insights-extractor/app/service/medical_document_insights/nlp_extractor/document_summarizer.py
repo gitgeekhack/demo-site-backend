@@ -123,12 +123,18 @@ class DocumentSummarizer:
                 logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
                             f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
         else:
+            query_response = [len(stuff_calls) * query for _ in stuff_calls]
             response_summary = [await self.__generate_summary(docs, query) for docs in stuff_calls]
+
             final_response_summary = [Document(page_content=response) for response in response_summary]
             summary = await self.__generate_summary(final_response_summary, concatenate_query)
 
-            input_tokens = (sum(chunk_length) + self.anthropic_llm.get_num_tokens(query) + self.anthropic_llm.get_num_tokens(concatenate_query))
-            output_tokens = self.anthropic_llm.get_num_tokens(summary)
+            sum_query_response = sum(self.anthropic_llm.get_num_tokens(qr) for qr in query_response)
+            num_concatenate_query = self.anthropic_llm.get_num_tokens(concatenate_query)
+            input_tokens = (sum(chunk_length) + sum_query_response + num_concatenate_query)
+
+            sum_response_summary = sum(self.anthropic_llm.get_num_tokens(rs) for rs in response_summary)
+            output_tokens = sum_response_summary + self.anthropic_llm.get_num_tokens(summary)
 
             logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
                         f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
