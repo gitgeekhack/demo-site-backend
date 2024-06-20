@@ -9,7 +9,7 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
 from app.constant import AWS, MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 
 class DocumentSummarizer:
@@ -102,7 +102,7 @@ class DocumentSummarizer:
 
         x = time.time()
         docs, chunk_length = await self.__data_formatter(json_data)
-        input_tokens = sum(chunk_length)
+
         logger.info(f'[Medical-Insights][Summary] Chunk Preparation Time: {time.time() - x}')
 
         stuff_calls = await self.__get_stuff_calls(docs, chunk_length)
@@ -116,16 +116,23 @@ class DocumentSummarizer:
             if stuff_calls:
                 docs = stuff_calls[0]
                 summary = await self.__generate_summary(docs, query)
+
+                input_tokens = (sum(chunk_length) + self.anthropic_llm.get_num_tokens(query))
+                output_tokens = self.anthropic_llm.get_num_tokens(summary)
+
+                logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                            f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
         else:
             response_summary = [await self.__generate_summary(docs, query) for docs in stuff_calls]
             final_response_summary = [Document(page_content=response) for response in response_summary]
             summary = await self.__generate_summary(final_response_summary, concatenate_query)
 
-        final_summary = await self.__post_processing(summary)
-        output_tokens = self.anthropic_llm.get_num_tokens(final_summary)
+            input_tokens = (sum(chunk_length) + self.anthropic_llm.get_num_tokens(query) + self.anthropic_llm.get_num_tokens(concatenate_query))
+            output_tokens = self.anthropic_llm.get_num_tokens(summary)
 
-        logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
-                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
+            logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
+
+        final_summary = await self.__post_processing(summary)
 
         return {"summary": final_summary}
-
