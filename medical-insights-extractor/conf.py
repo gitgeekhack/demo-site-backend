@@ -1,13 +1,15 @@
+from app import logger
 import subprocess
 from os import environ
 
 # Run tests
-print("Running tests...")
+logger.info("Running tests...")
 test_result = subprocess.run(["pytest"], capture_output=True, text=True, cwd="/medical-insights/tests")
-print(test_result.stdout)
+logger.info(test_result.stdout)
+
 # Check test result
 if test_result.returncode == 0:
-    print("Tests passed successfully. Proceeding to start the server...")
+    logger.info("Tests passed successfully. Proceeding to start the server...")
     # Start server
     """gunicorn WSGI server configuration."""
     bind = '0.0.0.0:' + environ.get('PORT', '8083')
@@ -20,4 +22,4 @@ if test_result.returncode == 0:
     subprocess.run(server_command)
 
 else:
-    print("Tests failed. Aborting server start.")
+    logger.error("Tests failed. Aborting server start.")
