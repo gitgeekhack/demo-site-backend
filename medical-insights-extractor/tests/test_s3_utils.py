@@ -15,7 +15,7 @@ class TestS3Utils:
         target_path = tmp_path / "target"
         target_path.mkdir(parents=True, exist_ok=True)
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/operative_report.pdf"
         download_path = str(target_path / "operative_report.pdf")
         encrypted_key = eval(os.environ["S3_ENCRYPTION_KEY"])
@@ -29,7 +29,7 @@ class TestS3Utils:
         target_path = tmp_path / "target"
         target_path.mkdir(parents=True, exist_ok=True)
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/operative_report.pdf"
         download_path = str(target_path / "operative_report.pdf")
         encrypted_key = "wrong-encrypted-key"
@@ -45,7 +45,7 @@ class TestS3Utils:
         target_path = tmp_path / "target"
         target_path.mkdir(parents=True, exist_ok=True)
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/operative_report.pdf"
         download_path = str(target_path / "pdf" / "operative_report.pdf")
         encrypted_key = eval(os.environ["S3_ENCRYPTION_KEY"])
@@ -61,7 +61,7 @@ class TestS3Utils:
         target_path = tmp_path / "target"
         target_path.mkdir(parents=True, exist_ok=True)
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/op_report.pdf"
         download_path = str(target_path / "operative_report.pdf")
         encrypted_key = eval(os.environ["S3_ENCRYPTION_KEY"])
@@ -95,7 +95,7 @@ class TestS3Utils:
         with open(file_path, mode='rb') as file:
             bytes_buffer.write(file.read())
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "tests-data/operative_report.pdf"
         file_object = bytes_buffer.getvalue()
         encrypted_key = eval(os.environ["S3_ENCRYPTION_KEY"])
@@ -115,7 +115,7 @@ class TestS3Utils:
         with open(file_path, mode='rb') as file:
             bytes_buffer.write(file.read())
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "tests-data/operative_report.pdf"
         file_object = bytes_buffer.getvalue()
         encrypted_key = "wrong-encrypted-key"
@@ -161,7 +161,7 @@ class TestS3Utils:
         with open(file_path, mode='rb') as file:
             bytes_buffer.write(file.read())
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "tests-data/operative_report.pdf"
         file_object = bytes_buffer.getvalue()
         encrypted_key = eval(os.environ["S3_ENCRYPTION_KEY"])
@@ -178,7 +178,7 @@ class TestS3Utils:
     async def test_delete_object_with_invalid_key(self):
         s3 = S3Utils()
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = ""
         try:
             await s3.delete_object(bucket, key)
@@ -200,7 +200,7 @@ class TestS3Utils:
     async def test_check_s3_path_exists_with_valid_parameters(self):
         s3 = S3Utils()
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/operative_report.pdf"
         if await s3.check_s3_path_exists(bucket, key):
             assert True
@@ -211,7 +211,7 @@ class TestS3Utils:
     async def test_check_s3_path_exists_with_invalid_key(self):
         s3 = S3Utils()
 
-        bucket = "medical-insights-extractor-ds"
+        bucket = "ds-medical-insights-extractor"
         key = "sample-data/sample1/request/op_report.pdf"
         if not await s3.check_s3_path_exists(bucket, key):
             assert True

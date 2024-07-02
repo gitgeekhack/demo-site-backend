@@ -41,9 +41,9 @@ PROJECT_NAME = 'underwriting_automation'
 class S3:
     AWS_KEY_PATH = "user-data"
     LOCAL_PATH = "static"
-    BUCKET_NAME = 'insurance-underwriting-automation-ds'
+    BUCKET_NAME = 'ds-insurance-underwriting-automation'
     ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
-    PREFIX = "s3://insurance-underwriting-automation-ds/"
+    PREFIX = "s3://ds-insurance-underwriting-automation/"
 
 
 class Endpoints:

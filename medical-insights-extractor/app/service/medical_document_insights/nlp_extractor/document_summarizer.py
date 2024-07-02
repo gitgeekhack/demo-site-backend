@@ -8,9 +8,8 @@ from langchain.chains.question_answering import load_qa_chain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
-from app.constant import AWS
-from app.constant import MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.constant import AWS, MedicalInsights
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
 
 class DocumentSummarizer:
@@ -30,11 +29,7 @@ class DocumentSummarizer:
             },
             client=self.bedrock_client,
         )
-        self.reference_summary_first_lines = [
-            'Based on the provided medical report, here is a summary of the key information:',
-            'Here is a detailed and accurate summary based on the provided medical notes:',
-            'Here is a consolidated summary without duplicate information:',
-            'Based on the consultation note, the key points are:']
+        self.reference_summary_first_lines = MedicalInsights.LineRemove.SUMMARY_FIRST_LINE_REMOVE
         self.matching_threshold = 60
 
     async def __generate_summary(self, docs, query):
@@ -107,6 +102,7 @@ class DocumentSummarizer:
 
         x = time.time()
         docs, chunk_length = await self.__data_formatter(json_data)
+
         logger.info(f'[Medical-Insights][Summary] Chunk Preparation Time: {time.time() - x}')
 
         stuff_calls = await self.__get_stuff_calls(docs, chunk_length)
@@ -120,13 +116,27 @@ class DocumentSummarizer:
             if stuff_calls:
                 docs = stuff_calls[0]
                 summary = await self.__generate_summary(docs, query)
+
+                input_tokens = (sum(chunk_length) + self.anthropic_llm.get_num_tokens(query))
+                output_tokens = self.anthropic_llm.get_num_tokens(summary)
+
+                logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                            f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
         else:
             response_summary = [await self.__generate_summary(docs, query) for docs in stuff_calls]
             final_response_summary = [Document(page_content=response) for response in response_summary]
             summary = await self.__generate_summary(final_response_summary, concatenate_query)
 
-        logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] LLM execution time: {time.time() - y}')
+            query_response = len(stuff_calls) * self.anthropic_llm.get_num_tokens(query)
+            num_concatenate_query = self.anthropic_llm.get_num_tokens(concatenate_query)
+            input_tokens = (sum(chunk_length) + query_response + num_concatenate_query)
+
+            sum_response_summary = sum(self.anthropic_llm.get_num_tokens(rs) for rs in response_summary)
+            output_tokens = sum_response_summary + self.anthropic_llm.get_num_tokens(summary)
+
+            logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
 
         final_summary = await self.__post_processing(summary)
-        return {"summary": final_summary}
 
+        return {"summary": final_summary}

@@ -11,7 +11,7 @@ class AWS:
         connect_timeout = 3600
 
     class S3:
-        MEDICAL_BUCKET_NAME = 'medical-insights-extractor-ds'
+        MEDICAL_BUCKET_NAME = 'ds-medical-insights-extractor'
         ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
 
 
@@ -37,13 +37,13 @@ class ExceptionMessage:
 
 
 class MedicalInsights:
-    AWS_BUCKET = "medical-insights-extractor-ds"
+    AWS_BUCKET = "ds-medical-insights-extractor"
     TOTAL_PAGES_THRESHOLD = 1000
     REQUEST_FOLDER_NAME = "request"
     RESPONSE_FOLDER_NAME = "response"
     EMBEDDING_FOLDER_NAME = "embeddings"
     TEXTRACT_FOLDER_NAME = "textract_response"
-    PREFIX = "s3://medical-insights-extractor-ds/"
+    PREFIX = "s3://ds-medical-insights-extractor/"
     EMBEDDING_PICKLE_FILE_NAME = "embeddings.pkl"
     EMBEDDING_FAISS_FILE_NAME = "embeddings.faiss"
     S3_FOLDER_NAME = 'user-data'
@@ -171,3 +171,10 @@ class MedicalInsights:
                                                 'discharge_dates': ['None'], 'injury_dates': ['None'],
                                                 'patient_name': 'None'}}
         QNA_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty", 'source_documents': []}
+
+    class LineRemove:
+        SUMMARY_FIRST_LINE_REMOVE = [
+            'Based on the provided medical report, here is a summary of the key information:',
+            'Here is a detailed and accurate summary based on the provided medical notes:',
+            'Here is a consolidated summary without duplicate information:',
+            'Based on the consultation note, the key points are:']
