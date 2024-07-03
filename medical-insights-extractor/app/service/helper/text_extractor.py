@@ -43,7 +43,9 @@ async def convert_pdf_to_text(pdf_output_dir, page_no, doc_path):
     document = fitz.open(doc_path)
     page = document[page_no]
     image = page.get_pixmap(matrix=matrix)
-    image_path = os.path.join(pdf_output_dir, f'{page_no + 1}.jpg')
+    image_save_path = os.path.join(pdf_output_dir, os.path.basename(doc_path))
+    os.makedirs(image_save_path, exist_ok=True)
+    image_path = os.path.join(image_save_path, f'{page_no + 1}.jpg')
     image.save(image_path)
     page_text = await get_textract_response(image_path)
     return {f"page_{page_no + 1}": page_text}
