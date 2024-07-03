@@ -43,7 +43,7 @@ async def convert_pdf_to_text(pdf_output_dir, page_no, doc_path):
     document = fitz.open(doc_path)
     page = document[page_no]
     image = page.get_pixmap(matrix=matrix)
-    image_save_path = os.path.join(pdf_output_dir, os.path.basename(doc_path))
+    image_save_path = os.path.join(pdf_output_dir, os.path.splitext(os.path.basename(doc_path))[0])
     os.makedirs(image_save_path, exist_ok=True)
     image_path = os.path.join(image_save_path, f'{page_no + 1}.jpg')
     image.save(image_path)
