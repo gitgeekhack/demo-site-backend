@@ -6,8 +6,8 @@ import asyncio
 import traceback
 from aiohttp import web
 
-from app.constant import MedicalInsights
 from app import logger
+from app.constant import MedicalInsights
 from app.common.utils import is_pdf_file, get_file_size, get_response_headers, medical_insights_output_path, get_pdf_page_count
 from app.service.medical_document_insights.medical_insights import get_medical_insights
 from app.service.medical_document_insights.medical_insights_qna import get_query_response
@@ -17,6 +17,7 @@ from app.business_rule_exception import (InvalidFile, HandleFileLimitExceeded, F
 
 class MedicalInsightsExtractor:
     async def post(self):
+        logger.info("Post request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
@@ -55,33 +56,52 @@ class MedicalInsightsExtractor:
             project_response_file_path = os.path.join(project_response_path, 'output.json')
 
             if os.path.exists(project_response_file_path):
-                pass
-            else:
+                with open(project_response_file_path, 'r') as file:
+                    output_file = json.loads(file.read())
+
+                if output_file['status_code'] == 200:
+                    processed_documents = []
+                    for document in output_file['data']:
+                        processed_documents.append(os.path.join(project_path, document['document_name']))
+                    document_list = list(set(document_list) - set(processed_documents))
+            if document_list:
                 asyncio.create_task(get_medical_insights(project_path, document_list))
             return web.json_response(headers=headers, status=202)
 
         except TotalPageExceeded as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except FolderPathNull as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
-        except InvalidFile:
+        except InvalidFile as e:
             response = {"message": "Unsupported Media Type, Only PDF formats are Supported!"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=415)
 
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             response = {"message": "Project Not Found"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
@@ -91,6 +111,7 @@ class MedicalInsightsExtractor:
             return web.json_response(response, headers=headers, status=500)
 
     async def get(self):
+        logger.info("GET request received.")
         x_uuid = uuid.uuid1()
         headers = await get_response_headers()
         try:
@@ -115,26 +136,36 @@ class MedicalInsightsExtractor:
                 with open(project_response_file_path, 'r') as file:
                     res = json.loads(file.read())
                     if res["status_code"] == 200:
+                        logger.info(f"[Medical-Insights][GET] Loaded output from {project_response_file_path}")
                         return web.json_response(data=res['data'], headers=headers, status=200)
                     else:
                         raise Exception
             else:
-                return web.json_response(headers=headers, status=102)
+                logger.info("[Medical-Insights][GET] Output is still under process, responding with status code 425")
+                return web.json_response(headers=headers, status=425)
 
         except FolderPathNull as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             response = {"message": "Project Not Found"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:
@@ -182,22 +213,32 @@ class QnAExtractor:
 
         except FilePathNull as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except InputQueryNull as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except InvalidRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
         except MissingRequestBody as e:
             response = {"message": f"{e}"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=400)
 
-        except FileNotFoundError:
+        except FileNotFoundError as e:
             response = {"message": "Project Not Found"}
+            logger.error(f'Request ID: [{x_uuid}] %s -> %s', e, traceback.format_exc())
+            logger.error(f'Request ID: [{x_uuid}] Response: {response}')
             return web.json_response(response, headers=headers, status=404)
 
         except Exception as e:

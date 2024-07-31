@@ -2,13 +2,14 @@ import os
 import time
 import glob
 import json
+import copy
 
 from langchain.vectorstores import FAISS
 from langchain.chains import RetrievalQA
-from langchain.llms.bedrock import Bedrock
 from langchain.prompts import PromptTemplate
 from langchain.docstore.document import Document
 from langchain.embeddings import BedrockEmbeddings
+from langchain_community.chat_models import BedrockChat
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 
 from app import logger
@@ -22,13 +23,13 @@ class DocumentQnA:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
-        self.model_id_llm = 'anthropic.claude-instant-v1'
+        self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
 
-        self.anthropic_llm = Bedrock(
+        self.anthropic_llm = BedrockChat(
             model_id=self.model_id_llm,
             model_kwargs={
-                "max_tokens_to_sample": 4000,
+                "max_tokens": 4000,
                 "temperature": 0.75,
                 "top_p": 0.01,
                 "top_k": 0,
@@ -37,7 +38,7 @@ class DocumentQnA:
             client=self.bedrock_client,
         )
 
-        self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
+        self.titan_llm = BedrockChat(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
         self.prompt = self.__create_prompt_template()
 
@@ -65,7 +66,8 @@ class DocumentQnA:
         project_response_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME, MedicalInsights.RESPONSE_FOLDER_NAME)
         project_response_file_path = os.path.join(project_response_path, 'embeddings.pkl')
         if os.path.exists(project_response_file_path):
-            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings')
+            vectored_data = FAISS.load_local(project_response_path, self.bedrock_embeddings, index_name='embeddings',
+                                             allow_dangerous_deserialization=True)
         else:
             raw_text = ""
             document_list = glob.glob(os.path.join(project_path, '*'))
@@ -75,8 +77,11 @@ class DocumentQnA:
                 with open(f'{dir_name}/{pdf_name}_text.json', 'r') as file:
                     data = json.loads(file.read())
                     raw_text = raw_text + "".join(data.values())
-            docs = await self.__data_formatter(raw_text)
-            vectored_data = await self.__prepare_embeddings(docs, project_response_path)
+            if len(raw_text.strip()) != 0:
+                docs = await self.__data_formatter(raw_text)
+                vectored_data = await self.__prepare_embeddings(docs, project_response_path)
+            else:
+                vectored_data = None
         return vectored_data
 
     async def __data_formatter(self, raw_text):
@@ -139,19 +144,26 @@ class DocumentQnA:
         vectored_data = await self.__prepare_data(project_path)
         logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
-        x = time.time()
-        conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
-        answer = conversation_chain({'query': query})
+        if vectored_data is None:
+            logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
+            response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_EMPTY_DOC_RESPONSE)
+            response['query'] = query
+            return response
 
-        input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
-        output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+        else:
+            x = time.time()
+            conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
+            answer = conversation_chain({'query': query})
 
-        logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
-                    f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
+            input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
+            output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
 
-        logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
-                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
+            logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
+                        f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
 
-        logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+            logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
+                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
 
-        return answer
+            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+
+            return answer
