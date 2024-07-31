@@ -11,15 +11,14 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.vectorstores import FAISS
 
 from app import logger
-from app.constant import BotoClient
-from app.constant import MedicalInsights
+from app.constant import AWS, MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
 
 class DocTypeExtractor:
 
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = BotoClient.AWS_DEFAULT_REGION
+        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
 
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-3-haiku-20240307-v1:0'
