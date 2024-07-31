@@ -67,8 +67,11 @@ jsonpointer==2.4
 keras==2.7.0
 Keras-Preprocessing==1.1.2
 kiwisolver==1.4.2
-langchain==0.0.338
-langsmith==0.0.69
+langchain==0.1.12
+langchain-community==0.0.28
+langchain-core==0.1.32
+langchain-text-splitters==0.0.1
+langsmith==0.1.41
 Levenshtein==0.23.0
 libclang==16.0.6
 lxml==4.9.0
