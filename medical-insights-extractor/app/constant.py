@@ -3,10 +3,16 @@ import os
 USER_DATA_PATH = os.getenv("USER_DATA_PATH")
 
 
-class BotoClient:
-    AWS_DEFAULT_REGION = "us-east-1"
-    read_timeout = 3600
-    connect_timeout = 3600
+class AWS:
+    class BotoClient:
+        AWS_KEY_PATH = "user-data"
+        AWS_DEFAULT_REGION = "us-east-1"
+        read_timeout = 3600
+        connect_timeout = 3600
+
+    class S3:
+        MEDICAL_BUCKET_NAME = 'ds-medical-insights-extractor'
+        ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
 
 
 class AllowedFileType:
@@ -32,9 +38,18 @@ class ExceptionMessage:
 
 
 class MedicalInsights:
+    AWS_BUCKET = "ds-medical-insights-extractor"
     TOTAL_PAGES_THRESHOLD = 1000
     REQUEST_FOLDER_NAME = "request"
     RESPONSE_FOLDER_NAME = "response"
+    EMBEDDING_FOLDER_NAME = "embeddings"
+    TEXTRACT_FOLDER_NAME = "textract_response"
+    PREFIX = "s3://ds-medical-insights-extractor/"
+    EMBEDDING_PICKLE_FILE_NAME = "embeddings.pkl"
+    EMBEDDING_FAISS_FILE_NAME = "embeddings.faiss"
+    S3_FOLDER_NAME = 'user-data'
+    LOCAL_FOLDER_NAME = 'static'
+    OUTPUT_FILE_NAME = 'output.json'
 
     class Prompts:
         PROMPT_TEMPLATE = """
@@ -292,11 +307,16 @@ class MedicalInsights:
 
     class TemplateResponse:
         DEMOGRAPHICS_TEMPLATE_RESPONSE = {"patient_name": "", "date_of_birth": "", "age": "", "gender": "",
-                            "height": {"value": "", "date": ""}, "weight": {"value": "", "date": ""}, "bmi": ""}
+                                          "height": {"value": "", "date": ""}, "weight": {"value": "", "date": ""},
+                                          "bmi": ""}
 
-        HISTORY_TEMPLATE_RESPONSE = {'social_history': {'page_no': None, 'values': {'Smoking': 'No', 'Alcohol': 'No', 'Tobacco': 'No'}}, 'family_history': {'page_no': None, 'values': {}}, 'psychiatric_injury': {'page_no': None, 'values': []}}
+        HISTORY_TEMPLATE_RESPONSE = {
+            'social_history': {'page_no': None, 'values': {'Smoking': 'No', 'Alcohol': 'No', 'Tobacco': 'No'}},
+            'family_history': {'page_no': None, 'values': {}}, 'psychiatric_injury': {'page_no': None, 'values': []}}
 
-        QNA_EMPTY_DOC_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty", 'source_documents': []}
+        QNA_EMPTY_DOC_RESPONSE = {'query': "", 'result': "It seems that the PDF document is empty",
+                                  'source_documents': []}
+
     class LineRemove:
         SUMMARY_FIRST_LAST_LINE_REMOVE = [
             'Based on the provided',
