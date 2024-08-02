@@ -19,6 +19,9 @@ from app.constant import AWS
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
+import asyncio
+import concurrent.futures
+
 os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
 
 model_id_llm = 'anthropic.claude-instant-v1'
@@ -173,17 +176,20 @@ async def get_extracted_entities(json_data):
     entity = {}
 
     task = []
-    with futures.ThreadPoolExecutor(1) as executor:
+    with futures.ThreadPoolExecutor(max_workers=os.cpu_count()) as executor:
         for key, value in json_data.items():
             new_future = executor.submit(extract_entity_handler, key=key,
                                          value=value, page_wise_entities=entity)
             task.append(new_future)
 
-    results = futures.wait(task)
+        for future in futures.as_completed(task):
+            result = future.result()  # Get the result from each completed future
+            entity.update(result) 
+    #results = futures.wait(task)
 
-    page_wise_entities = {}
-    for entity in results.done:
-        page_wise_entities.update(entity.result())
+    # page_wise_entities = {}
+    # for entity in results.done:
+    #     page_wise_entities.update(entity.result())
 
     filter_empty_pages = {key: value for key, value in page_wise_entities.items() if
                           any(value[key] for key in ['diagnosis', 'treatments', 'medications'])}
@@ -194,11 +200,11 @@ async def get_extracted_entities(json_data):
         page_v |= {"page_no": page_no}
         page_wise_entities.append(page_v)
 
-    logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Input Embedding tokens: {sum(emb_tokens)}')
+    # logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Input Embedding tokens: {sum(emb_tokens)}')
 
-    logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Embedding tokens for LLM call: {sum(emb_prompt_tokens)}')
+    # logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Embedding tokens for LLM call: {sum(emb_prompt_tokens)}')
 
-    logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
-                f'Output tokens: {sum(output_tokens)}')
+    # logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
+    #             f'Output tokens: {sum(output_tokens)}')
 
     return {'medical_entities': page_wise_entities}

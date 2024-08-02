@@ -29,6 +29,8 @@ from app.constant import AWS
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
+import concurrent.futures
+import asyncio
 
 class Encounter(BaseModel):
     encounter_dates: List[str] = Field(description="Date of the encounter")
@@ -296,7 +298,7 @@ class EncountersExtractor:
         except Exception as e:
             logger.error(f'%s -> %s', e, traceback.format_exc())
             return []
-
+    '''
     async def get_encounters(self, document):
         """ This method is used to generate the encounters """
         filename = os.path.basename(document['name'])
@@ -354,3 +356,67 @@ class EncountersExtractor:
             encounters.extend(encounters_list)
 
         return {'encounters': encounters}
+        '''
+    async def get_encounters(self, document):
+        filename = os.path.basename(document['name'])
+        data = document['page_wise_text']
+        start_time = time.time()
+        docs, chunk_length, list_of_page_contents = await self.__data_formatter(filename, data)
+        stuff_calls = await self.__get_stuff_calls(docs, chunk_length)
+        emb_tokens = sum(self.titan_llm.get_num_tokens(doc.page_content) for doc in docs)
+
+        logger.info(f'[Medical-Insights][Encounter] Chunk Preparation Time: {time.time() - start_time}')
+
+        query = MedicalInsights.Prompts.ENCOUNTER_PROMPT
+        prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
+        prompt = PromptTemplate(
+            template=prompt_template, input_variables=["context", "question"]
+        )
+
+        encounters = []
+
+        # Use ThreadPoolExecutor within an async context to process document chunks
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = []
+            for docs in stuff_calls:
+                future = executor.submit(self.process_documents, docs, prompt, query, list_of_page_contents)
+                futures.append(future)
+
+            for future in concurrent.futures.as_completed(futures):
+                encounters_list, response_time_info = future.result()
+                encounters.extend(encounters_list)
+                logger.info(response_time_info)
+
+        return {'encounters': encounters}
+
+    def process_documents(self, docs, prompt, query, list_of_page_contents):
+        """ Process each chunk of documents to extract embeddings and run the QA model. """
+        vectorstore_faiss = FAISS.from_documents(
+            documents=docs,
+            embedding=self.bedrock_embeddings,
+        )
+        start_time = time.time()
+        qa = RetrievalQA.from_chain_type(
+            llm=self.anthropic_llm,
+            chain_type="stuff",
+            retriever=vectorstore_faiss.as_retriever(
+                search_type="similarity", search_kwargs={"k": len(docs)}
+            ),
+            return_source_documents=True,
+            chain_type_kwargs={"prompt": prompt}
+        )
+        answer = qa({"query": query})
+        response_time = time.time() - start_time
+
+        # Call __post_processing in an asynchronous context
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        encounters_list = loop.run_until_complete(self.__post_processing(list_of_page_contents, answer['result'], answer['source_documents']))
+        loop.close()
+
+        input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.anthropic_llm.get_num_tokens(prompt.template)
+        output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+        response_time_info = f'[Medical-Insights][Encounter][{self.model_id_llm}] Input tokens: {input_tokens} ' \
+                             f'Output tokens: {output_tokens} LLM execution time: {response_time}'
+
+        return encounters_list, response_time_info

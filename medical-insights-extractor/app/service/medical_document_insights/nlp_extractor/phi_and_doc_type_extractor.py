@@ -18,7 +18,8 @@ from app.constant import AWS
 from app.constant import MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
 
-
+import asyncio
+import concurrent.futures
 class PHIAndDocTypeExtractor:
     def __init__(self):
         os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
@@ -278,17 +279,41 @@ class PHIAndDocTypeExtractor:
         embeddings = await self.__get_docs_embeddings(data)
         logger.info(f"[Medical-Insights][PHI] Embedding Generation for PHI and Document Type is completed in {time.time() - t} seconds.")
 
-        t = time.time()
-        document_type = await self.__get_document_type(embeddings)
-        logger.info(f"[Medical-Insights][PHI] Identification of Document Type is completed in {time.time() - t} seconds.")
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            loop = asyncio.get_running_loop()
 
-        t = time.time()
-        patient_info = await self.__get_phi_dates(embeddings, document_type)
-        logger.info(f"[Medical-Insights][PHI] PHI Dates Extraction is completed in {time.time() - t} seconds.")
+            # Submit tasks to the thread pool and execute them concurrently
+            document_type_future = loop.run_in_executor(executor, asyncio.run, self.__get_document_type(embeddings))
+            patient_info_future = loop.run_in_executor(executor, asyncio.run, self.__get_phi_dates(embeddings, None))  # We need to handle document type after it's known
+            patient_name_and_dob_future = loop.run_in_executor(executor, asyncio.run, self.__get_patient_name_and_dob(embeddings))
 
-        t = time.time()
-        patient_name_and_dob = await self.__get_patient_name_and_dob(embeddings)
-        logger.info(f"[Medical-Insights][PHI] Patient Name and DOB Extraction is completed in {time.time() - t} seconds.")
+            # Wait for all tasks to complete
+            document_type = await document_type_future
+            patient_info = await patient_info_future
+            patient_name_and_dob = await patient_name_and_dob_future
+
+            # After obtaining document_type, proceed with PHI dates if needed
+            if patient_info['patient_information'].get('admission_dates') is None:  # Check if the first call didn't fetch dates
+                patient_info = await self.__get_phi_dates(embeddings, document_type)
+
+        logger.info(f"[Medical-Insights][PHI] All extraction tasks completed in {time.time() - t} seconds.")
+        
+
+        # t = time.time()
+        # embeddings = await self.__get_docs_embeddings(data)
+        # logger.info(f"[Medical-Insights][PHI] Embedding Generation for PHI and Document Type is completed in {time.time() - t} seconds.")
+
+        # t = time.time()
+        # document_type = await self.__get_document_type(embeddings)
+        # logger.info(f"[Medical-Insights][PHI] Identification of Document Type is completed in {time.time() - t} seconds.")
+
+        # t = time.time()
+        # patient_info = await self.__get_phi_dates(embeddings, document_type)
+        # logger.info(f"[Medical-Insights][PHI] PHI Dates Extraction is completed in {time.time() - t} seconds.")
+
+        # t = time.time()
+        # patient_name_and_dob = await self.__get_patient_name_and_dob(embeddings)
+        # logger.info(f"[Medical-Insights][PHI] Patient Name and DOB Extraction is completed in {time.time() - t} seconds.")
 
         patient_info['patient_information'].update(patient_name_and_dob)
         return patient_info

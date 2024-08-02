@@ -11,6 +11,8 @@ from app import logger
 from app.constant import AWS, MedicalInsights
 from app.service.medical_document_insights.nlp_extractor import bedrock_client
 
+import asyncio
+import concurrent.futures
 
 class DocumentSummarizer:
     def __init__(self):
@@ -123,19 +125,24 @@ class DocumentSummarizer:
                 logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
                             f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
         else:
-            response_summary = [await self.__generate_summary(docs, query) for docs in stuff_calls]
-            final_response_summary = [Document(page_content=response) for response in response_summary]
-            summary = await self.__generate_summary(final_response_summary, concatenate_query)
+            with concurrent.futures.ThreadPoolExecutor() as executor:
+                loop= asyncio.get_running_loop()
+                futures = [loop.run_in_executor(executor,asyncio.run,self.__generate_summary(docs, query))
+                           for docs in stuff_calls]
+                
+                response_summary = [await self.__generate_summary(docs, query) for docs in stuff_calls]
+                final_response_summary = [Document(page_content=response) for response in response_summary]
+                summary = await self.__generate_summary(final_response_summary, concatenate_query)
 
-            query_response = len(stuff_calls) * self.anthropic_llm.get_num_tokens(query)
-            num_concatenate_query = self.anthropic_llm.get_num_tokens(concatenate_query)
-            input_tokens = (sum(chunk_length) + query_response + num_concatenate_query)
+                query_response = len(stuff_calls) * self.anthropic_llm.get_num_tokens(query)
+                num_concatenate_query = self.anthropic_llm.get_num_tokens(concatenate_query)
+                input_tokens = (sum(chunk_length) + query_response + num_concatenate_query)
 
-            sum_response_summary = sum(self.anthropic_llm.get_num_tokens(rs) for rs in response_summary)
-            output_tokens = sum_response_summary + self.anthropic_llm.get_num_tokens(summary)
+                sum_response_summary = sum(self.anthropic_llm.get_num_tokens(rs) for rs in response_summary)
+                output_tokens = sum_response_summary + self.anthropic_llm.get_num_tokens(summary)
 
-            logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
-                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
+                # logger.info(f'[Medical-Insights][Summary][{self.model_id_llm}] Input tokens: {input_tokens} '
+                #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
 
         final_summary = await self.__post_processing(summary)
 
