@@ -206,38 +206,41 @@ class DocumentQnA:
         # Determine the number of workers based on available CPUs
         num_workers = os.cpu_count()
 
-        x = time.time()
-        with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-            # Run blocking I/O operations in the executor
-        #vectored_data = await self.__prepare_data(project_path)
-            vectored_data = await loop.run_in_executor(executor, self.__prepare_data, project_path)
-
-        logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
-
-        if vectored_data is None:
-            logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
-            response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_RESPONSE)
-            response['query'] = query
-            return response
-
-        x = time.time()
-        conversation_chain = await loop.run_in_executor(executor, self.__create_conversation_chain, vectored_data, self.prompt)
-        answer = conversation_chain({'query': query})
-
-        # input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
-        # output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
-
-        local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
-        project_id = os.path.dirname(local_path[:-1])
-        shutil.rmtree(project_id)
-
-        # logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
-        #             f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
-
-        # logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
-        #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
-
-        logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
-        
-        executor.shutdown()
+        vectored_data = None 
+        try:
+            x = time.time()
+            with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+                # Run blocking I/O operations in the executor
+            #vectored_data = await self.__prepare_data(project_path)
+                vectored_data = await loop.run_in_executor(executor, self.__prepare_data, project_path)
+    
+            logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
+    
+            if vectored_data is None:
+                logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
+                response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_RESPONSE)
+                response['query'] = query
+                return response
+    
+            x = time.time()
+            conversation_chain = await loop.run_in_executor(executor, self.__create_conversation_chain, vectored_data, self.prompt)
+            answer = conversation_chain({'query': query})
+    
+            # input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
+            # output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+    
+            local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
+            project_id = os.path.dirname(local_path[:-1])
+            shutil.rmtree(project_id)
+    
+            # logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
+            #             f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
+    
+            # logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
+            #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
+    
+            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+        finally:
+            if executor:
+                executor.shutdown()
         return answer
