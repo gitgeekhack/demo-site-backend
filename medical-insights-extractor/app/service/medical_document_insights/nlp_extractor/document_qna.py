@@ -16,10 +16,8 @@ from langchain.text_splitter import RecursiveCharacterTextSplitter
 from app import logger
 from app.common.s3_utils import s3_utils
 from app.constant import AWS, MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.service.medical_document_insights.nlp_extractor import bedrock_client #, get_llm_input_tokens
 
-import concurrent.futures
-import asyncio
 
 class DocumentQnA:
     def __init__(self):
@@ -65,7 +63,7 @@ class DocumentQnA:
         return prompt
 
     async def __prepare_data(self, project_path):
-        
+
         s3_embedding_path = project_path.replace(MedicalInsights.REQUEST_FOLDER_NAME,
                                                  MedicalInsights.EMBEDDING_FOLDER_NAME)
 
@@ -202,51 +200,33 @@ class DocumentQnA:
 
     async def get_query_response(self, query, project_path):
 
-        loop = asyncio.get_running_loop()
-        # Determine the number of workers based on available CPUs
-        num_workers = os.cpu_count()
+        x = time.time()
+        vectored_data = await self.__prepare_data(project_path)
+        logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
 
-        vectored_data = None 
-        try:
-            x = time.time()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-                # Run blocking I/O operations in the executor
-            #vectored_data = await self.__prepare_data(project_path)
-                vectored_data = await loop.run_in_executor(executor, self.__prepare_data, project_path)
-    
-            logger.info(f"[Medical-Insights-QnA] Input data preparation for LLM is completed in {time.time() - x} seconds.")
-    
-            if vectored_data is None:
-                logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
-                response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_RESPONSE)
-                response['query'] = query
-                return response
-    
-            x = time.time()
-            with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
-            conversation_chain = await loop.run_in_executor(
-                executor,
-                lambda: self.__create_conversation_chain(vectored_data, self.prompt)
-            )
-            # conversation_chain = await loop.run_in_executor(executor, self.__create_conversation_chain, vectored_data, self.prompt)
-            answer = conversation_chain({'query': query})
-    
-            # input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
-            # output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
-    
-            local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
-            project_id = os.path.dirname(local_path[:-1])
-            shutil.rmtree(project_id)
-    
-            # logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
-            #             f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
-    
-            # logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
-            #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
-    
-            logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
-        except Exception as e:
-            logger.error(f"an error occurred: {str(e)}")
-            raise e
-            
+        if vectored_data is None:
+            logger.warning("[Medical-Insights-QnA] Empty Document Found for QnA !!")
+            response = copy.deepcopy(MedicalInsights.TemplateResponse.QNA_RESPONSE)
+            response['query'] = query
+            return response
+
+        x = time.time()
+        conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
+        answer = conversation_chain({'query': query})
+
+        # input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
+        # output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+
+        local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
+        project_id = os.path.dirname(local_path[:-1])
+        shutil.rmtree(project_id)
+
+        # logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
+        #             f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
+
+        # logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
+        #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
+
+        logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
+
         return answer
