@@ -223,7 +223,12 @@ class DocumentQnA:
                 return response
     
             x = time.time()
-            conversation_chain = await loop.run_in_executor(executor, self.__create_conversation_chain, vectored_data, self.prompt)
+            with concurrent.futures.ThreadPoolExecutor(max_workers=num_workers) as executor:
+            conversation_chain = await loop.run_in_executor(
+                executor,
+                lambda: self.__create_conversation_chain(vectored_data, self.prompt)
+            )
+            # conversation_chain = await loop.run_in_executor(executor, self.__create_conversation_chain, vectored_data, self.prompt)
             answer = conversation_chain({'query': query})
     
             # input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
@@ -240,7 +245,8 @@ class DocumentQnA:
             #             f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
     
             logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
-        finally:
-            if executor:
-                executor.shutdown()
+        except Exception as e:
+            logger.error(f"an error occurred: {str(e)}")
+            raise e
+            
         return answer
