@@ -11,6 +11,7 @@ services:
       Tesseract_PATH: "/usr/bin/tesseract"
       CVAT_IP: "http://localhost:8080/"
       USER_DATA_PATH: "/mnt/user-data"
+      S3_ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8081:8081"
 
@@ -22,6 +23,7 @@ services:
       - "/mnt/user-data:/mnt/user-data:rw"
     environment:
       USER_DATA_PATH: "/mnt/user-data"
+      S3_ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8083:8083"
 
@@ -33,6 +35,7 @@ services:
       - "/mnt/user-data:/mnt/user-data:rw"
     environment:
       Tesseract_PATH: "/usr/bin/tesseract"
+      S3_ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8000:8000"
 
@@ -42,5 +45,7 @@ services:
       dockerfile: amd.Dockerfile
     volumes:
       - "/mnt/user-data:/mnt/user-data:rw"
+    environment:
+      S3_ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8082:8082"
