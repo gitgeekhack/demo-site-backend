@@ -1,3 +1,8 @@
+import os
+
+PROJECT_NAME = "answering_machine_detection"
+
+
 class ExceptionMessage:
     INVALID_FILE_EXCEPTION_MESSAGE = 'Input file is invalid'
     FILE_LIMIT_EXCEEDED_EXCEPTION_MESSAGE = "File limit exceeded, only upload file upto 25 MB"
@@ -12,3 +17,11 @@ headers = {
     'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
 }
+
+
+class S3:
+    AWS_KEY_PATH = "user-data"
+    LOCAL_PATH = "static"
+    BUCKET_NAME = 'ds-answering-machine-detection'
+    ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+    PREFIX = "s3://ds-answering-machine-detection/"
