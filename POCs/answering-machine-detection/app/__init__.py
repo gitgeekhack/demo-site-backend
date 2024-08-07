@@ -1,34 +1,36 @@
-import logging
 import os
+import logging
+import shutil
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
+
 import warnings
 
 warnings.filterwarnings("ignore")
 
-from aiohttp import web
 import uuid
-import traceback
 import json
+import traceback
+from aiohttp import web
+
 import tensorflow as tf
 
 tf.executing_eagerly()
 from tensorflow.python.keras.models import load_model
 
-MODEL_PATH = "./app/model/2s_model.h5"
-
-MODEL = load_model(MODEL_PATH)
-
-from app import config
+from app.common.s3_utils import s3_utils
+from app.constant import headers, S3, PROJECT_NAME
 from app.services.helper.authentication import BearerToken
-
 from app.services.helper.pre_processing_helper import PreProcessingPipeLine
 from app.business_rule_exception import InvalidFile, FileLimitExceeded, FilePathNull, MultipleFileUploaded, \
     MissingRequestBody, MissingRequiredParameter, ShortAudioLengthException
-from app.constant import headers
+
+MODEL_PATH = "./app/model/2s_model.h5"
 
 pipe_line = PreProcessingPipeLine()
+
+MODEL = load_model(MODEL_PATH)
 
 from app.services.amd import BinaryPredictor
 
@@ -45,29 +47,56 @@ async def amd(request):
     try:
         token = request.headers.get('Authorization')
         token = token.split(' ')[-1]
+
         if BearerToken.validate(token):
+
             data_bytes = await request.content.read()
             if not data_bytes:
                 raise MissingRequestBody
+
             data = json.loads(data_bytes)
+
             if 'file_path' not in data.keys():
                 raise MissingRequiredParameter(message='Missing required parameter file_path')
+
             file_path = data['file_path']
+
             if file_path == '':
                 raise FilePathNull()
+
+            local_path = None
             if isinstance(file_path, str):
-                if not os.path.exists(file_path):
+                if file_path.startswith(S3.PREFIX):
+                    s3_key = file_path.replace(S3.PREFIX, '')
+                else:
+                    raise MissingRequestBody
+
+                response = await s3_utils.check_s3_path_exists(bucket=S3.BUCKET_NAME, key=s3_key)
+
+                if not response:
                     raise FileNotFoundError
-                filename = os.path.basename(file_path)
+
+                filename = os.path.basename(s3_key)
+
                 if not filename.lower().endswith('.ulaw'):
                     raise InvalidFile(filename)
-                file_size = os.path.getsize(file_path) / 1024**2
+
+                s3_dir_name = os.path.dirname(s3_key)
+                local_path = os.path.join(s3_dir_name.replace(S3.AWS_KEY_PATH, S3.LOCAL_PATH), PROJECT_NAME)
+                os.makedirs(local_path, exist_ok=True)
+                local_file_path = os.path.join(local_path, filename)
+                await s3_utils.download_object(S3.BUCKET_NAME, s3_key, local_file_path, S3.ENCRYPTION_KEY)
+
+                file_size = os.path.getsize(local_file_path) / 1024 ** 2
                 if file_size > 25:
                     raise FileLimitExceeded(file_path)
             else:
                 raise MultipleFileUploaded()
 
-            audio_file = open(file_path, 'rb')
+            if not local_path:
+                raise Exception
+
+            audio_file = open(local_file_path, 'rb')
             result, audio_length = await binary_predictor.predict(audio_file.read())
             if result == 0:
                 is_human_answer = True
@@ -75,6 +104,9 @@ async def amd(request):
                 is_human_answer = False
             res = {"is_human_answer": is_human_answer, 'input_audio_length': f'{audio_length} seconds'}
             logger.info(f'[{filename}] => is_human_answer: {is_human_answer}]')
+
+            shutil.rmtree(local_path)
+
             return web.json_response(res, headers=headers, status=200)
         else:
             return web.json_response({"message": 'Unauthorized'}, headers=headers, status=401)
@@ -123,5 +155,5 @@ logging.basicConfig(level=logging.INFO, format='[Time: %(asctime)s] - '
                                                'Module: %(module)s - '
                                                'Function: %(funcName)s - '
                                                '%(message)s')
-app = web.Application(client_max_size=1024*1024*25)
+app = web.Application(client_max_size=1024 * 1024 * 25)
 app.add_routes([web.options('/api/v1/amd', options_request), web.post('/api/v1/amd', amd)])

@@ -1,3 +1,4 @@
+import os
 from enum import Enum
 
 CLIENT_MAX_SIZE = 4096 * 4096
@@ -34,6 +35,15 @@ ISO_DATE_FORMAT = '%Y-%m-%d'
 
 TRG_AGREED_TO_PAY = 'agreed_to_pay_date'
 TRG_PROMISE_TO_PROVIDE = 'promise_to_provide_date'
+PROJECT_NAME = 'underwriting_automation'
+
+
+class S3:
+    AWS_KEY_PATH = "user-data"
+    LOCAL_PATH = "static"
+    BUCKET_NAME = 'ds-insurance-underwriting-automation'
+    ENCRYPTION_KEY = eval(os.getenv("S3_ENCRYPTION_KEY"))
+    PREFIX = "s3://ds-insurance-underwriting-automation/"
 
 
 class Endpoints:
@@ -653,6 +663,7 @@ class ExceptionMessage:
     UNABLE_TO_EXTRACT_DATAPOINT = 'Request ID: [{}] -> Unable to extract {}'
     SIZE_LIMIT_EXCEEDED = 'File Limit Exceeded'
     MULTIPLE_FILE_UPLOADED_EXCEPTION_MESSAGE = "Multiple files are uploaded, only upload single file"
+    INVALID_REQUEST_BODY_EXCEPTION_MESSAGE = "Invalid request body received"
 
 
 class ErrorCode:
