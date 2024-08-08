@@ -1,33 +1,26 @@
+import ast
 import os
 import re
-import ast
 import time
 import traceback
+from datetime import datetime
+from typing import List
 
 import dateparser
-from datetime import datetime
-
-from fuzzywuzzy import fuzz
-
-from typing import List
-from langchain.output_parsers import PydanticOutputParser
-from langchain_core.pydantic_v1 import BaseModel, Field
-from langchain.output_parsers import OutputFixingParser
-
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.llms.bedrock import Bedrock
-from langchain.prompts import PromptTemplate
-from langchain.docstore.document import Document
-from langchain.embeddings import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
-
 from app import logger
-from app.constant import AWS
 from app.constant import MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
+from fuzzywuzzy import fuzz
+from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
+from langchain.output_parsers import OutputFixingParser
+from langchain.output_parsers import PydanticOutputParser
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_aws import BedrockLLM
+from langchain_community.embeddings import BedrockEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_core.pydantic_v1 import BaseModel, Field
 
 
 class Encounter(BaseModel):
@@ -38,12 +31,11 @@ class Encounter(BaseModel):
 
 class EncountersExtractor:
     def __init__(self):
-        os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
         self.bedrock_client = bedrock_client
         self.model_id_llm = 'anthropic.claude-v2:1'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
 
-        self.anthropic_llm = Bedrock(
+        self.anthropic_llm = BedrockLLM(
             model_id=self.model_id_llm,
             model_kwargs={
                 "max_tokens_to_sample": 4000,
@@ -55,7 +47,7 @@ class EncountersExtractor:
             client=self.bedrock_client,
         )
 
-        self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
+        self.titan_llm = BedrockLLM(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
 
     async def __find_page_range(self, page_indexes_dict, chunk_indexes, search_start_page):
@@ -239,12 +231,12 @@ class EncountersExtractor:
 
             encounters = []
             for date, event, reference in list_of_tuples:
-                if isinstance(reference, dict):       
+                if isinstance(reference, dict):
                     reference_text = " ".join(reference.values())
                 else:
                     try:
                         reference = ast.literal_eval(reference)
-                        if isinstance(reference, dict):    
+                        if isinstance(reference, dict):
                             reference_text = " ".join(reference.values())
                     except:
                         reference_text = reference
@@ -280,7 +272,7 @@ class EncountersExtractor:
             return encounters
 
         except Exception as e:
-            logger.error(f'%s -> %s', e, traceback.format_exc())
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
             return []
 
     async def __fallback_post_processing(self, mis_formatted_response):
@@ -294,22 +286,19 @@ class EncountersExtractor:
             return list_of_tuples
 
         except Exception as e:
-            logger.error(f'%s -> %s', e, traceback.format_exc())
+            logger.error('%s -> %s' % (e, traceback.format_exc()))
             return []
 
     async def get_encounters(self, document):
         """ This method is used to generate the encounters """
         filename = os.path.basename(document['name'])
         data = document['page_wise_text']
-        x = time.time()
+        chunk_start_time = time.time()
         docs, chunk_length, list_of_page_contents = await self.__data_formatter(filename, data)
         stuff_calls = await self.__get_stuff_calls(docs, chunk_length)
-        emb_tokens = 0
-        for i in docs:
-            emb_tokens += self.titan_llm.get_num_tokens(i.page_content)
 
-        z = time.time()
-        logger.info(f'[Medical-Insights][Encounter] Chunk Preparation Time: {z - x}')
+        emb_generation_start_time = time.time()
+        logger.info(f'[Encounter] Chunk Preparation Time: {emb_generation_start_time - chunk_start_time}')
 
         query = MedicalInsights.Prompts.ENCOUNTER_PROMPT
         prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
@@ -323,12 +312,9 @@ class EncountersExtractor:
                 documents=docs,
                 embedding=self.bedrock_embeddings,
             )
-            y = time.time()
-            logger.info(f'[Medical-Insights][Encounter][{self.model_embeddings}] Input Embedding tokens: {emb_tokens} '
-                        f'and Generation time: {y - z}')
-
-            logger.info(f'[Medical-Insights][Encounter][{self.model_embeddings}] Embedding tokens for LLM call: '
-                        f'{self.titan_llm.get_num_tokens(query) + self.titan_llm.get_num_tokens(prompt_template)}')
+            encounter_start_time = time.time()
+            logger.info(f'[Encounter][{self.model_embeddings}] Embeddings generation time: '
+                        f'{encounter_start_time - emb_generation_start_time}')
 
             qa = RetrievalQA.from_chain_type(
                 llm=self.anthropic_llm,
@@ -340,15 +326,12 @@ class EncountersExtractor:
                 chain_type_kwargs={"prompt": prompt}
             )
 
-            answer = qa({"query": query})
+            answer = qa.invoke({"query": query})
             response = answer['result']
             relevant_chunks = answer['source_documents']
-            input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.anthropic_llm.get_num_tokens(
-                prompt_template)
-            output_tokens = self.anthropic_llm.get_num_tokens(response)
 
-            logger.info(f'[Medical-Insights][Encounter][{self.model_id_llm}] Input tokens: {input_tokens} '
-                        f'Output tokens: {output_tokens} LLM execution time: {time.time() - y}')
+            logger.info(
+                f'[Encounter][{self.model_id_llm}] LLM execution time: {time.time() - encounter_start_time}')
 
             encounters_list = await self.__post_processing(list_of_page_contents, response, relevant_chunks)
             encounters.extend(encounters_list)

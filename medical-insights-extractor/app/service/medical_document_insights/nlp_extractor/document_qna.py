@@ -1,22 +1,21 @@
 import copy
-import os
-import time
 import json
+import os
 import shutil
+import time
+
 import aiofiles
-
-from langchain.vectorstores import FAISS
-from langchain.chains import RetrievalQA
-from langchain.llms.bedrock import Bedrock
-from langchain.prompts import PromptTemplate
-from langchain.docstore.document import Document
-from langchain.embeddings import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-
 from app import logger
 from app.common.s3_utils import s3_utils
 from app.constant import AWS, MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
+from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_aws import BedrockLLM
+from langchain_community.embeddings import BedrockEmbeddings
+from langchain_community.vectorstores import FAISS
 
 
 class DocumentQnA:
@@ -26,7 +25,7 @@ class DocumentQnA:
         self.model_id_llm = 'anthropic.claude-instant-v1'
         self.model_embeddings = 'amazon.titan-embed-text-v1'
 
-        self.anthropic_llm = Bedrock(
+        self.anthropic_llm = BedrockLLM(
             model_id=self.model_id_llm,
             model_kwargs={
                 "max_tokens_to_sample": 4000,
@@ -38,7 +37,7 @@ class DocumentQnA:
             client=self.bedrock_client,
         )
 
-        self.titan_llm = Bedrock(model_id=self.model_embeddings, client=self.bedrock_client)
+        self.titan_llm = BedrockLLM(model_id=self.model_embeddings, client=self.bedrock_client)
         self.bedrock_embeddings = BedrockEmbeddings(model_id=self.model_embeddings, client=self.bedrock_client)
         self.prompt = self.__create_prompt_template()
 
@@ -212,20 +211,11 @@ class DocumentQnA:
 
         x = time.time()
         conversation_chain = await self.__create_conversation_chain(vectored_data, self.prompt)
-        answer = conversation_chain({'query': query})
-
-        input_tokens = get_llm_input_tokens(self.anthropic_llm, answer) + self.prompt_template_tokens
-        output_tokens = self.anthropic_llm.get_num_tokens(answer['result'])
+        answer = conversation_chain.invoke({'query': query})
 
         local_path = project_path.replace(MedicalInsights.S3_FOLDER_NAME, MedicalInsights.LOCAL_FOLDER_NAME)
         project_id = os.path.dirname(local_path[:-1])
         shutil.rmtree(project_id)
-
-        logger.info(f'[Medical-Insights-QnA][{self.model_embeddings}] Embedding tokens for LLM call: '
-                    f'{self.titan_llm.get_num_tokens(query) + self.prompt_template_tokens}')
-
-        logger.info(f'[Medical-Insights-QnA][{self.model_id_llm}] Input tokens: {input_tokens} '
-                    f'Output tokens: {output_tokens} LLM execution time: {time.time() - x}')
 
         logger.info(f"[Medical-Insights-QnA] LLM generated response for input query in {time.time() - x} seconds.")
 

@@ -1,30 +1,25 @@
+import asyncio
+import json
 import os
 import re
-import json
-import asyncio
 import traceback
-import multiprocessing
 from concurrent import futures
 
-from langchain.chains import RetrievalQA
-from langchain.vectorstores import FAISS
-from langchain.llms.bedrock import Bedrock
-from langchain.prompts import PromptTemplate
-from langchain.docstore.document import Document
-from langchain.embeddings import BedrockEmbeddings
-from langchain.text_splitter import RecursiveCharacterTextSplitter
-
 from app import logger
-from app.constant import AWS
 from app.constant import MedicalInsights
-from app.service.medical_document_insights.nlp_extractor import bedrock_client, get_llm_input_tokens
-
-os.environ['AWS_DEFAULT_REGION'] = AWS.BotoClient.AWS_DEFAULT_REGION
+from app.service.medical_document_insights.nlp_extractor import bedrock_client
+from langchain.chains import RetrievalQA
+from langchain.docstore.document import Document
+from langchain.prompts import PromptTemplate
+from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_aws import BedrockLLM
+from langchain_community.embeddings import BedrockEmbeddings
+from langchain_community.vectorstores import FAISS
 
 model_id_llm = 'anthropic.claude-instant-v1'
 model_embeddings = 'amazon.titan-embed-text-v1'
 
-anthropic_llm = Bedrock(
+anthropic_llm = BedrockLLM(
     model_id=model_id_llm,
     model_kwargs={
         "max_tokens_to_sample": 10000,
@@ -35,13 +30,8 @@ anthropic_llm = Bedrock(
     client=bedrock_client,
 )
 
-titan_llm = Bedrock(model_id=model_embeddings, client=bedrock_client)
+titan_llm = BedrockLLM(model_id=model_embeddings, client=bedrock_client)
 bedrock_embeddings = BedrockEmbeddings(model_id=model_embeddings, client=bedrock_client)
-
-emb_tokens = None
-emb_prompt_tokens = None
-input_tokens = None
-output_tokens = None
 
 
 async def is_alpha(entity):
@@ -90,7 +80,7 @@ async def convert_str_into_json(text):
         final_data = await get_valid_entity(updated_final_data)
 
     except Exception as e:
-        logger.error('%s -> %s', e, traceback.format_exc())
+        logger.error('%s -> %s' % (e, traceback.format_exc()))
         return final_data
 
     return final_data
@@ -108,12 +98,7 @@ async def data_formatter(json_data):
 async def get_medical_entities(key, value, page_wise_entities):
     """ This method is used to provide medical entities """
 
-    global emb_tokens, emb_prompt_tokens, input_tokens, output_tokens
-
     docs = await data_formatter(value)
-
-    for i in docs:
-        emb_tokens.append(titan_llm.get_num_tokens(i.page_content))
 
     if not docs:
         page_wise_entities[key] = {'diagnosis': [], 'treatments': [], 'medications': []}
@@ -126,8 +111,6 @@ async def get_medical_entities(key, value, page_wise_entities):
 
     query = MedicalInsights.Prompts.ENTITY_PROMPT
     prompt_template = MedicalInsights.Prompts.PROMPT_TEMPLATE
-
-    emb_prompt_tokens.append(titan_llm.get_num_tokens(query) + titan_llm.get_num_tokens(prompt_template))
 
     prompt = PromptTemplate(
         template=prompt_template, input_variables=["context", "question"]
@@ -143,11 +126,8 @@ async def get_medical_entities(key, value, page_wise_entities):
         chain_type_kwargs={"prompt": prompt}
     )
 
-    answer = qa({"query": query})
+    answer = qa.invoke({"query": query})
     response = answer['result']
-
-    input_tokens.append(get_llm_input_tokens(anthropic_llm, answer) + anthropic_llm.get_num_tokens(prompt_template))
-    output_tokens.append(anthropic_llm.get_num_tokens(response))
 
     entities = await convert_str_into_json(response)
     page_wise_entities[key] = entities
@@ -163,17 +143,10 @@ def extract_entity_handler(key, value, page_wise_entities):
 async def get_extracted_entities(json_data):
     """ This method is used to provide medical entities from document"""
 
-    global emb_tokens, emb_prompt_tokens, input_tokens, output_tokens
-    manager = multiprocessing.Manager()
-    emb_tokens = manager.list()
-    emb_prompt_tokens = manager.list()
-    input_tokens = manager.list()
-    output_tokens = manager.list()
-
     entity = {}
 
     task = []
-    with futures.ThreadPoolExecutor(1) as executor:
+    with futures.ThreadPoolExecutor(os.cpu_count()) as executor:
         for key, value in json_data.items():
             new_future = executor.submit(extract_entity_handler, key=key,
                                          value=value, page_wise_entities=entity)
@@ -193,12 +166,5 @@ async def get_extracted_entities(json_data):
         page_no = int(page_k.split("_")[1])
         page_v |= {"page_no": page_no}
         page_wise_entities.append(page_v)
-
-    logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Input Embedding tokens: {sum(emb_tokens)}')
-
-    logger.info(f'[Medical-Insights][Entity][{model_embeddings}] Embedding tokens for LLM call: {sum(emb_prompt_tokens)}')
-
-    logger.info(f'[Medical-Insights][Entity][{model_id_llm}] Input tokens: {sum(input_tokens)} '
-                f'Output tokens: {sum(output_tokens)}')
 
     return {'medical_entities': page_wise_entities}

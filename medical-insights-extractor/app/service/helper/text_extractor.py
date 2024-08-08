@@ -103,7 +103,7 @@ async def extract_pdf_text(file_path):
         document = fitz.open(file_path)
 
         task = []
-        with futures.ProcessPoolExecutor(2) as executor:
+        with futures.ThreadPoolExecutor(os.cpu_count()) as executor:
             for page_no in range(len(document)):
                 new_future = executor.submit(convert_pdf_to_text_handler, pdf_output_dir=pdf_output_dir,
                                              page_no=page_no, doc_path=file_path)

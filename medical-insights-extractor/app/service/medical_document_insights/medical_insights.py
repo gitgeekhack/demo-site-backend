@@ -152,7 +152,7 @@ async def get_medical_insights(project_path, document_list):
     try:
         text_result = []
         document_task = []
-        with futures.ThreadPoolExecutor(2) as executor:
+        with futures.ThreadPoolExecutor(os.cpu_count()) as executor:
             for document in document_list:
                 new_future = executor.submit(get_textract_text_handler, document=document)
                 document_task.append(new_future)
@@ -164,7 +164,7 @@ async def get_medical_insights(project_path, document_list):
         document_wise_response = []
         for document in text_result:
             task = []
-            with futures.ThreadPoolExecutor(2) as executor:
+            with futures.ThreadPoolExecutor(os.cpu_count()) as executor:
                 task.append(executor.submit(get_summary_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_entities_handler, data=document['page_wise_text']))
                 task.append(executor.submit(get_encounters_handler, data=document))

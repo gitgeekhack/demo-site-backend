@@ -1,9 +1,9 @@
-FROM python:3.9
+FROM python:3.9-slim
 
 WORKDIR /medical-insights
 
 ADD ./requirements.txt ./requirements.txt
-RUN pip install --upgrade pip==23.3
+RUN pip install --upgrade pip==24.2
 RUN pip install -r requirements.txt
 ADD ./app ./app
 RUN pip install gunicorn
