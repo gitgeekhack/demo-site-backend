@@ -145,6 +145,9 @@ def format_output(extracted_outputs):
     document_wise_response_list = []
 
     for key, value in document_wise_response.items():
+        value['tests'] = []
+        for i in value['medical_entities']:
+            value['tests'].append({'page_no': i['page_no'], 'tests': i.pop('tests')})
         value |= {"document_name": os.path.basename(key)}
         document_wise_response_list.append(value)
 
