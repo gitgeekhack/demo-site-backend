@@ -9,23 +9,10 @@ services:
       - "/mnt/user-data:/mnt/user-data:rw"
     environment:
       Tesseract_PATH: "/usr/bin/tesseract"
-      CVAT_IP: "http://localhost:8080/"
       USER_DATA_PATH: "/mnt/user-data"
       S3_ENCRYPTION_KEY: "Binary Encryption Key"
     ports:
       - "8081:8081"
-
-  medical_insights_extractor:
-    build:
-      context: ../medical-insights-extractor
-      dockerfile: medical_insights.Dockerfile
-    volumes:
-      - "/mnt/user-data:/mnt/user-data:rw"
-    environment:
-      USER_DATA_PATH: "/mnt/user-data"
-      S3_ENCRYPTION_KEY: "Binary Encryption Key"
-    ports:
-      - "8083:8083"
 
   underwriting_automation:
     build:

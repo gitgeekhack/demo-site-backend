@@ -138,3 +138,4 @@ converted_files/
 uploaded_files/
 cvat_annotations/
 app/static/medical_poc_ocr
+static/
