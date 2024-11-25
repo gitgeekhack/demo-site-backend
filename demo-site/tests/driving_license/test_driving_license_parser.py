@@ -1,4 +1,6 @@
+import os
 import pytest
+os.chdir('../../')
 from app.service.helper.driving_license_parser import parse_name, parse_date, parse_license_number, autocorrect_city, \
     parse_address, split_address, parse_gender, parse_height, parse_weight, parse_hair_color, parse_eye_color, \
     parse_license_class

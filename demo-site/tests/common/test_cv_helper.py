@@ -1,4 +1,6 @@
+import os
 import pytest
+os.chdir('../../')
 import cv2
 import numpy as np
 from app.service.helper import cv_helper
@@ -10,7 +12,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_get_object_with_valid_parameter(self):
         extractor = cv_helper.CVHelper()
-        image_path = 'data/image/minnesota_license.jpg'
+        image_path = 'tests/data/image/minnesota_license.jpg'
         image = cv2.imread(image_path)
         coordinates = np.array([244.12, 193.16, 463.87, 242.86], dtype=np.float32)
         label = 'license_number'
@@ -20,7 +22,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_get_object_with_invalid_parameter(self):
         extractor = cv_helper.CVHelper()
-        pdf_path = 'data/pdf/Sample1.pdf'
+        pdf_path = 'tests/data/pdf/Sample1.pdf'
         coordinates = np.array([244.12, 193.16, 463.87, 242.86], dtype=np.float32)
         label = 'license_number'
         try:
@@ -80,7 +82,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_calculate_skew_angle_with_valid_parameter(self):
         extractor = cv_helper.CVHelper()
-        image_path = 'data/image/calculate_skew_angle.jpg'
+        image_path = 'tests/data/image/calculate_skew_angle.jpg'
         image = cv2.imread(image_path)
         result = await extractor._calculate_skew_angel(image)
         assert result is not None
@@ -88,7 +90,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_calculate_skew_angle_with_invalid_parameter(self):
         extractor = cv_helper.CVHelper()
-        txt_path = 'data/text/sample.txt'
+        txt_path = 'tests/data/text/sample.txt'
         try:
             await extractor._calculate_skew_angel(txt_path)
         except:
@@ -97,7 +99,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_fix_skew_with_valid_parameter(self):
         extractor = cv_helper.CVHelper()
-        image_path = 'data/image/minnesota_license.jpg'
+        image_path = 'tests/data/image/minnesota_license.jpg'
         image = cv2.imread(image_path)
         skew_angle = 0
         result = await extractor.fix_skew(image, skew_angle)
@@ -106,7 +108,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_fix_skew_with_invalid_parameter(self):
         extractor = cv_helper.CVHelper()
-        txt_path = 'data/text/sample.txt'
+        txt_path = 'tests/data/text/sample.txt'
         skew_angle = 0
         try:
             await extractor.fix_skew(txt_path, skew_angle)
@@ -116,7 +118,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_automatic_enhancement_with_valid_parameter(self):
         extractor = cv_helper.CVHelper()
-        img_path = 'data/image/minnesota_license.jpg'
+        img_path = 'tests/data/image/minnesota_license.jpg'
         image = cv2.imread(img_path)
         result = await extractor.automatic_enhancement(image)
         assert result is not None
@@ -124,7 +126,7 @@ class TestCVHelper:
     @pytest.mark.asyncio
     async def test_automatic_enhancement_with_invalid_parameter(self):
         extractor = cv_helper.CVHelper()
-        pdf_path = 'data/pdf/Sample1.pdf'
+        pdf_path = 'tests/data/pdf/Sample1.pdf'
         try:
             await extractor.automatic_enhancement(pdf_path)
         except:
