@@ -1,5 +1,7 @@
+import os
 import uuid
 import pytest
+os.chdir('../../')
 import cv2
 from app.service.driving_license import extract
 
@@ -34,7 +36,7 @@ class TestDLDataPointExtractorV1:
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
 
-        image_path = 'data/image/minnesota_license.jpg'
+        image_path = 'tests/data/image/minnesota_license.jpg'
         image = cv2.imread(image_path)
 
         result = await extractor._DLDataPointExtractorV1__detect_objects(image)
@@ -45,7 +47,7 @@ class TestDLDataPointExtractorV1:
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
 
-        invalid_file_path = 'data/text/sample.txt'
+        invalid_file_path = 'tests/data/text/sample.txt'
 
         try:
             await extractor._DLDataPointExtractorV1__detect_objects(invalid_file_path)
@@ -57,7 +59,7 @@ class TestDLDataPointExtractorV1:
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
 
-        image_path = 'data/image/get_text_from_object.jpg'
+        image_path = 'tests/data/image/get_text_from_object.jpg'
         label = 'license_number'
 
         image = cv2.imread(image_path)
@@ -69,7 +71,7 @@ class TestDLDataPointExtractorV1:
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
 
-        pdf_path = 'data/pdf/Sample1.pdf'
+        pdf_path = 'tests/data/pdf/Sample1.pdf'
         label = 'license_number'
 
         try:
@@ -81,7 +83,7 @@ class TestDLDataPointExtractorV1:
     async def test_extract_data_by_label_with_valid_parameter(self):
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
-        image_path = 'data/image/extract_data_by_label.jpg'
+        image_path = 'tests/data/image/extract_data_by_label.jpg'
         image = cv2.imread(image_path)
         result = await extractor._DLDataPointExtractorV1__extract_data_by_label(image)
         assert result is not None
@@ -90,7 +92,7 @@ class TestDLDataPointExtractorV1:
     async def test_extract_data_by_label_with_invalid_parameter(self):
         test_uuid = str(uuid.uuid4())
         extractor = extract.DLDataPointExtractorV1(uuid=test_uuid)
-        txt_path = 'data/text/sample.txt'
+        txt_path = 'tests/data/text/sample.txt'
         try:
             await extractor._DLDataPointExtractorV1__extract_data_by_label(txt_path)
         except:
