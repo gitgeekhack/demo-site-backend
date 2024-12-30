@@ -1,0 +1,20 @@
+INSERT INTO "EmployeeDetails" ("EmployeeID", "Name", "Salary", "Department")
+VALUES
+(1, 'Vivek', 50000, 'Data Science'),
+(2, 'Darshan', 50000, 'Data Science'),
+(3, 'Kashyap', 50000, 'Data Science'),
+(4, 'Agasti', 70000, 'Data Science');
+
+select * from "EmployeeDetails" order by "EmployeeID";
+
+INSERT INTO "EmployeeCertificate" ("CertificateID", "EmployeeID", "CertificateName", "StartDate", "EndDate")
+VALUES
+(1, 1, 'CCP', '2023-09-01', '2023-10-25'),
+(3, 2, 'SAA', '2023-09-01', '2023-11-25'),
+(4, 3, 'CCP', '2023-08-01', '2023-09-05'),
+(5, 4, 'CCP', '2023-06-01', '2023-07-01'),
+(6, 4, 'SAA', '2023-07-15', '2023-09-25'),
+(7, 4, 'ML Speciality', '2023-10-01', NULL),
+(2, 2, 'CCP', '2023-06-01', NULL);
+
+select * from "EmployeeCertificate" order by "CertificateID";
